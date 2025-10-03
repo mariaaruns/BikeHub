@@ -23,11 +23,11 @@ namespace BikeHub.Repository.IRepository
 
         //product
 
-        //Task CreateProductAsync();
+        Task<int> CreateProductAsync(AddProductsDto dto);
         Task<PagedResult<ProductsDto>> GetAllProductsAsync(GetProductsDto dto);
-        //Task GetProductByIdAsync();
-        //Task UpdateProductByIdAsync();
-        //Task DeleteProductByIdAsync();
+        Task<GetProductByIdDto> GetProductByIdAsync(int id);
+        Task<bool> UpdateProductByIdAsync(UpdateProductDto dto);
+        Task<bool> DeactivateProductAsync(int id);
 
         
     }

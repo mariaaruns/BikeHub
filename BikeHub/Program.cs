@@ -51,6 +51,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddAntiforgery(options =>
+{
+    options.SuppressXFrameOptionsHeader = true; // optional
+});
 builder.Services.AddAuthorization();
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen(options =>

@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36127.28 d17.14
+VisualStudioVersion = 17.14.36127.28
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BikeHub", "BikeHub\BikeHub.csproj", "{CC78108A-F17A-44C4-9F05-722A5237286A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BikeHub.Shared", "BikeHub.Shared\BikeHub.Shared.csproj", "{0991DBBA-BD9B-4A58-92D5-BFCF49889599}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client", "client", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bikehub.Client", "Bikehub.Client\Bikehub.Client.csproj", "{B654AB1F-FA7E-430C-B81C-FB94A2233A80}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,9 +25,17 @@ Global
 		{0991DBBA-BD9B-4A58-92D5-BFCF49889599}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0991DBBA-BD9B-4A58-92D5-BFCF49889599}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0991DBBA-BD9B-4A58-92D5-BFCF49889599}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B654AB1F-FA7E-430C-B81C-FB94A2233A80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B654AB1F-FA7E-430C-B81C-FB94A2233A80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B654AB1F-FA7E-430C-B81C-FB94A2233A80}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{B654AB1F-FA7E-430C-B81C-FB94A2233A80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B654AB1F-FA7E-430C-B81C-FB94A2233A80}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B654AB1F-FA7E-430C-B81C-FB94A2233A80} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B8F8AA83-0192-441D-9E02-DA70AD2641EA}
