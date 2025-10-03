@@ -10,7 +10,12 @@ namespace BikeHub.Shared.Common
         public int TotalRecords { get; set; }
         public int Page { get; set; }
         public int PageSize { get; set; }
+
+        
+        //public bool HasNextPage=> 
+
         public List<T> Data { get; set; } = new();
+
         public PagedResult(int TotalRecords, int Page, int PageSize, List<T> Data)
         {
             this.TotalRecords = TotalRecords;

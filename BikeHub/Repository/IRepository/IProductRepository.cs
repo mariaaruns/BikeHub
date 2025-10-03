@@ -22,7 +22,6 @@ namespace BikeHub.Repository.IRepository
 
 
         //product
-
         Task<int> CreateProductAsync(AddProductsDto dto);
         Task<PagedResult<ProductsDto>> GetAllProductsAsync(GetProductsDto dto);
         Task<GetProductByIdDto> GetProductByIdAsync(int id);

@@ -24,8 +24,11 @@ namespace BikeHub.Features
                     { 
                     return Results.BadRequest(ApiResponse<string>.Fail("Invalid Request", "PageNumber and PageSize must be greater than zero"));
                     }
+
                     var result = await productRepository.GetAllProductsAsync(req);
+
                     return Results.Ok(ApiResponse<PagedResult<ProductsDto>>.Success(result,"Products fetched successfully"));
+
                 }
                 catch (Exception ex)
                 {
@@ -35,7 +38,11 @@ namespace BikeHub.Features
             })
             .WithTags("Products")
             .Produces<ApiResponse<PagedResult<ProductsDto>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<string>>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
             .WithName("GetAllProducts");
+
+
 
             app.MapPost("/products/add", async (IProductRepository productRepository,[FromForm] AddProductsDto req) => {
 
@@ -97,6 +104,8 @@ namespace BikeHub.Features
             .DisableAntiforgery()
             .WithName("Create Product");
 
+
+            
             app.MapPut("/products/update", async (IProductRepository productRepository, [FromForm] UpdateProductDto req) =>
             {
                 string newFilePath = string.Empty;
@@ -171,7 +180,7 @@ namespace BikeHub.Features
               .WithTags("Products")
               .Produces<ApiResponse<bool>>(StatusCodes.Status200OK)
               .DisableAntiforgery()
-              .WithName("UpdateProduct");
+              .WithName("Update Product");
 
             app.MapGet("/products/{id}", async (IProductRepository productRepository, [FromRoute, Required] int id) =>
             {
@@ -197,6 +206,8 @@ namespace BikeHub.Features
             .Produces<ApiResponse<GetProductByIdDto>>(StatusCodes.Status200OK)
             .WithName("Get Product");
 
+
+
             app.MapPatch("/products/{id}/deactivate", async (IProductRepository repo, int id) =>
             {
                 var result = await repo.DeactivateProductAsync(id);
@@ -207,6 +218,12 @@ namespace BikeHub.Features
             .Produces<ApiResponse<bool>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<string>>(StatusCodes.Status404NotFound)
             .WithName("Deactivate Product");
+
+
+
+
+            //category start
+
 
         }
     }

@@ -103,11 +103,8 @@ app.UseStaticFiles(new StaticFileOptions
 });
 
 app.UseAuthentication();
-
-//app.UseAuthorization();
-
+app.UseAuthorization();
 app.MapCarter();
-
 app.Run();
 
 

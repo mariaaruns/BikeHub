@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BikeHub.Shared.Dto.Request
 {
-    public class GetProductsDto:PaginationBaseModel
+    public class GetProductsDto : PaginationBaseModel
     {
         public string? ProductNameFilter { get; set; }
         //public int PageNumber { get; set; } = 1;

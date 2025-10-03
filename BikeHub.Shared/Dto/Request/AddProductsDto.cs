@@ -12,12 +12,16 @@ namespace BikeHub.Shared.Dto.Request
     {
         [Required]
         public string ProductName { get; set; }
+        
         [Required]
         public int BrandId { get; set; }
+        
         [Required]
         public int CategoryId { get; set; }
+        
         [Required]
         public int ModelYear { get; set; }
+        
         [Required]
         public decimal ListPrice { get; set; }
         public IFormFile? ProductImage { get; set; }

@@ -1,4 +1,5 @@
 ﻿using BikeHub.Models;
+using Dapper;
 using Microsoft.AspNetCore.Identity;
 using System.Data;
 using System.Security.Claims;
@@ -19,24 +20,46 @@ namespace BikeHub.Service
         {
             this._connection = connection;
         }
-        public Task AddClaimsAsync(ApplicationUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+        public async Task AddClaimsAsync(ApplicationUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = "INSERT INTO AspNetUserClaims (UserId, ClaimType, ClaimValue) VALUES (@UserId, @ClaimType, @ClaimValue)";
+            var claimData = claims.Select(c => new { UserId = user.Id, ClaimType = c.Type, ClaimValue = c.Value });
+            await _connection.ExecuteAsync(sql, claimData);
         }
 
-        public Task AddToRoleAsync(ApplicationUser user, string roleName, CancellationToken cancellationToken)
+        public async  Task AddToRoleAsync(ApplicationUser user, string roleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string roleQuery = "SELECT Id FROM AspNetRoles WHERE NormalizedName = @roleName";
+            var roleId = await _connection.QuerySingleOrDefaultAsync<int>(roleQuery, new { roleName });
+
+            if (roleId != 0)
+            {
+                const string sql = "INSERT INTO AspNetUserRoles (UserId, RoleId) VALUES (@userId, @roleId)";
+                await _connection.ExecuteAsync(sql, new { userId = user.Id, roleId });
+            }
         }
 
-        public Task<IdentityResult> CreateAsync(ApplicationUser user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> CreateAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = @"
+                INSERT INTO AspNetUsers ( UserName, NormalizedUserName, Email, NormalizedEmail, 
+                    EmailConfirmed, PasswordHash, SecurityStamp, ConcurrencyStamp, PhoneNumber, 
+                    PhoneNumberConfirmed, TwoFactorEnabled, LockoutEnd, LockoutEnabled, 
+                    AccessFailedCount, CreatedDate)
+                VALUES ( @UserName, @NormalizedUserName, @Email, @NormalizedEmail, 
+                    @EmailConfirmed, @PasswordHash, @SecurityStamp, @ConcurrencyStamp, @PhoneNumber, 
+                    @PhoneNumberConfirmed, @TwoFactorEnabled, @LockoutEnd, @LockoutEnabled, 
+                    @AccessFailedCount, @CreatedDate)";
+
+            var result = await _connection.ExecuteAsync(sql, user);
+            return result > 0 ? IdentityResult.Success : IdentityResult.Failed();
         }
 
-        public Task<IdentityResult> DeleteAsync(ApplicationUser user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> DeleteAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = "DELETE FROM AspNetUsers WHERE Id = @Id";
+            var result = await _connection.ExecuteAsync(sql, new { user.Id });
+            return result > 0 ? IdentityResult.Success : IdentityResult.Failed();
         }
 
         public void Dispose()
@@ -44,179 +67,257 @@ namespace BikeHub.Service
             throw new NotImplementedException();
         }
 
-        public Task<ApplicationUser?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
+        public async Task<ApplicationUser?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = "SELECT * FROM AspNetUsers WHERE NormalizedEmail = @normalizedEmail";
+            return await _connection.QuerySingleOrDefaultAsync<ApplicationUser>(sql, new { normalizedEmail });
         }
 
-        public Task<ApplicationUser?> FindByIdAsync(string userId, CancellationToken cancellationToken)
+        public async Task<ApplicationUser?> FindByIdAsync(string userId, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = "SELECT * FROM AspNetUsers WHERE Id = @userId";
+            return await _connection.QuerySingleOrDefaultAsync<ApplicationUser>(sql, new { userId });
+
         }
 
-        public Task<ApplicationUser?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+        public async Task<ApplicationUser?> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = "SELECT * FROM AspNetUsers WHERE NormalizedUserName = @normalizedUserName";
+            return await _connection.QuerySingleOrDefaultAsync<ApplicationUser>(sql, new { normalizedUserName });
         }
 
         public Task<int> GetAccessFailedCountAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(user.AccessFailedCount);
         }
 
-        public Task<IList<Claim>> GetClaimsAsync(ApplicationUser user, CancellationToken cancellationToken)
+        public async Task<IList<Claim>> GetClaimsAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = "SELECT ClaimType, ClaimValue FROM AspNetUserClaims WHERE UserId = @userId";
+            var claims = await _connection.QueryAsync(sql, new { userId = user.Id });
+            return claims.Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
         }
 
         public Task<string?> GetEmailAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(user.Email);
         }
 
         public Task<bool> GetEmailConfirmedAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(user.EmailConfirmed);
         }
 
         public Task<bool> GetLockoutEnabledAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(user.LockoutEnabled);
         }
 
         public Task<DateTimeOffset?> GetLockoutEndDateAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+             return Task.FromResult(user.LockoutEnd);
         }
 
         public Task<string?> GetNormalizedEmailAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(user.NormalizedEmail);
         }
 
         public Task<string?> GetNormalizedUserNameAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(user.NormalizedUserName);
         }
 
         public Task<string?> GetPasswordHashAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+              
+        
+            return Task.FromResult(user.PasswordHash);
+        
         }
 
-        public Task<IList<string>> GetRolesAsync(ApplicationUser user, CancellationToken cancellationToken)
+        public async Task<IList<string>> GetRolesAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = @"
+                SELECT r.Name FROM AspNetRoles r
+                INNER JOIN AspNetUserRoles ur ON r.Id = ur.RoleId
+                WHERE ur.UserId = @userId";
+
+            var roles = await _connection.QueryAsync<string>(sql, new { userId = user.Id });
+            return roles.ToList();
         }
 
         public Task<string?> GetSecurityStampAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(user.SecurityStamp);
         }
 
         public Task<string> GetUserIdAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(user.Id.ToString());
         }
 
         public Task<string?> GetUserNameAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(user.UserName);
         }
 
-        public Task<IList<ApplicationUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
+        public async Task<IList<ApplicationUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = @"
+                SELECT u.* FROM AspNetUsers u
+                INNER JOIN AspNetUserClaims uc ON u.Id = uc.UserId
+                WHERE uc.ClaimType = @ClaimType AND uc.ClaimValue = @ClaimValue";
+
+            var users = await _connection.QueryAsync<ApplicationUser>(sql, new { ClaimType = claim.Type, ClaimValue = claim.Value });
+            return users.ToList();
         }
 
-        public Task<IList<ApplicationUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
+        public async Task<IList<ApplicationUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = @"
+                SELECT u.* FROM AspNetUsers u
+                INNER JOIN AspNetUserRoles ur ON u.Id = ur.UserId
+                INNER JOIN AspNetRoles r ON ur.RoleId = r.Id
+                WHERE r.NormalizedName = @roleName";
+
+            var users = await _connection.QueryAsync<ApplicationUser>(sql, new { roleName });
+            return users.ToList();
         }
 
         public Task<bool> HasPasswordAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(!string.IsNullOrEmpty(user.PasswordHash));
         }
 
-        public Task<int> IncrementAccessFailedCountAsync(ApplicationUser user, CancellationToken cancellationToken)
+        public  Task<int> IncrementAccessFailedCountAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            user.AccessFailedCount++;
+            return Task.FromResult(user.AccessFailedCount);
         }
 
-        public Task<bool> IsInRoleAsync(ApplicationUser user, string roleName, CancellationToken cancellationToken)
+        public async Task<bool> IsInRoleAsync(ApplicationUser user, string roleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = @"
+                SELECT COUNT(1) FROM AspNetUserRoles ur
+                INNER JOIN AspNetRoles r ON ur.RoleId = r.Id
+                WHERE ur.UserId = @userId AND r.NormalizedName = @roleName";
+
+            var count = await _connection.QuerySingleAsync<int>(sql, new { userId = user.Id, roleName });
+            return count > 0;
         }
 
-        public Task RemoveClaimsAsync(ApplicationUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+        public async Task RemoveClaimsAsync(ApplicationUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = "DELETE FROM AspNetUserClaims WHERE UserId = @UserId AND ClaimType = @ClaimType AND ClaimValue = @ClaimValue";
+            var claimData = claims.Select(c => new { UserId = user.Id, ClaimType = c.Type, ClaimValue = c.Value });
+            await _connection.ExecuteAsync(sql, claimData);
+
         }
 
-        public Task RemoveFromRoleAsync(ApplicationUser user, string roleName, CancellationToken cancellationToken)
+        public async Task RemoveFromRoleAsync(ApplicationUser user, string roleName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = @"
+                DELETE ur FROM AspNetUserRoles ur
+                INNER JOIN AspNetRoles r ON ur.RoleId = r.Id
+                WHERE ur.UserId = @userId AND r.NormalizedName = @roleName";
+
+            await _connection.ExecuteAsync(sql, new { userId = user.Id, roleName });
         }
 
-        public Task ReplaceClaimAsync(ApplicationUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
+        public async Task ReplaceClaimAsync(ApplicationUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = @"
+                UPDATE AspNetUserClaims 
+                SET ClaimType = @NewClaimType, ClaimValue = @NewClaimValue
+                WHERE UserId = @UserId AND ClaimType = @ClaimType AND ClaimValue = @ClaimValue";
+
+            await _connection.ExecuteAsync(sql, new
+            {
+                UserId = user.Id,
+                ClaimType = claim.Type,
+                ClaimValue = claim.Value,
+                NewClaimType = newClaim.Type,
+                NewClaimValue = newClaim.Value
+            });
         }
 
         public Task ResetAccessFailedCountAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            user.AccessFailedCount = 0;
+            return Task.CompletedTask;
         }
 
         public Task SetEmailAsync(ApplicationUser user, string? email, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            user.Email = email ?? string.Empty;
+            return Task.CompletedTask;
         }
 
         public Task SetEmailConfirmedAsync(ApplicationUser user, bool confirmed, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            user.EmailConfirmed = confirmed;
+            return Task.CompletedTask;
         }
 
         public Task SetLockoutEnabledAsync(ApplicationUser user, bool enabled, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            user.LockoutEnabled = enabled;
+            return Task.CompletedTask;
         }
 
         public Task SetLockoutEndDateAsync(ApplicationUser user, DateTimeOffset? lockoutEnd, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            user.LockoutEnd = lockoutEnd;
+            return Task.CompletedTask;
         }
 
         public Task SetNormalizedEmailAsync(ApplicationUser user, string? normalizedEmail, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            user.NormalizedEmail = normalizedEmail ?? string.Empty;
+            return Task.CompletedTask;
         }
 
         public Task SetNormalizedUserNameAsync(ApplicationUser user, string? normalizedName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            user.NormalizedUserName = normalizedName ?? string.Empty;
+            return Task.CompletedTask;
         }
 
         public Task SetPasswordHashAsync(ApplicationUser user, string? passwordHash, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            user.PasswordHash = passwordHash ?? string.Empty;
+            return Task.CompletedTask;
         }
 
         public Task SetSecurityStampAsync(ApplicationUser user, string stamp, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            user.SecurityStamp = stamp;
+            return Task.CompletedTask;
         }
 
         public Task SetUserNameAsync(ApplicationUser user, string? userName, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            user.UserName = userName ?? string.Empty;
+            return Task.CompletedTask;
         }
 
-        public Task<IdentityResult> UpdateAsync(ApplicationUser user, CancellationToken cancellationToken)
+        public async Task<IdentityResult> UpdateAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            const string sql = @"
+                UPDATE AspNetUsers SET 
+                    UserName = @UserName, NormalizedUserName = @NormalizedUserName,
+                    Email = @Email, NormalizedEmail = @NormalizedEmail,
+                    EmailConfirmed = @EmailConfirmed, PasswordHash = @PasswordHash,
+                    SecurityStamp = @SecurityStamp, ConcurrencyStamp = @ConcurrencyStamp,
+                    PhoneNumber = @PhoneNumber, PhoneNumberConfirmed = @PhoneNumberConfirmed,
+                    TwoFactorEnabled = @TwoFactorEnabled, LockoutEnd = @LockoutEnd,
+                    LockoutEnabled = @LockoutEnabled, AccessFailedCount = @AccessFailedCount,
+                    LastLoginDate = @LastLoginDate
+                      WHERE Id = @Id";
+
+            var result = await _connection.ExecuteAsync(sql, user);
+            return result > 0 ? IdentityResult.Success : IdentityResult.Failed();
         }
     }
 }
