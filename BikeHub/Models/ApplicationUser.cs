@@ -1,4 +1,6 @@
-﻿namespace BikeHub.Models
+﻿using Microsoft.Identity.Client;
+
+namespace BikeHub.Models
 {
     public class ApplicationUser
     {
@@ -19,6 +21,10 @@
         public int AccessFailedCount { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public DateTime? LastLoginDate { get; set; }
+
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Image { get; set; } = string.Empty;
     }
 
     public class ApplicationRole

@@ -10,9 +10,11 @@ namespace BikeHub.Shared.Common
         public int TotalRecords { get; set; }
         public int Page { get; set; }
         public int PageSize { get; set; }
-
         
-        //public bool HasNextPage=> 
+        public int TotalPages => (int)Math.Ceiling((double)TotalRecords / PageSize);
+
+        public bool HasNextPage => TotalPages < Page;
+        public bool HasPrevPage => Page > 1;
 
         public List<T> Data { get; set; } = new();
 

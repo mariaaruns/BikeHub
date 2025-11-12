@@ -17,14 +17,14 @@ namespace BikeHub.Service
 
         public  async Task AddClaimAsync(ApplicationRole role, Claim claim, CancellationToken cancellationToken = default)
         {
-            const string sql = "INSERT INTO AspNetRoleClaims (ClaimType, ClaimValue) VALUES (@RoleId, @ClaimType, @ClaimValue)";
+            const string sql = "INSERT INTO RoleClaims (ClaimType, ClaimValue) VALUES (@RoleId, @ClaimType, @ClaimValue)";
             await _connection.ExecuteAsync(sql, new {ClaimType = claim.Type, ClaimValue = claim.Value });
         }
 
         public async Task<IdentityResult> CreateAsync(ApplicationRole role, CancellationToken cancellationToken)
         {
             const string sql = @"
-                INSERT INTO AspNetRoles (Name, NormalizedName, ConcurrencyStamp)
+                INSERT INTO Roles (Name, NormalizedName, ConcurrencyStamp)
                 VALUES (@Name, @NormalizedName, @ConcurrencyStamp)";
 
             var result = await _connection.ExecuteAsync(sql, role);
@@ -33,7 +33,7 @@ namespace BikeHub.Service
 
         public async Task<IdentityResult> DeleteAsync(ApplicationRole role, CancellationToken cancellationToken)
         {
-            const string sql = "DELETE FROM AspNetRoles WHERE Id = @Id";
+            const string sql = "DELETE FROM Roles WHERE Id = @Id";
             var result = await _connection.ExecuteAsync(sql, new { role.Id });
             return result > 0 ? IdentityResult.Success : IdentityResult.Failed();
         }
@@ -45,19 +45,19 @@ namespace BikeHub.Service
 
         public async Task<ApplicationRole?> FindByIdAsync(string roleId, CancellationToken cancellationToken)
         {
-            const string sql = "SELECT * FROM AspNetRoles WHERE Id = @roleId";
+            const string sql = "SELECT * FROM Roles WHERE Id = @roleId";
             return await _connection.QuerySingleOrDefaultAsync<ApplicationRole>(sql, new { roleId });
         }
 
         public async Task<ApplicationRole?> FindByNameAsync(string normalizedRoleName, CancellationToken cancellationToken)
         {
-            const string sql = "SELECT * FROM AspNetRoles WHERE NormalizedName = @normalizedRoleName";
+            const string sql = "SELECT * FROM Roles WHERE NormalizedName = @normalizedRoleName";
             return await _connection.QuerySingleOrDefaultAsync<ApplicationRole>(sql, new { normalizedRoleName });
         }
 
         public async Task<IList<Claim>> GetClaimsAsync(ApplicationRole role, CancellationToken cancellationToken = default)
         {
-            const string sql = "SELECT ClaimType, ClaimValue FROM AspNetRoleClaims WHERE RoleId = @roleId";
+            const string sql = "SELECT ClaimType, ClaimValue FROM RoleClaims WHERE RoleId = @roleId";
             var claims = await _connection.QueryAsync(sql, new { roleId = role.Id });
             return claims.Select(c => new Claim(c.ClaimType, c.ClaimValue)).ToList();
         }
@@ -79,7 +79,7 @@ namespace BikeHub.Service
 
         public async Task RemoveClaimAsync(ApplicationRole role, Claim claim, CancellationToken cancellationToken = default)
         {
-            const string sql = "DELETE FROM AspNetRoleClaims WHERE RoleId = @RoleId AND ClaimType = @ClaimType AND ClaimValue = @ClaimValue";
+            const string sql = "DELETE FROM RoleClaims WHERE RoleId = @RoleId AND ClaimType = @ClaimType AND ClaimValue = @ClaimValue";
             await _connection.ExecuteAsync(sql, new { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
         }
         
@@ -99,7 +99,7 @@ namespace BikeHub.Service
         public async Task<IdentityResult> UpdateAsync(ApplicationRole role, CancellationToken cancellationToken)
         {
             const string sql = @"
-                UPDATE AspNetRoles SET 
+                UPDATE Roles SET 
                     Name = @Name, NormalizedName = @NormalizedName, ConcurrencyStamp = @ConcurrencyStamp
                 WHERE Id = @Id";
 

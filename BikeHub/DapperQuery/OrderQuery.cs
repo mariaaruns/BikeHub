@@ -1,0 +1,59 @@
+﻿namespace BikeHub.DapperQuery
+{
+    public class OrderQuery
+    {
+        public const string GetOrderList = @"select t1.order_id OrderId,
+                                            t2.first_name + ' ' + t2.last_name CustomerName,
+                                            (select value from t000_lookup where Id=t1.order_status) as OrderStatus,
+                                            t3.cartCount,t3.TotalPrice,T2.Image
+                                            from sales.orders t1
+                                            left join sales.customers t2 on
+                                            t1.customer_id= t2.customer_id
+                                            inner join (select oi.order_id,count(oi.order_id)[cartCount] ,sum(Convert(Decimal(18,2),oi.list_price)) [TotalPrice] from sales.order_items oi  group By oi.order_id) t3 on
+                                            t3.order_id=t1.order_id
+                                            where Cast(order_date as Date)=@OrderDate and 
+                                            t1.order_status=@OrderStatus and (@OrderId IS NULL OR @OrderId=0 OR t1.order_id=@OrderId)
+                                            order by order_date desc , t1.order_id desc
+                                            OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;"
+
+;
+        public const string GetOrderListCount = @"select count(1)
+                                                from sales.orders t1
+                                                left join sales.customers t2 on
+                                                t1.customer_id= t2.customer_id
+                                                inner join (select oi.order_id,count(oi.order_id)[cartCount] 
+                                                ,sum(Convert(Decimal(18,2),oi.list_price)) [TotalPrice] from sales.order_items oi  group By oi.order_id) t3 on
+                                                t3.order_id=t1.order_id
+                                                where Cast(order_date as Date)=@OrderDate and 
+                                                t1.order_status=@OrderStatus and (@OrderId IS NULL OR @OrderId=0 OR t1.order_id=@OrderId)";
+
+
+
+
+        public const string GetOrderDetailByOrderId = @"select t1.order_id OrderId,
+                                                t1.order_status OrderStatus,
+                                                t1.customer_id CustomerId,
+                                                t1.order_date OrderDate,
+                                                t1.required_date RequiredDate,
+                                                t1.shipped_date ShippedDate,
+                                                t1.store_id StoreId,
+                                                t1.staff_id StaffId,
+                                                t2.first_name + ' ' + t2.last_name CustomerName,
+                                                t2.email Email,
+                                                t2.phone Phone,
+                                                t2.photo Photo,
+                                                t3.item_id ItemId,
+                                                t3.product_id ProductId,
+                                                t3.quantity Quantity,
+                                                t3.list_price ListPrice,
+                                                t4.product_name ProductName
+                                                from sales.orders t1
+                                                left join sales.customers t2 on
+                                                t1.customer_id= t2.customer_id
+                                                inner join sales.order_items t3 on
+                                                t1.order_id=t3.order_id
+                                                inner join production.products t4 on
+                                                t3.product_id=t4.product_id
+                                                where t1.order_id=@OrderId";
+    }
+}

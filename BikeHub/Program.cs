@@ -18,9 +18,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddCarter();
-builder.Services.AddScoped<IDbConnection>(sp =>
+builder.Services.AddTransient<IDbConnection>(sp =>
     new SqlConnection(builder.Configuration.GetConnectionString("Conn")));
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IOrderRepository,OrderRepository >();
+
 builder.Services.AddTransient<IUserStore<ApplicationUser>, UserStore>();
 builder.Services.AddTransient<IRoleStore<ApplicationRole>, RoleStore>();
 
@@ -36,7 +38,8 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options => {
+    .AddJwtBearer(options =>
+    {
         var key = builder.Configuration.GetValue<string>("jwt:SecureKey");
         var keyByteArray = Encoding.UTF8.GetBytes(key);
         var securityKey = new SymmetricSecurityKey(keyByteArray);

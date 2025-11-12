@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "watch",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "BikeHub\\BikeHub.csproj"
+      ],
+      //"problemMatcher": "$msCompile",
+      "isBackground": true
+    },
+    {
+      "label": "MAUI: Android Hot Reload",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "BikeHub.Mobile/BikeHub.Mobile.csproj",
+        "-f",
+        "net9.0-android",
+        //"-p:RunOnAndroidEmulator=true",
+        "-p:DeviceName=192.168.1.2:5555"
+      ],
+      "isBackground": true,
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

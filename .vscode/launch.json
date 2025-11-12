@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Debug + Hot Reload",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "watch",
+            "program": "D:\\.NET Core Web Api\\BikeHub\\BikeHub\\bin\\Debug\\net9.0\\BikeHub.dll",
+            "args": [],
+            "cwd": "D:\\.NET Core Web Api\\BikeHub\\BikeHub",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "DOTNET_WATCH_HOT_RELOAD": "1"
+            },
+            "requireExactSource": false
+        },
+         {
+      "name": "MAUI Android + Hot Reload",
+      "type": "coreclr",               // Use coreclr for attaching to MAUI watch
+      "request": "launch",
+      "preLaunchTask": "MAUI: Android Hot Reload",
+      "program": "D:/.NET Core Web Api/BikeHub/BikeHub.Mobile/bin/Debug/net9.0-android/BikeHub.Mobile.dll",
+      "cwd": "${workspaceFolder}/BikeHub.Mobile",
+      "stopAtEntry": false
+    }
+    ]
+}
