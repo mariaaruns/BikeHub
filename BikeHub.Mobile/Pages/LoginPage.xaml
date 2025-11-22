@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BikeHub.Mobile.Pages.LoginPage"
+             xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
+             x:DataType="vm:LoginViewModel"
+             xmlns:controls="clr-namespace:BikeHub.Mobile.Controls"
+             
+             Title="LoginPage"
+            Shell.TabBarIsVisible="False"
+             Shell.NavBarIsVisible="False">
+
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Label" x:Key="appName">
+                <Setter Property="FontSize" Value="24"></Setter>
+                <Setter Property="FontAttributes" Value="Bold"></Setter>
+                <Setter Property="HorizontalOptions" Value="Center"></Setter>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="0,40,0,0" Spacing="0" VerticalOptions="End" >
+
+                <!-- App Title -->
+
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                    <Label Text="Bike"
+                            FontSize="40"
+                            FontAttributes="Bold"
+                            TextColor="blue"
+                            Margin="0,0,0,0"/>
+
+                    <Label Text="Hub"
+                                FontSize="40"
+                                FontAttributes="Bold"
+                                TextColor="red"
+                                Margin="0,0,0,0"/>
+                </HorizontalStackLayout>
+                
+
+                <BoxView HeightRequest="80" Color="white" />
+
+                <!-- Welcome Back -->
+                <Label Text="Welcome Back"
+                FontSize="36"
+                FontAttributes="Bold"
+                TextColor="#0A0D14"
+                HorizontalOptions="Center" />
+
+                <Label Text="Sign in to continue"
+                FontSize="22"
+                TextColor="#8B8B8B"
+                HorizontalOptions="Center"
+                Margin="0,8,0,0" />
+
+                <BoxView HeightRequest="40" Color="white" />
+
+                <!-- Username/Email -->
+                <Label Text="Username/Email"
+                FontSize="20"
+                TextColor="#0A0D14"
+                Margin="16,0,0,0" />
+
+                <Frame CornerRadius="10"
+                BorderColor="#D1D5DB"
+                HasShadow="False"
+                Margin="16,8,16,0"
+                Padding="0">
+                    <Grid ColumnDefinitions="40,*,10">
+                        <Image Source="userfill.png"
+                        HeightRequest="24"
+                        WidthRequest="24"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center" />
+
+                        <controls:NoUnderlineEntry Grid.Column="1"
+                        Text="{Binding UserName}"
+                        Placeholder="your.email@example.com"
+                        FontSize="18"
+                        BackgroundColor="Transparent"
+                        TextColor="#8B8B8B"
+                        Keyboard="Email"/>
+                    </Grid>
+                </Frame>
+
+                <!-- Password -->
+                <Label Text="Password"
+                FontSize="20"
+                TextColor="#0A0D14"
+                Margin="16,16,0,0" />
+
+                <Frame CornerRadius="10"
+                BorderColor="#D1D5DB"
+                HasShadow="False"
+                Margin="16,8,16,0"
+                Padding="0">
+                    <Grid ColumnDefinitions="40,*,10">
+                        <Image Source="lock.png"
+                        HeightRequest="24"
+                        WidthRequest="24"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center" />
+
+                        <controls:NoUnderlineEntry Grid.Column="1"
+                                               Text="{Binding Password}"
+                     Placeholder="Enter your password"
+                     FontSize="18"
+                     BackgroundColor="Transparent"
+                     TextColor="#8B8B8B"
+                     IsPassword="True" />
+
+                    </Grid>
+                </Frame>
+
+                <!-- Forgot Password -->
+                <Label Text="Forgot Password?"
+                FontSize="18"
+                TextColor="#F5A100"
+                HorizontalOptions="End"
+                Margin="0,8,24,0" />
+
+                <!-- Login Button -->
+                <Button Text="Login"
+                 FontSize="19"
+                 FontAttributes="Bold"
+                 BackgroundColor="#F5A100"
+                 TextColor="White"
+                 CornerRadius="15"
+                 Margin="16,24,16,0"
+                 HeightRequest="45" 
+                 Command="{Binding LoginCommand}"/>
+
+                <!-- Sign Up Link -->
+                <Label HorizontalOptions="Center"
+                Margin="0,32,0,0">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Don't have an account? " FontSize="20" TextColor="#0A0D14"/>
+                            <Span Text="Sign Up"
+                           FontSize="20"
+                           TextColor="#1A73E8"
+                           TextDecorations="Underline"/>
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+
+                <BoxView HeightRequest="60" Color="white" />
+
+                <!-- Footer -->
+                <Label Text="© 2024 Bike Store. All Rights Reserved."
+FontSize="16"
+TextColor="#8B8B8B"
+HorizontalOptions="Center"
+VerticalOptions="End"
+Margin="0,0,0,16" />
+
+            </VerticalStackLayout>
+            
+        </ScrollView>
+        <Grid BackgroundColor="#80000000"
+              IsVisible="{Binding IsBusy}"
+              InputTransparent="False">
+            <ActivityIndicator 
+                IsRunning="{Binding IsBusy}"
+                Color="White"
+                WidthRequest="70"
+                HeightRequest="70"
+                VerticalOptions="Center"
+                HorizontalOptions="Center"/>
+        </Grid>
+    </Grid>
+</ContentPage>

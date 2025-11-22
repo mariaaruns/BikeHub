@@ -41,6 +41,15 @@ namespace BikeHub.Service
 
         public async Task<IdentityResult> CreateAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
+            var validationErrors = new List<IdentityError>();
+            if (string.IsNullOrWhiteSpace(user.UserName))
+                validationErrors.Add(new IdentityError { Code = "InvalidUserName", Description = "UserName is required." });
+            if (string.IsNullOrWhiteSpace(user.Email))
+                validationErrors.Add(new IdentityError { Code = "InvalidEmail", Description = "Email is required." });
+
+            if (validationErrors.Count > 0)
+                return IdentityResult.Failed(validationErrors.ToArray());
+
             const string sql = @"
                 INSERT INTO Users ( UserName, NormalizedUserName, Email, NormalizedEmail, 
                     EmailConfirmed, PasswordHash, SecurityStamp, ConcurrencyStamp, PhoneNumber, 
@@ -51,8 +60,39 @@ namespace BikeHub.Service
                     @PhoneNumberConfirmed, @TwoFactorEnabled, @LockoutEnd, @LockoutEnabled, 
                     @AccessFailedCount, @CreatedDate,@FirstName,@LastName,@Image)";
 
-            var result = await _connection.ExecuteAsync(sql, user);
-            return result > 0 ? IdentityResult.Success : IdentityResult.Failed();
+            try
+            {
+                var affected = await _connection.ExecuteAsync(sql, user);
+                if (affected > 0)
+                    return IdentityResult.Success;
+
+                return IdentityResult.Failed(new IdentityError
+                {
+                    Code = "InsertFailed",
+                    Description = "User insert affected 0 rows."
+                });
+            }
+            catch(Exception ex) {
+                var msg = ex.Message ?? "Unknown database error";
+
+                if (msg.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("duplicate", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("Violation of UNIQUE KEY", StringComparison.OrdinalIgnoreCase) ||
+                    msg.Contains("duplicate key", StringComparison.OrdinalIgnoreCase))
+                {
+                    return IdentityResult.Failed(new IdentityError
+                    {
+                        Code = "DuplicateUser",
+                        Description = "A user with the same username or email already exists."
+                    });
+                }
+                return IdentityResult.Failed(new IdentityError
+                {
+                    Code = "DatabaseError",
+                    Description = msg
+                });
+            }
+            
         }
 
         public async Task<IdentityResult> DeleteAsync(ApplicationUser user, CancellationToken cancellationToken)
@@ -64,7 +104,7 @@ namespace BikeHub.Service
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            
         }
 
         public async Task<ApplicationUser?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)

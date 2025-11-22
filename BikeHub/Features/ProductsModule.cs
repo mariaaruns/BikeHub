@@ -40,7 +40,7 @@ namespace BikeHub.Features
             .Produces<ApiResponse<PagedResult<ProductsDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<string>>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
-            .WithName("GetAllProducts");
+            .WithName("GetAllProducts").RequireAuthorization();
 
 
 

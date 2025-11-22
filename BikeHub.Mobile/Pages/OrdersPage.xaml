@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BikeHub.Mobile.Pages.OrdersPage"
+             xmlns:cards="clr-namespace:Syncfusion.Maui.Toolkit.Cards;assembly=Syncfusion.Maui.Toolkit"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:controls="clr-namespace:BikeHub.Mobile.Controls"
+             xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
+             xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
+             xmlns:conv="clr-namespace:BikeHub.Mobile.Converters"
+             x:DataType="vm:OrderViewModel"
+             
+             Title="Orders">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <conv:OrderStatusDisplayConverter x:Key="OrderStatusDisplayConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <AbsoluteLayout>
+        <Grid RowDefinitions="Auto,Auto,*" Margin="0,0,0,0" RowSpacing="10" AbsoluteLayout.LayoutBounds="0,0,1,1" AbsoluteLayout.LayoutFlags="All">
+
+            <Frame Grid.Row="0" CornerRadius="10"  BorderColor="#D1D5DB" HasShadow="False" Margin="16,8,16,0" Padding="0" >
+                <Grid ColumnDefinitions="40,*,20">
+                    <Image Source="search.png" Grid.Column="0" HeightRequest="20"/>
+                    <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Search Orders..."/>
+                </Grid>
+            </Frame>
+
+            <Grid Margin="16,8,16,0" Grid.Row="1" ColumnSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <VerticalStackLayout Grid.Column="0">
+                    <Label Text="Status" />
+                    <Border BackgroundColor="{Binding SelectedStatus,Converter={StaticResource OrderStatusDisplayConverter}}" Style="{StaticResource entryWrapper}">
+                        <controls:NoUnderlinePicker
+                                    x:Name="StatusPicker"
+                                    Title="Select Status"
+                                    ItemsSource="{Binding StatusSource}"
+                                    SelectedItem="{Binding SelectedStatus, Mode=TwoWay}"
+                                    SelectionChangedCommand="{Binding StatusChangedCommand}"
+                                    TextColor="White"/>
+                    </Border>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="Order date"/>
+                    <Border BackgroundColor="WhiteSmoke" Style="{StaticResource entryWrapper}">
+                        <controls:NoUnderlineDatePicker  />
+                    </Border>
+                </VerticalStackLayout>
+
+            </Grid>
+
+            <CollectionView Grid.Row="2" ItemsSource="{Binding Orders}">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout HorizontalOptions="Center" Margin="0,50">
+                        <Image Source="no_products.png" HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
+                        <Label Text="No Orders Found" FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:OrdersDto">
+
+                        <SwipeView >
+                            <SwipeView.RightItems>
+                                <SwipeItems Mode="Execute" >
+
+                                    <SwipeItemView
+                                   BackgroundColor="red"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path= DeleteOrderCommand}"
+                                    CommandParameter="{Binding .}">
+                                        <Grid Padding="12" HorizontalOptions="Center" VerticalOptions="Center">
+                                            <Image Source="trash_white.png"  HeightRequest="20" WidthRequest="20"/>
+                                        </Grid>
+                                    </SwipeItemView>
+
+                                </SwipeItems>
+
+                            </SwipeView.RightItems>
+
+
+
+                            <Frame BorderColor="GhostWhite" BackgroundColor="WhiteSmoke" CornerRadius="10" HasShadow="False" Margin="16,0,16,0" Padding="0" >
+
+                                <Grid RowDefinitions="Auto,*" Padding="0,0,10,0">
+                                    <Grid  ColumnDefinitions="3,70,*,Auto" ColumnSpacing="10">
+
+                                        <BoxView Grid.Column="0"  BackgroundColor="{Binding Status, Converter={StaticResource OrderStatusDisplayConverter}}"/>
+
+                                        <Frame Grid.Column="1" WidthRequest="70"
+                                                               HeightRequest="70"
+                                                               CornerRadius="35"
+                                                               Padding="0"
+                                                               HasShadow="False"
+                                                               BorderColor="{Binding Status, Converter={StaticResource OrderStatusDisplayConverter}}">                           
+                                            <Image Source="{Binding Image}" Grid.Column="1"  Aspect="AspectFill" />
+                          
+                                        </Frame>
+                                        
+
+                                        <VerticalStackLayout VerticalOptions="Center" Grid.Column="2" Spacing="15">
+                                            <HorizontalStackLayout Spacing="5">
+                                                <Image Source="id_card.png" WidthRequest="16" VerticalOptions="Center"/>
+                                                <Label VerticalOptions="Center" Text="{Binding CustomerName}"  FontAttributes="Bold" FontSize="16"/>
+                                            </HorizontalStackLayout>
+                                            <HorizontalStackLayout Spacing="5">
+                                                <Image Source="order_history.png" WidthRequest="12" VerticalOptions="Center"/>
+                                                <Label VerticalOptions="Center" Text="{Binding OrderId}"  FontSize="12" TextColor="Gray"/>
+                                            </HorizontalStackLayout>
+                                        </VerticalStackLayout>
+
+                                        <VerticalStackLayout Grid.Column="3" Grid.Row="0"  VerticalOptions="Center" Spacing="15" >
+                                            <HorizontalStackLayout Spacing="5">
+                                                <Image Source="money_bills.png" WidthRequest="16" VerticalOptions="Center"/>
+                                                <Label VerticalOptions="Center" Text="{Binding TotalAmount,StringFormat='$ {0:F2}'}" TextColor="Green"  FontAttributes="Bold" FontSize="16"/>
+                                            </HorizontalStackLayout>
+
+
+
+                                            <Border BackgroundColor="{Binding Status, Converter={StaticResource OrderStatusDisplayConverter}}" StrokeShape="RoundRectangle 5" Padding="5">
+                                                
+                                                    <Label Text="{Binding Status}" HorizontalOptions="Center" FontSize="12" TextColor="White"/>
+                                                
+                                            </Border>
+                                            
+                                        </VerticalStackLayout>
+                                        
+
+                                    </Grid>
+                                </Grid>
+                            </Frame>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+
+        </Grid>
+        <Button Text="+"
+              WidthRequest="60"
+              HeightRequest="60"
+              CornerRadius="30"
+              BackgroundColor="Orange"
+              TextColor="White"
+              FontSize="28"
+              Shadow="{Shadow Brush=Black, Opacity=0.3, Radius=10}"
+              AbsoluteLayout.LayoutBounds="1,1,AutoSize,AutoSize"
+              AbsoluteLayout.LayoutFlags="PositionProportional"
+              TranslationX="-20"
+              TranslationY="-20" Command="{Binding  GotoNewOrderCommand}"/>
+
+    </AbsoluteLayout>
+
+
+
+
+
+</ContentPage>

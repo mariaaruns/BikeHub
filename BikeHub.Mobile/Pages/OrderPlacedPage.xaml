@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BikeHub.Mobile.Pages.OrderPlacedPage"
+            xmlns:skia="clr-namespace:SkiaSharp.Extended.UI.Controls;assembly=SkiaSharp.Extended.UI"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:controls="clr-namespace:BikeHub.Mobile.Controls"
+             xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
+             xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
+             xmlns:conv="clr-namespace:BikeHub.Mobile.Converters"
+             x:DataType="vm:OrderViewModel"
+             
+             Title="Order Placed">
+    <VerticalStackLayout Margin="16"  Spacing="15">
+        <skia:SKLottieView x:Name="LottieAnimation"
+                            Source="Sucesso.json"
+                            RepeatCount="0"
+                            HeightRequest="300"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"/>
+
+        <Label Text="Order created successfully."
+                 TextColor="Grey"
+               FontSize="18"
+               FontAttributes="Bold" 
+               HorizontalTextAlignment="Center"/>
+
+        <Label Text="You can review it under Orders -> Processing"
+               TextColor="LightGrey"
+       FontSize="12"
+       FontAttributes="Bold" 
+       HorizontalTextAlignment="Center"/>
+
+        <Button Text="&lt;-  Go back" 
+                VerticalOptions="End" 
+                WidthRequest="150"
+                BackgroundColor="Orange"/>
+    </VerticalStackLayout>
+</ContentPage>

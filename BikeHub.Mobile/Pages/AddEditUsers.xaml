@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BikeHub.Mobile.Pages.AddEditUsers"
+             xmlns:controls="clr-namespace:BikeHub.Mobile.Controls"
+             xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
+             xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
+             xmlns:conv="clr-namespace:BikeHub.Mobile.Converters"
+             x:DataType="vm:UserViewModel"
+             Title="{Binding PageTitle}">
+
+
+
+    <ScrollView>
+        <VerticalStackLayout Margin="16,10" Spacing="20" >
+            <Border BackgroundColor="Grey" HeightRequest="150" StrokeShape="RoundRectangle 75" StrokeThickness="0" HorizontalOptions="Center" >
+                    <Image Source="man.png" Aspect="Fill"/>
+            </Border>
+                <Label Text="Upload new profile here." TextColor="DeepSkyBlue" HorizontalOptions="Center"/>
+
+            <VerticalStackLayout Spacing="10">
+                <Label Text="User Information" FontSize="18" FontAttributes="Bold"/>
+
+                <Label Text="First Name" FontSize="16"/>
+
+                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                    <controls:NoUnderlineEntry Placeholder="First Name"/>
+                </Border>
+
+                <Label Text="Last Name" FontSize="16"/>
+
+                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                    <controls:NoUnderlineEntry Placeholder="Last Name"/>
+                </Border>
+
+                <Label Text="Email Address" FontSize="16"/>
+
+                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                    <controls:NoUnderlineEntry Placeholder="youremailaddress@email.com"/>
+                </Border>
+
+
+                <Label Text="Password" FontSize="16"/>
+
+                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                    <controls:NoUnderlineEntry Placeholder="Password" IsPassword="True"/>
+                </Border>
+
+                <Label Text="Phone Number" FontSize="16"/>
+
+                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                    <controls:NoUnderlineEntry Placeholder="Phone Number"/>
+                </Border>
+
+
+                <Label Text="User Role" FontSize="16"/>
+                
+                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                    <controls:NoUnderlinePicker Title="User Role" ItemsSource="{Binding Rolestatus}"/>
+                </Border>
+
+                
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+
+                        <Button Grid.Column="0" BackgroundColor="Orange" Text="Save Changes"/>
+                        <Button Grid.Column="1" BackgroundColor="LightGrey" Text="Cancel"/>
+                    </Grid>
+                    
+                
+                
+            </VerticalStackLayout>
+
+        
+    </VerticalStackLayout>
+    </ScrollView>
+
+
+
+</ContentPage>

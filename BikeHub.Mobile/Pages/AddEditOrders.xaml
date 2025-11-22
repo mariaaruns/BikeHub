@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BikeHub.Mobile.Pages.AddEditOrders"
+             xmlns:controls="clr-namespace:BikeHub.Mobile.Controls"
+             xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
+             xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
+             xmlns:conv="clr-namespace:BikeHub.Mobile.Converters"
+             x:DataType="vm:OrderViewModel"
+             Title="{Binding PageTitle}">
+
+
+    <ScrollView>
+        <VerticalStackLayout Margin="15,5" Spacing="10">
+            <Label FontSize="18" FontAttributes="Bold" Text="Customer Information"/>
+
+            <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+
+                <Grid ColumnDefinitions="40,*,10">
+                    <Image Source="userfill.png"
+                                   HeightRequest="24"
+                                   WidthRequest="24"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Center" />
+
+                    <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Search Customer Name"/>
+
+                </Grid>
+
+            </Border>
+
+            <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                <Grid ColumnDefinitions="40,*,10">
+                    <Image Source="envelope.png"
+                    HeightRequest="24"
+                    WidthRequest="24"
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center" />
+                    <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Customer Email"/>
+                </Grid>
+
+            </Border>
+
+
+            <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                <Grid ColumnDefinitions="40,*,10">
+                    <Image Source="phone_flip.png"
+                            HeightRequest="24"
+                            WidthRequest="24"
+                            VerticalOptions="Center"
+                            HorizontalOptions="Center" />
+                    <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Customer Phone"/>
+                </Grid>
+
+            </Border>
+
+            <Label FontSize="18" FontAttributes="Bold" Text="Order Status"/>
+
+            <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                <Grid ColumnDefinitions="*,30">
+                    <Image  Grid.Column="1" Source="angle_down.png"
+                             HeightRequest="24"
+                             WidthRequest="24"
+                             VerticalOptions="Center"
+                             HorizontalOptions="Center" />  
+                    <controls:NoUnderlinePicker  Title="Order Status" />
+                </Grid>
+                
+            </Border>
+
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                <Label Grid.Column="0" FontSize="18" FontAttributes="Bold" Text="Products" VerticalOptions="Center"/>
+
+                <Button Grid.Column="1" Text="+ Add Products" HorizontalOptions="End" BackgroundColor="orange" />
+            </Grid>
+
+            <Border Padding="80"  StrokeShape="RoundRectangle 10">
+                <Label Text="No Products Added" HorizontalOptions="Center" VerticalOptions="Center" TextColor="Gray"/>
+            </Border>
+
+            <Border StrokeThickness="0"  StrokeShape="RoundRectangle 10">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="20" BackgroundColor="#F0F0F0" Padding="10">
+                    <!-- Subtotal Row -->
+                    <Label Grid.Column="0" Text="Subtotal" TextColor="Gray" FontSize="16" />
+                    <Label Grid.Column="1" Text="$0.0" TextColor="Gray" FontSize="16" HorizontalOptions="End" />
+
+                    <!-- Tax Row -->
+                    <Label Grid.Row="1" Grid.Column="0" Text="Tax(8%)" TextColor="Gray" FontSize="16" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="$0.0" TextColor="Gray" FontSize="16" HorizontalOptions="End" />
+
+                    <!-- Grand Total Row -->
+                    <Label Grid.Row="2" Grid.Column="0" Text="Grand Total" FontSize="20" FontAttributes="Bold" />
+                    <Label Grid.Row="2" Grid.Column="1" Text="$0.0" FontSize="20" FontAttributes="Bold" HorizontalOptions="End" />
+                </Grid>
+            </Border>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+
+                <Button Grid.Column="0" BackgroundColor="Orange" Text="Create Order" Command="{Binding CreateNewOrderCommand}"/>
+                <Button Grid.Column="1" BackgroundColor="LightGrey" Text="Cancel"/>
+            </Grid>
+
+        </VerticalStackLayout>
+
+    </ScrollView>
+</ContentPage>

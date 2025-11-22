@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BikeHub.Mobile.Pages.AddEditCustomer"
+             xmlns:controls="clr-namespace:BikeHub.Mobile.Controls"
+             xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
+             xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
+             xmlns:conv="clr-namespace:BikeHub.Mobile.Converters"
+             x:DataType="vm:CustomerViewModel"
+             Title="{Binding PageTitle}">
+
+
+    <ScrollView>
+        <VerticalStackLayout Margin="16,10" Spacing="20" >
+            <Border BackgroundColor="Grey" HeightRequest="150" StrokeShape="RoundRectangle 75" StrokeThickness="0" HorizontalOptions="Center" >
+                <Image Source="man.png" Aspect="Fill"/>
+            </Border>
+            <Label Text="Upload Customer profile here." TextColor="DeepSkyBlue" HorizontalOptions="Center"/>
+
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Customer Information" FontSize="18" FontAttributes="Bold"/>
+
+                <Grid RowDefinitions="Auto,Auto" >
+
+                    <Grid ColumnDefinitions="*,*"
+          RowDefinitions="Auto,Auto"
+          ColumnSpacing="10"
+          RowSpacing="5">
+
+                        <!-- First Name -->
+                        <Label Grid.Row="0" Grid.Column="0" Text="First Name" FontSize="16"/>
+                        <Border Grid.Row="1" Grid.Column="0"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10"
+                Padding="5,5">
+                            <controls:NoUnderlineEntry Placeholder="First Name"/>
+                        </Border>
+
+                        <!-- Last Name -->
+                        <Label Grid.Row="0" Grid.Column="1" Text="Last Name" FontSize="16"/>
+                        <Border Grid.Row="1" Grid.Column="1"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10"
+                Padding="5,5">
+                            <controls:NoUnderlineEntry Placeholder="Last Name"/>
+                        </Border>
+                    </Grid>
+
+                </Grid>
+
+                <Label Text="Email Address" FontSize="16"/>
+
+                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                    <controls:NoUnderlineEntry Placeholder="youremailaddress@email.com"/>
+                </Border>
+
+                <Label Text="Phone Number" FontSize="16"/>
+
+                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                    <controls:NoUnderlineEntry Placeholder="Phone Number"/>
+                </Border>
+
+
+                <Label Text="Street" FontSize="16"/>
+
+                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                    <controls:NoUnderlineEntry Placeholder="Street"/>
+                </Border>
+
+
+                <Grid RowDefinitions="Auto,Auto" >
+
+                    <Grid ColumnDefinitions="*,*"
+                        RowDefinitions="Auto,Auto"
+                        ColumnSpacing="10"
+                        RowSpacing="5">
+
+                        <!-- First Name -->
+                        <Label Grid.Row="0" Grid.Column="0" Text="City" FontSize="16"/>
+                        <Border Grid.Row="1" Grid.Column="0"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="5,5">
+                            <controls:NoUnderlineEntry Placeholder="City"/>
+                        </Border>
+
+                        <!-- Last Name -->
+                        <Label Grid.Row="0" Grid.Column="1" Text="State" FontSize="16"/>
+                        <Border Grid.Row="1" Grid.Column="1"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="5,5">
+                            <controls:NoUnderlineEntry Placeholder="State"/>
+                        </Border>
+                    </Grid>
+
+                </Grid>
+
+
+                <Label Text="Zip Code" FontSize="16"/>
+
+                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                    <controls:NoUnderlineEntry Placeholder="Zip Code"/>
+                </Border>
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+
+                    <Button Grid.Column="0" BackgroundColor="Orange" Text="Save Changes"/>
+                    <Button Grid.Column="1" BackgroundColor="LightGrey" Text="Cancel"/>
+                </Grid>
+
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

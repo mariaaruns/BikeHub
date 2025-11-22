@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BikeHub.Mobile.Pages.ProductsPage"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:tabView="clr-namespace:Syncfusion.Maui.Toolkit.TabView;assembly=Syncfusion.Maui.Toolkit"
+             xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
+             xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
+             xmlns:controls="clr-namespace:BikeHub.Mobile.Controls"
+             xmlns:converters="clr-namespace:BikeHub.Mobile.Converters"
+             x:DataType="vm:ProductsViewModel"
+             
+             Title="Products">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StockDisplayConverter x:Key="StockDisplayConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+
+    <ContentPage.Content>
+        <tabView:SfTabView x:Name="tabView" EnableSwiping="false" TabBarPlacement="Top"  IndicatorBackground="orange" >
+
+            <!-- Define the items (tabs) of the SfTabView -->
+            <tabView:SfTabView.Items>
+
+                <!-- First tab item with header "Call" -->
+
+                <tabView:SfTabItem Header="Product" ImagePosition="Left" ImageSource="product.png" >
+                    <!-- Content of the "Call" tab: a Grid with a red background -->
+                    <tabView:SfTabItem.Content>
+
+                        <AbsoluteLayout>
+                            <Grid RowDefinitions="Auto,*" Margin="0,0,0,0" RowSpacing="10" AbsoluteLayout.LayoutBounds="0,0,1,1" AbsoluteLayout.LayoutFlags="All">
+
+                                <Frame Grid.Row="0" CornerRadius="10"  BorderColor="#D1D5DB" HasShadow="False" Margin="16,8,16,0" Padding="0" >
+                                    <Grid ColumnDefinitions="40,*,20">
+                                        <Image Source="search.png" Grid.Column="0" HeightRequest="20"/>
+                                        <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Search Products..."/>
+                                    </Grid>
+                                </Frame>
+
+
+
+                                <CollectionView Grid.Row="1" ItemsSource="{Binding Products }">
+                                    <CollectionView.EmptyView>
+                                        <VerticalStackLayout HorizontalOptions="Center" Margin="0,50">
+                                            <Image Source="no_products.png" HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
+                                            <Label Text="No Products Found" FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
+                                        </VerticalStackLayout>
+                                    </CollectionView.EmptyView>
+                                    <CollectionView.ItemsLayout>
+                                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
+                                    </CollectionView.ItemsLayout>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="model:ProductsDto">
+
+                                            <SwipeView>
+                                                <SwipeView.RightItems>
+                                                    <SwipeItems Mode="Execute">
+
+
+                                                        <SwipeItemView
+                                                         BackgroundColor="red"
+                                                          Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path= DeleteProductCommand}"
+                                                          CommandParameter="{Binding .}">
+                                                            <Grid Padding="12" HorizontalOptions="Center" VerticalOptions="Center">
+                                                                <Image Source="trash_white.png"  HeightRequest="20" WidthRequest="20"/>
+                                                            </Grid>
+                                                        </SwipeItemView>
+
+                                                    </SwipeItems>
+
+                                                </SwipeView.RightItems>
+
+                                                <Frame BorderColor="white" BackgroundColor="WhiteSmoke" CornerRadius="10" HasShadow="False" Margin="16,0,16,0" Padding="0" >
+                                                    <Grid RowDefinitions="Auto,*,Auto" Padding="10">
+                                                        <Grid  ColumnDefinitions="100,*,15" ColumnSpacing="10">
+                                                            <Image Source="{Binding ProductImage}" Grid.RowSpan="2" Grid.Column="0" HeightRequest="100" />
+                                                            <VerticalStackLayout Grid.Column="1" Grid.RowSpan="3" Spacing="20">
+                                                                <VerticalStackLayout Spacing="5">
+                                                                    <Label Text="{Binding ProductName}" FontSize="18" FontAttributes="Bold"/>
+                                                                    <HorizontalStackLayout Spacing="3">
+                                                                        <Image Source="category.png" HeightRequest="10"/>
+                                                                        <Label Text="{Binding CategoryName}" TextColor="Gray"/>
+                                                                    </HorizontalStackLayout>
+                                                                </VerticalStackLayout>
+
+                                                                <HorizontalStackLayout Spacing="10">
+                                                                    <Label FontAttributes="Bold" Text="{Binding Stock,Converter={StaticResource StockDisplayConverter}}"
+                                                                   TextColor="{Binding Stock,Converter={StaticResource StockDisplayConverter}}"/>
+
+                                                                    <Label  FontAttributes="Bold" Text="{Binding Price,StringFormat='$ {0:F2}'}"/>
+                                                                </HorizontalStackLayout>
+
+                                                            </VerticalStackLayout>
+
+                                                           <!-- <ImageButton VerticalOptions="Start" Source="trash.png" Grid.Column="3" Grid.Row="0" HeightRequest="5" />-->
+
+
+                                                        </Grid>
+                                                    </Grid>
+                                                </Frame>
+                                            </SwipeView>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+
+
+                            </Grid>
+                            <Button Text="+"
+                WidthRequest="60"
+                HeightRequest="60"
+                CornerRadius="30"
+                BackgroundColor="Orange"
+                TextColor="White"
+                FontSize="28"
+                Shadow="{Shadow Brush=Black, Opacity=0.3, Radius=10}"
+                AbsoluteLayout.LayoutBounds="1,1,AutoSize,AutoSize"
+                AbsoluteLayout.LayoutFlags="PositionProportional"
+                TranslationX="-20"
+                TranslationY="-20"  Command="{Binding GotoAddProductCommand}" />
+
+                        </AbsoluteLayout>
+                    </tabView:SfTabItem.Content>
+                </tabView:SfTabItem>
+                <!-- Second tab item with header "Favorites" -->
+
+                <tabView:SfTabItem Header="Brands"  ImagePosition="Left" ImageSource="brand.png">
+                    <tabView:SfTabItem.Content>
+                        <AbsoluteLayout>
+                            <Grid RowDefinitions="Auto,*" Margin="0,0,0,0" RowSpacing="10" AbsoluteLayout.LayoutBounds="0,0,1,1" AbsoluteLayout.LayoutFlags="All">
+
+                                <Frame Grid.Row="0" CornerRadius="10"  BorderColor="#D1D5DB" HasShadow="False" Margin="16,8,16,0" Padding="0" >
+                                    <Grid ColumnDefinitions="40,*,20">
+                                        <Image Source="search.png" Grid.Column="0" HeightRequest="20"/>
+                                        <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Search Brands..."/>
+                                    </Grid>
+                                </Frame>
+
+
+
+                                <CollectionView Grid.Row="1" ItemsSource="{Binding Brands }">
+                                    <CollectionView.EmptyView>
+                                        <VerticalStackLayout HorizontalOptions="Center" Margin="0,50">
+                                            <Image Source="no_products.png" HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
+                                            <Label Text="No Products Found" FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
+                                        </VerticalStackLayout>
+                                    </CollectionView.EmptyView>
+                                    <CollectionView.ItemsLayout>
+                                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
+                                    </CollectionView.ItemsLayout>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="model:BrandsDto">
+
+                                            <SwipeView >
+                                                <SwipeView.RightItems>
+                                                    <SwipeItems Mode="Execute" >
+
+                                                        <SwipeItemView
+                                                         BackgroundColor="red"
+                                                          Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path= DeleteBrandsCommand}"
+                                                          CommandParameter="{Binding .}">
+                                                            <Grid Padding="12" HorizontalOptions="Center" VerticalOptions="Center">
+                                                                <Image Source="trash_white.png"  HeightRequest="20" WidthRequest="20"/>
+                                                            </Grid>
+                                                        </SwipeItemView>
+
+                                                    </SwipeItems>
+
+                                                </SwipeView.RightItems>
+
+
+
+                                                <Frame BorderColor="white" BackgroundColor="WhiteSmoke" CornerRadius="10" HasShadow="False" Margin="16,0,16,0" Padding="0" >
+
+                                                    <Grid RowDefinitions="Auto,*" Padding="10">
+                                                        <Grid  ColumnDefinitions="50,*,15" ColumnSpacing="10">
+
+                                                            <Image Source="{Binding Logo}" Grid.Column="0" HeightRequest="50" />
+
+                                                            <Label Grid.Column="1" VerticalOptions="Center" Text="{Binding BrandName}"  FontAttributes="Bold" FontSize="16"/>
+
+
+                                                            <ImageButton VerticalOptions="Center" Source="angle_right.png" Grid.Column="3" Grid.Row="0" HeightRequest="5" />
+
+
+                                                        </Grid>
+                                                    </Grid>
+                                                </Frame>
+                                            </SwipeView>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+
+
+                            </Grid>
+                            <Button Text="+"
+                                    WidthRequest="60"
+                                    HeightRequest="60"
+                                    CornerRadius="30"
+                                    BackgroundColor="Orange"
+                                    TextColor="White"
+                                    FontSize="28"
+                                    Shadow="{Shadow Brush=Black, Opacity=0.3, Radius=10}"
+                                    AbsoluteLayout.LayoutBounds="1,1,AutoSize,AutoSize"
+                                    AbsoluteLayout.LayoutFlags="PositionProportional"
+                                    TranslationX="-20"
+                                    TranslationY="-20"
+                                    Command="{Binding GotoAddBrandCommand}"/>
+
+                        </AbsoluteLayout>
+                    </tabView:SfTabItem.Content>
+                </tabView:SfTabItem>
+                <!-- Third tab item with header "Contacts" -->
+
+                <tabView:SfTabItem Header="Category"  ImagePosition="Left" ImageSource="category.png">
+                    <tabView:SfTabItem.Content>
+                        <AbsoluteLayout>
+                            <Grid RowDefinitions="Auto,*" Margin="0,0,0,0" RowSpacing="10" AbsoluteLayout.LayoutBounds="0,0,1,1" AbsoluteLayout.LayoutFlags="All">
+
+                                <Frame Grid.Row="0" CornerRadius="10"  BorderColor="#D1D5DB" HasShadow="False" Margin="16,8,16,0" Padding="0" >
+                                    <Grid ColumnDefinitions="40,*,20">
+                                        <Image Source="search.png" Grid.Column="0" HeightRequest="20"/>
+                                        <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Search Categories..."/>
+                                    </Grid>
+                                </Frame>
+
+
+
+
+                                <CollectionView Grid.Row="1" ItemsSource="{Binding Categories }">
+                                    <CollectionView.EmptyView>
+                                        <VerticalStackLayout HorizontalOptions="Center" Margin="0,50">
+                                            <Image Source="no_products.png" HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
+                                            <Label Text="No Products Found" FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
+                                        </VerticalStackLayout>
+                                    </CollectionView.EmptyView>
+                                    <CollectionView.ItemsLayout>
+                                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
+                                    </CollectionView.ItemsLayout>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="model:CategoryDto">
+
+                                            <SwipeView>
+                                                <SwipeView.RightItems>
+                                                    <SwipeItems Mode="Execute">
+
+
+                                                        <SwipeItemView
+                                                         BackgroundColor="red"
+                                                          Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path= DeleteCategoryCommand}"
+                                                          CommandParameter="{Binding .}">
+                                                            <Grid Padding="12" HorizontalOptions="Center" VerticalOptions="Center">
+                                                                <Image Source="trash_white.png"  HeightRequest="20" WidthRequest="20"/>
+                                                            </Grid>
+                                                        </SwipeItemView>
+
+                                                    </SwipeItems>
+
+                                                </SwipeView.RightItems>
+
+
+
+                                                <Frame BorderColor="white" BackgroundColor="WhiteSmoke" CornerRadius="10" HasShadow="False" Margin="16,0,16,0" Padding="0" >
+
+                                                    <Grid RowDefinitions="Auto,*" Padding="10">
+                                                        <Grid  ColumnDefinitions="50,*,15" ColumnSpacing="10">
+
+                                                            <Image Source="category_color.png" Grid.Column="0" HeightRequest="50" />
+
+                                                            <Label Grid.Column="1" VerticalOptions="Center" Text="{Binding CategoryName}"  FontAttributes="Bold" FontSize="16"/>
+
+                                                            <ImageButton VerticalOptions="Center" Source="angle_right.png" Grid.Column="3" Grid.Row="0" HeightRequest="10" />
+
+                                                        </Grid>
+                                                    </Grid>
+                                                </Frame>
+                                            </SwipeView>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+
+
+                            </Grid>
+                            <Button Text="+"
+                                    WidthRequest="60"
+                                    HeightRequest="60"
+                                    CornerRadius="30"
+                                    BackgroundColor="Orange"
+                                    TextColor="White"
+                                    FontSize="28"
+                                    Shadow="{Shadow Brush=Black, Opacity=0.3, Radius=10}"
+                                    AbsoluteLayout.LayoutBounds="1,1,AutoSize,AutoSize"
+                                    AbsoluteLayout.LayoutFlags="PositionProportional"
+                                    TranslationX="-20"
+                                    TranslationY="-20"
+                                    Command="{Binding GotoAddCategoryCommand}"
+                                    />
+
+                        </AbsoluteLayout>
+                    </tabView:SfTabItem.Content>
+                </tabView:SfTabItem>
+
+            </tabView:SfTabView.Items>
+
+        </tabView:SfTabView>
+
+    </ContentPage.Content>
+
+</ContentPage>

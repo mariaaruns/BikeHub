@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="BikeHub.Mobile.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:BikeHub.Mobile"
+     xmlns:pages="clr-namespace:BikeHub.Mobile.Pages"
+  Shell.FlyoutBehavior="Disabled"
+  Shell.TabBarIsVisible="True"
+  Shell.TabBarBackgroundColor="{StaticResource White}"
+  Shell.TabBarForegroundColor="Black"
+  Shell.TabBarTitleColor="Orange"
+  Shell.TabBarUnselectedColor="Black"
+  x:Name="MainShell"
+    Title="BikeHub.Mobile">
+    
+    <ShellContent Route="LoadingPage"
+                  ContentTemplate="{DataTemplate pages:LoadingPage}" />
+
+    <ShellContent
+        Title="Home"
+        ContentTemplate="{DataTemplate pages:LoginPage}"
+        Route="LoginPage" />
+
+    <TabBar>
+        <ShellContent
+ Title="Dashboard"
+ Icon="dashboard.png"
+ ContentTemplate="{DataTemplate pages:MainPage}"
+ Route="MainPage" />
+
+        <ShellContent
+ Title="Products"
+ Icon="products.png"
+ ContentTemplate="{DataTemplate pages:ProductsPage}"
+ Route="ProductsPage" />
+
+        <ShellContent
+ Title="Customers"
+ Icon="customer.png"
+ ContentTemplate="{DataTemplate pages:CustomersPage}"
+ Route="CustomersPage" />
+
+        <ShellContent
+ Title="Orders"
+ Icon="order.png"
+ ContentTemplate="{DataTemplate pages:OrdersPage}"
+ Route="OrdersPage" />
+
+        <ShellContent
+    Title="User"
+    Icon="user.png"
+    ContentTemplate="{DataTemplate pages:UsersPage}"
+    Route="UserPage" />
+    </TabBar>
+
+    <!--<Shell.FlyoutFooter>
+    <Grid Padding="15">
+        <sf:SfSegmentedControl x:Name="ThemeSegmentedControl" 
+            VerticalOptions="Center" HorizontalOptions="Center" SelectionChanged="SfSegmentedControl_SelectionChanged"
+            SegmentWidth="40" SegmentHeight="40">
+            <sf:SfSegmentedControl.ItemsSource>
+                <x:Array Type="{x:Type sf:SfSegmentItem}">
+                    <sf:SfSegmentItem ImageSource="{StaticResource IconLight}"/>
+                    <sf:SfSegmentItem ImageSource="{StaticResource IconDark}"/>
+                </x:Array>
+            </sf:SfSegmentedControl.ItemsSource>
+        </sf:SfSegmentedControl>
+    </Grid>
+</Shell.FlyoutFooter>-->
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="*, Auto" Padding="10,0">
+           
+            <Label x:Name="PageTitleLabel"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           VerticalOptions="Center"
+                           HorizontalOptions="Start"
+                   TextColor="Black"/>
+
+
+            <ImageButton Grid.Column="1"
+                x:Name="AvatarButton"
+                HeightRequest="36"
+                WidthRequest="36"
+                Aspect="AspectFill"
+                VerticalOptions="Center"
+                HorizontalOptions="End"
+                BackgroundColor="Transparent"
+                Clicked="AvatarButton_Clicked"
+                Source="man.png"/>
+
+        </Grid>
+    </Shell.TitleView>
+
+</Shell>

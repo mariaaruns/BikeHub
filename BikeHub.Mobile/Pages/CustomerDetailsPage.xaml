@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BikeHub.Mobile.Pages.CustomerDetailsPage"
+             xmlns:controls="clr-namespace:BikeHub.Mobile.Controls"
+             xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
+             xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
+             xmlns:conv="clr-namespace:BikeHub.Mobile.Converters"
+             x:DataType="vm:CustomerViewModel"
+             Title="Customer Info">
+
+    <Grid RowDefinitions="Auto,Auto,*" Margin="16">
+        <VerticalStackLayout Grid.Row="0" Spacing="10">
+            <Border BackgroundColor="Grey" HeightRequest="150" StrokeShape="RoundRectangle 75" StrokeThickness="0" HorizontalOptions="Center" >
+                <Image Source="man.png" Aspect="Fill"/>
+            </Border>
+            <Label Text="John Doe" HorizontalOptions="Center" FontSize="18" FontAttributes="Bold"/>
+            <Label Text="Joined 2022" HorizontalOptions="Center" FontSize="12" />
+        </VerticalStackLayout>
+
+        <Border Grid.Row="1" StrokeThickness="0" StrokeShape="RoundRectangle 5" BackgroundColor="LightGray" Padding="10">
+            <VerticalStackLayout  Spacing="5">
+
+                <Label Text="Contact Information"  FontSize="18"  FontAttributes="Bold"/>
+                <BoxView BackgroundColor="Black"  HeightRequest="1"/>
+
+                <Grid RowDefinitions="40,40,40" RowSpacing="10">
+
+                    <!-- Row 0 -->
+                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+                        <Label Text="Phone" Grid.Column="0" FontSize="15"/>
+                        <Label Text="123456897" Grid.Column="1" FontSize="15" HorizontalOptions="End"/>
+
+                        <!-- underline -->
+                        <BoxView Grid.ColumnSpan="2"
+                 VerticalOptions="End"
+                 HeightRequest="1"
+                 Color="#DDDDDD"/>
+                    </Grid>
+
+                    <!-- Row 1 -->
+                    <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
+                        <Label Text="Email" Grid.Column="0" FontSize="15"/>
+                        <Label Text="yourMail@mail.com" Grid.Column="1" FontSize="15" HorizontalOptions="End"/>
+
+                        <!-- underline -->
+                        <BoxView Grid.ColumnSpan="2"
+                 VerticalOptions="End"
+                 HeightRequest="1"
+                 Color="#DDDDDD"/>
+                    </Grid>
+
+                    <!-- Row 2 -->
+                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
+                        <Label Text="Address" Grid.Column="0" FontSize="15"/>
+                        <Label Text="123MainSt,Anytown,USA" Grid.Column="1" FontSize="15" HorizontalOptions="End"/>
+
+                        <!-- underline -->
+                        <BoxView Grid.ColumnSpan="2"
+                 VerticalOptions="End"
+                 HeightRequest="1"
+                 Color="#DDDDDD"/>
+                    </Grid>
+
+                </Grid>
+
+                
+
+
+            </VerticalStackLayout>
+        </Border>
+        
+
+        <Button HeightRequest="10" VerticalOptions="End" Grid.Row="2" BackgroundColor="Orange"  Text="Edit Customer" />
+    </Grid>
+</ContentPage>

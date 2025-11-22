@@ -1,0 +1,219 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:chart="clr-namespace:Syncfusion.Maui.Toolkit.Charts;assembly=Syncfusion.Maui.Toolkit"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:picker="clr-namespace:Syncfusion.Maui.Toolkit.Picker;assembly=Syncfusion.Maui.Toolkit"
+             xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
+             x:DataType="vm:DashboardViewModel"
+             Title="Dashboard"
+             x:Class="BikeHub.Mobile.Pages.MainPage">
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="0,0,0,0" Spacing="0">
+                <Grid  Padding="20,0" ColumnDefinitions="Auto,*" BackgroundColor="White">
+                    <picker:SfDatePicker x:Name="datepicker" SelectedDate="{Binding DateSelected, Mode=TwoWay}" Mode="RelativeDialog" Format="MM_yyyy" MinimumDate="2014/05/15" Background="white" >
+                        <picker:SfDatePicker.SelectionView>
+                            <picker:PickerSelectionView CornerRadius="10" Background="orange"/>
+                        </picker:SfDatePicker.SelectionView>
+              
+                    </picker:SfDatePicker>
+
+                    <Label Text="Date Range" Grid.Column="0" TextColor="#8B8B8B"  FontSize="18" VerticalOptions="Center"/>
+                    <Button Grid.Column="1"  Text="{Binding DateSelectedText}" CornerRadius="5"
+            
+            BackgroundColor="#F3F7FE"
+            TextColor="#8B8B8B"
+            x:Name="pickerButton"
+            Clicked="pickerButton_Clicked"
+            HorizontalOptions="End"
+            VerticalOptions="Center"
+            MinimumHeightRequest="40"
+            HeightRequest="10" 
+            WidthRequest="150" ImageSource="calendar_white.png">
+                    </Button>
+                </Grid>
+                <!-- Top Stats -->
+                <Grid Padding="16,12,16,0" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="16">
+                    <!-- Total Products -->
+                    <Frame Grid.Row="0" Grid.Column="0" CornerRadius="24" BackgroundColor="#F3F7FE" HasShadow="False" Padding="16">
+                        <Grid>
+                            <Label Text="Total Products" FontSize="18" TextColor="#8B8B8B"/>
+                            <!--<Label Text="{Binding TotalProductsCount}" FontSize="28" FontAttributes="Bold" TextColor="#0A0D14" Margin="0,24,0,0"/>-->
+                            <HorizontalStackLayout Margin="0,24,0,0" VerticalOptions="Start" Spacing="8" HorizontalOptions="Start">
+                                <ActivityIndicator IsVisible="{Binding IsCountsLoading}" IsRunning="{Binding IsCountsLoading}" WidthRequest="22" HeightRequest="22" />
+                                <Label Text="{Binding TotalProductsCount}"  FontSize="28" FontAttributes="Bold" TextColor="#0A0D14" >
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsCountsLoading}" Value="True">
+                                            <Setter Property="IsVisible" Value="False" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </HorizontalStackLayout>
+                            <Image Source="bike.png" HeightRequest="40" WidthRequest="40" Opacity="0.2"
+                               HorizontalOptions="End" VerticalOptions="End" Margin="0,0,0,0"/>
+                        </Grid>
+                    </Frame>
+                    <!-- Total Orders -->
+                    <Frame Grid.Row="0" Grid.Column="1" CornerRadius="24" BackgroundColor="#F3F7FE" HasShadow="False" Padding="16">
+                        <Grid>
+                            <Label Text="Total Orders" FontSize="18" TextColor="#8B8B8B"/>
+                           
+                            <HorizontalStackLayout Margin="0,24,0,0" VerticalOptions="Start" Spacing="8" HorizontalOptions="Start">
+                                <ActivityIndicator IsVisible="{Binding IsCountsLoading}" IsRunning="{Binding IsCountsLoading}" WidthRequest="22" HeightRequest="22" />
+                                <Label Text="{Binding TotalOrdersCount}"  FontSize="28" FontAttributes="Bold" TextColor="#0A0D14" >
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsCountsLoading}" Value="True">
+                                            <Setter Property="IsVisible" Value="False" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </HorizontalStackLayout>
+
+                            <Image Source="orderhistory.png" HeightRequest="40" WidthRequest="40" Opacity="0.2"
+                               HorizontalOptions="End" VerticalOptions="End" Margin="0,0,0,0"/>
+                        </Grid>
+                    </Frame>
+                    <!-- Total Services -->
+                    <Frame Grid.Row="1" Grid.ColumnSpan="2" CornerRadius="24" BackgroundColor="#F3F7FE" HasShadow="False" Padding="16" Margin="0,0,0,0">
+                        <Grid>
+                            <Label Text="Total Services" FontSize="18" TextColor="#8B8B8B"/>
+                            
+
+                            <HorizontalStackLayout Margin="0,24,0,0" VerticalOptions="Start" Spacing="8" HorizontalOptions="Start">
+                                <ActivityIndicator IsVisible="{Binding IsCountsLoading}" IsRunning="{Binding IsCountsLoading}" WidthRequest="22" HeightRequest="22" />
+                                <Label Text="{Binding TotalServiceCount}"  FontSize="28" FontAttributes="Bold" TextColor="#0A0D14" >
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsCountsLoading}" Value="True">
+                                            <Setter Property="IsVisible" Value="False" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </HorizontalStackLayout>
+
+
+                            <Image Source="wrench.png" HeightRequest="40" WidthRequest="40" Opacity="0.2"
+                               HorizontalOptions="End" VerticalOptions="End" Margin="0,0,0,0"/>
+                        </Grid>
+                    </Frame>
+                </Grid>
+
+                <!-- Service Tasks -->
+                <Label Text="Service Tasks" FontSize="24" FontAttributes="Bold" TextColor="#0A0D14" Margin="16,32,0,0"/>
+                <Grid Padding="16,16,16,0" ColumnDefinitions="*,*" ColumnSpacing="16">
+                    <!-- Pending -->
+                    <Frame Grid.Column="0" CornerRadius="24" BackgroundColor="#FFF9E6" HasShadow="False" Padding="16">
+                        <Grid>
+                            <Label Text="Pending" FontSize="18" TextColor="#B86A00"/>
+
+                            <HorizontalStackLayout Margin="0,24,0,0" VerticalOptions="Start" Spacing="8" HorizontalOptions="Start">
+                                <ActivityIndicator IsVisible="{Binding IsCountsLoading}" IsRunning="{Binding IsCountsLoading}" WidthRequest="22" HeightRequest="22" />
+                                <Label Text="{Binding PendingServiceCount}"  FontSize="28" FontAttributes="Bold" TextColor="#B86A00" >
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsCountsLoading}" Value="True">
+                                            <Setter Property="IsVisible" Value="False" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </HorizontalStackLayout>
+                            <Image Source="hourglass.png" HeightRequest="32" WidthRequest="32" Opacity="0.2"
+                               HorizontalOptions="End" VerticalOptions="End"/>
+                        </Grid>
+                    </Frame>
+                    <!-- Completed -->
+                    <Frame Grid.Column="1" CornerRadius="24" BackgroundColor="#FFF9E6"  HasShadow="False" Padding="16">
+                        <Grid>
+                            <Label Text="Completed" FontSize="18" TextColor="#22C55E"/>
+                            
+                            <HorizontalStackLayout Margin="0,24,0,0" VerticalOptions="Start" Spacing="8" HorizontalOptions="Start">
+                                <ActivityIndicator IsVisible="{Binding IsCountsLoading}" IsRunning="{Binding IsCountsLoading}" WidthRequest="22" HeightRequest="22" />
+                                <Label Text="{Binding CompletedServiceCount}"  FontSize="28" FontAttributes="Bold" TextColor="#22C55E" >
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsCountsLoading}" Value="True">
+                                            <Setter Property="IsVisible" Value="False" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </HorizontalStackLayout>
+
+                            <Image Source="progress_complete.png" HeightRequest="32" WidthRequest="32" Opacity="0.2"
+                               HorizontalOptions="End" VerticalOptions="End"/>
+                        </Grid>
+                    </Frame>
+                </Grid>
+
+                <!-- Sales Overview -->
+                <Label Text="Sales Overview" FontSize="24" FontAttributes="Bold" TextColor="#0A0D14" Margin="16,32,0,0"/>
+                <Frame CornerRadius="24" BackgroundColor="White" HasShadow="False" Padding="16" Margin="16,16,16,0" BorderColor="#F1F1F1">
+                    <VerticalStackLayout>
+                        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Start">
+                            <Label Text="This Month" FontSize="18" TextColor="#8B8B8B"/>
+                            <Frame Grid.Column="1" Padding="8,2" CornerRadius="12" BackgroundColor="#E6F7EC" HasShadow="False" VerticalOptions="Center" HorizontalOptions="End">
+                                <Label Text="+12%" FontSize="16" TextColor="#22C55E"/>
+                            </Frame>
+                        </Grid>
+
+                        <Label Text="{Binding CurrentMonthSalesAmount,StringFormat='${0:N2}'}" FontSize="32" FontAttributes="Bold" TextColor="#0A0D14" Margin="0,-8,0,0"/>
+                        <!-- Placeholder for chart image -->
+                        <chart:SfCartesianChart>
+
+                            <chart:SfCartesianChart.Title>
+                                <Label Text="Sales"/>
+                            </chart:SfCartesianChart.Title>
+
+                            <chart:SfCartesianChart.Legend>
+                                <chart:ChartLegend/>
+                            </chart:SfCartesianChart.Legend>
+
+                            <chart:SfCartesianChart.XAxes>
+                                <chart:CategoryAxis>
+                                    <chart:CategoryAxis.Title>
+                                        <chart:ChartAxisTitle Text="Months"/>
+                                    </chart:CategoryAxis.Title>
+                                </chart:CategoryAxis>
+                            </chart:SfCartesianChart.XAxes>
+
+                            <chart:SfCartesianChart.YAxes>
+                                <chart:NumericalAxis>
+                                    <chart:NumericalAxis.Title>
+                                        <chart:ChartAxisTitle Text="Amount(in $)"/>
+                                    </chart:NumericalAxis.Title>
+                                </chart:NumericalAxis>
+                            </chart:SfCartesianChart.YAxes>
+
+                            <!--Initialize the series for chart-->
+                      <chart:ColumnSeries Label="Total Sales" 
+                        EnableTooltip="True"
+                        ShowDataLabels="True"
+                        ItemsSource="{Binding Data}"
+                        XBindingPath="Month" 
+                        YBindingPath="NetAmount">
+                                <chart:ColumnSeries.DataLabelSettings>
+                                    <chart:CartesianDataLabelSettings LabelPlacement="Inner"/>
+                                </chart:ColumnSeries.DataLabelSettings>
+                            </chart:ColumnSeries>
+
+                        </chart:SfCartesianChart>
+
+
+                    </VerticalStackLayout>
+                </Frame>
+
+                <!-- Add New Task Button -->
+                <Button Text="+ New Order"
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    BackgroundColor="#F5A100"
+                    TextColor="White"
+                    CornerRadius="12"
+                    Margin="16,32,16,24"
+                    HeightRequest="40"
+                    HorizontalOptions="Fill" Command="{Binding  GotoCreateOrderPageCommand}"/>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Bottom Navigation Bar -->
+      
+    </Grid>
+
+</ContentPage>

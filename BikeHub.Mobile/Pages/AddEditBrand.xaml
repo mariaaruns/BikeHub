@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BikeHub.Mobile.Pages.AddEditBrand"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:controls="clr-namespace:BikeHub.Mobile.Controls"
+             xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
+             xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
+             xmlns:conv="clr-namespace:BikeHub.Mobile.Converters"
+             x:DataType="vm:ProductsViewModel"
+             Title="Add Brand">
+
+
+    <AbsoluteLayout>
+
+        <ScrollView AbsoluteLayout.LayoutBounds="0,0,1,1" AbsoluteLayout.LayoutFlags="All">
+            <VerticalStackLayout Margin="16,5" Spacing="20" >
+
+                <Border BackgroundColor="Grey" HeightRequest="150" StrokeShape="RoundRectangle 75" StrokeThickness="0" HorizontalOptions="Center" >
+                    <Image Source="man.png" Aspect="Fill"/>
+                </Border>
+            <Label Text="Upload new brand logo here." TextColor="DeepSkyBlue" HorizontalOptions="Center"/>
+
+            <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                <controls:NoUnderlineEntry Placeholder="Brand Name"/>
+            </Border>
+            
+
+
+        </VerticalStackLayout>
+            
+        </ScrollView>
+
+        <Button Text="+"
+      WidthRequest="60"
+      HeightRequest="60"
+      CornerRadius="30"
+      BackgroundColor="Orange"
+      TextColor="White"
+      FontSize="28"
+      Shadow="{Shadow Brush=Black, Opacity=0.3, Radius=10}"
+      AbsoluteLayout.LayoutBounds="1,1,AutoSize,AutoSize"
+      AbsoluteLayout.LayoutFlags="PositionProportional"
+      TranslationX="-20"
+      TranslationY="-20"
+      Command="{Binding GotoAddCustomerCommand}"/>
+
+
+    </AbsoluteLayout>
+
+</ContentPage>

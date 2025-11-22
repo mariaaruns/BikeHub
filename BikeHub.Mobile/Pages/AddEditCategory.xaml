@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BikeHub.Mobile.Pages.AddEditCategory"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+xmlns:controls="clr-namespace:BikeHub.Mobile.Controls"
+xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
+xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
+xmlns:conv="clr-namespace:BikeHub.Mobile.Converters"
+x:DataType="vm:ProductsViewModel"
+             Title="{Binding PageTitle}">
+
+
+    <AbsoluteLayout>
+
+        <ScrollView AbsoluteLayout.LayoutBounds="0,0,1,1" AbsoluteLayout.LayoutFlags="All">
+            <VerticalStackLayout Margin="16,40" Spacing="10"  >
+
+                <Label Text="Category" FontAttributes="Bold" FontSize="20"/>
+                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                    <controls:NoUnderlineEntry Placeholder="Category Name"/>
+                </Border>
+
+
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+        <Button Text="+"
+      WidthRequest="60"
+      HeightRequest="60"
+      CornerRadius="30"
+      BackgroundColor="Orange"
+      TextColor="White"
+      FontSize="28"
+      Shadow="{Shadow Brush=Black, Opacity=0.3, Radius=10}"
+      AbsoluteLayout.LayoutBounds="1,1,AutoSize,AutoSize"
+      AbsoluteLayout.LayoutFlags="PositionProportional"
+      TranslationX="-20"
+      TranslationY="-20"
+      Command="{Binding GotoAddCustomerCommand}"/>
+
+
+    </AbsoluteLayout>
+
+</ContentPage>
