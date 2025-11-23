@@ -1,5 +1,9 @@
-﻿using BikeHub.Mobile.Pages;
+﻿using BikeHub.Mobile.ApiServices;
+using BikeHub.Mobile.Pages;
+using BikeHub.Shared.Dto.Request;
 using BikeHub.Shared.Dto.Response;
+using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -8,6 +12,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BikeHub.Mobile.ViewModel
@@ -24,7 +29,8 @@ namespace BikeHub.Mobile.ViewModel
         [ObservableProperty]
         private string brandId;
 
-
+        [ObservableProperty]
+        private bool _isRefreshing;
         public string PageTitle
         {
             get
@@ -63,16 +69,47 @@ namespace BikeHub.Mobile.ViewModel
         partial void OnCategoryIdChanged(string value) => RaisePageTitleChanged();
 
 
-
-        public ObservableCollection<ProductsDto> Products { get; set; }
+        [ObservableProperty]
+        private ObservableCollection<ProductsDto> _products=new();
         public ObservableCollection<BrandsDto> Brands { get; set; }
         public ObservableCollection<CategoryDto> Categories { get; set; }
-        [ObservableProperty] private string productName;
+        [ObservableProperty]
+        private string productName;
         [ObservableProperty] private string price;
         [ObservableProperty] private string quantity;
 
+        [ObservableProperty]
+        private bool _isLoadingMore;
+
+        private CancellationTokenSource _searchCts;
+       async partial void OnProductNameChanged(string newValue)
+        {
+            try
+            {
+                _searchCts?.Cancel();
+                _searchCts = new CancellationTokenSource();
+                var token = _searchCts.Token;
+                await Task.Delay(500, token);
+                
+                Products.Clear();
+
+              _ = LoadProductAsync(token);
+            }
+            catch (TaskCanceledException) { 
+            
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+         
         
-        
+        }
+
+        private int _currentPage = 1;
+        private int _pageSize = 20;
+
         [ObservableProperty] private string selectedBrand;
         public List<string> BrandList { get; } = new List<string> { "Brand1", "Brand2" };
 
@@ -106,45 +143,36 @@ namespace BikeHub.Mobile.ViewModel
         }
 
         [ObservableProperty] private string productImage; // bind to Image.Source
-        public ProductsViewModel()
+        private readonly IProductApi _productApi;
+        public ProductsViewModel(IProductApi productApi)
         {
-            Products = new ObservableCollection<ProductsDto>();
-            Products.Add(new ProductsDto() { ProductId = 1, ProductName = "Trek Fuel EX 9.8", CategoryName = "Mountain Bike", Stock = 12, Price = 2000.90m, ProductImage = "mountain_bike.png" });
-            Products.Add(new ProductsDto() { ProductId = 2, ProductName = "Specialized Turbo Levo", CategoryName = "Electric Bike", Stock = 8, Price = 4800.50m, ProductImage = "mountain_bike.png" });
-            Products.Add(new ProductsDto() { ProductId = 3, ProductName = "Giant Defy Advanced 2", CategoryName = "Road Bike", Stock = 15, Price = 2100.00m, ProductImage = "mountain_bike.png" });
-            Products.Add(new ProductsDto() { ProductId = 4, ProductName = "Cannondale Quick 4", CategoryName = "Hybrid Bike", Stock = 20, Price = 950.75m, ProductImage = "mountain_bike.png" });
-            Products.Add(new ProductsDto() { ProductId = 5, ProductName = "Santa Cruz Hightower", CategoryName = "Mountain Bike", Stock = 5, Price = 3700.25m, ProductImage = "mountain_bike.png" });
-            Products.Add(new ProductsDto() { ProductId = 6, ProductName = "Bianchi Oltre XR4", CategoryName = "Road Bike", Stock = 10, Price = 5600.00m, ProductImage = "mountain_bike.png" });
-            Products.Add(new ProductsDto() { ProductId = 7, ProductName = "Polygon Path X5", CategoryName = "Hybrid Bike", Stock = 18, Price = 750.40m, ProductImage = "mountain_bike.png" });
-            Products.Add(new ProductsDto() { ProductId = 8, ProductName = "Yamaha CrossCore RC", CategoryName = "Electric Bike", Stock = 6, Price = 3200.10m, ProductImage = "mountain_bike.png" });
-            Products.Add(new ProductsDto() { ProductId = 9, ProductName = "Marin Rift Zone 29 3", CategoryName = "Mountain Bike", Stock = 9, Price = 2450.60m, ProductImage = "mountain_bike.png" });
-            Products.Add(new ProductsDto() { ProductId = 10, ProductName = "Trek FX 3 Disc", CategoryName = "Hybrid Bike", Stock = 14, Price = 1200.00m, ProductImage = "mountain_bike.png" });
+            _productApi = productApi;
 
-             Brands = new ObservableCollection<BrandsDto>();
+            //Brands = new ObservableCollection<BrandsDto>();
 
-            Brands.Add(new BrandsDto() { BrandId = 1, BrandName = "Trek", Logo = "woman.png" });
-            Brands.Add(new BrandsDto() { BrandId = 2, BrandName = "Giant", Logo = "woman.png" });
-            Brands.Add(new BrandsDto() { BrandId = 3, BrandName = "Specialized", Logo = "woman.png" });
-            Brands.Add(new BrandsDto() { BrandId = 4, BrandName = "Cannondale", Logo = "woman.png" });
-            Brands.Add(new BrandsDto() { BrandId = 5, BrandName = "Scott", Logo = "woman.png" });
-            Brands.Add(new BrandsDto() { BrandId = 6, BrandName = "Bianchi", Logo = "woman.png" });
-            Brands.Add(new BrandsDto() { BrandId = 7, BrandName = "Santa Cruz", Logo = "woman.png" });
-            Brands.Add(new BrandsDto() { BrandId = 8, BrandName = "Merida", Logo = "woman.png" });
-            Brands.Add(new BrandsDto() { BrandId = 9, BrandName = "Cube", Logo = "woman.png" });
-            Brands.Add(new BrandsDto() { BrandId = 10, BrandName = "Polygon", Logo = "woman.png" });
+            //Brands.Add(new BrandsDto() { BrandId = 1, BrandName = "Trek", Logo = "woman.png" });
+            //Brands.Add(new BrandsDto() { BrandId = 2, BrandName = "Giant", Logo = "woman.png" });
+            //Brands.Add(new BrandsDto() { BrandId = 3, BrandName = "Specialized", Logo = "woman.png" });
+            //Brands.Add(new BrandsDto() { BrandId = 4, BrandName = "Cannondale", Logo = "woman.png" });
+            //Brands.Add(new BrandsDto() { BrandId = 5, BrandName = "Scott", Logo = "woman.png" });
+            //Brands.Add(new BrandsDto() { BrandId = 6, BrandName = "Bianchi", Logo = "woman.png" });
+            //Brands.Add(new BrandsDto() { BrandId = 7, BrandName = "Santa Cruz", Logo = "woman.png" });
+            //Brands.Add(new BrandsDto() { BrandId = 8, BrandName = "Merida", Logo = "woman.png" });
+            //Brands.Add(new BrandsDto() { BrandId = 9, BrandName = "Cube", Logo = "woman.png" });
+            //Brands.Add(new BrandsDto() { BrandId = 10, BrandName = "Polygon", Logo = "woman.png" });
 
 
-            Categories = new ObservableCollection<CategoryDto>();
-            Categories.Add(new CategoryDto() { CategoryId = 1, CategoryName = "Mountain Bikes" });
-            Categories.Add(new CategoryDto() { CategoryId = 2, CategoryName = "Road Bikes" });
-            Categories.Add(new CategoryDto() { CategoryId = 3, CategoryName = "Hybrid Bikes" });
-            Categories.Add(new CategoryDto() { CategoryId = 4, CategoryName = "Electric Bikes" });
-            Categories.Add(new CategoryDto() { CategoryId = 5, CategoryName = "Kids Bikes" });
-            Categories.Add(new CategoryDto() { CategoryId = 6, CategoryName = "BMX Bikes" });
-            Categories.Add(new CategoryDto() { CategoryId = 7, CategoryName = "Folding Bikes" });
-            Categories.Add(new CategoryDto() { CategoryId = 8, CategoryName = "Gravel Bikes" });
-            Categories.Add(new CategoryDto() { CategoryId = 9, CategoryName = "Cruiser Bikes" });
-            Categories.Add(new CategoryDto() { CategoryId = 10, CategoryName = "Track Bikes" });
+            //Categories = new ObservableCollection<CategoryDto>();
+            //Categories.Add(new CategoryDto() { CategoryId = 1, CategoryName = "Mountain Bikes" });
+            //Categories.Add(new CategoryDto() { CategoryId = 2, CategoryName = "Road Bikes" });
+            //Categories.Add(new CategoryDto() { CategoryId = 3, CategoryName = "Hybrid Bikes" });
+            //Categories.Add(new CategoryDto() { CategoryId = 4, CategoryName = "Electric Bikes" });
+            //Categories.Add(new CategoryDto() { CategoryId = 5, CategoryName = "Kids Bikes" });
+            //Categories.Add(new CategoryDto() { CategoryId = 6, CategoryName = "BMX Bikes" });
+            //Categories.Add(new CategoryDto() { CategoryId = 7, CategoryName = "Folding Bikes" });
+            //Categories.Add(new CategoryDto() { CategoryId = 8, CategoryName = "Gravel Bikes" });
+            //Categories.Add(new CategoryDto() { CategoryId = 9, CategoryName = "Cruiser Bikes" });
+            //Categories.Add(new CategoryDto() { CategoryId = 10, CategoryName = "Track Bikes" });
 
         }
 
@@ -220,5 +248,85 @@ namespace BikeHub.Mobile.ViewModel
         {
             await Shell.Current.GoToAsync($"{nameof(AddEditCategory)}?productId={ProductId}&brandId={brandId}&categoryId=0");
         }
+
+
+        [RelayCommand]
+        public async Task LoadProductAsync(CancellationToken cancellationToken) {
+
+            try
+            {
+                if (IsLoadingMore) return;
+                IsLoadingMore = true;
+
+                var dto = new GetProductsDto
+                {
+
+                    PageNumber = _currentPage,
+                    PageSize = _pageSize,
+                    ProductNameFilter = ProductName
+                };
+
+                var result = await _productApi.GetProducts(dto, cancellationToken);
+
+                if (result is null)
+                {
+                    IsLoadingMore = false;
+                    return;
+                }
+
+                if (result.Status)
+                    result.Data.Data.ForEach(p => Products.Add(p));
+
+                _currentPage++;
+            }
+            catch (TaskCanceledException) { 
+            
+            }
+            catch (Exception)
+            {
+                var toast = Toast.Make("Unexpected Error , While Product Load", ToastDuration.Long);
+                await toast.Show(cancellationToken);
+
+            }
+            finally
+            {
+
+                IsLoadingMore = false;
+
+            }
+        }
+        [RelayCommand]
+        private async Task RefreshAsync() {
+
+            IsRefreshing = true;
+
+            try
+            {
+                // 2. RESET Pagination Counters
+                _currentPage = 1; // Reset to the first page
+
+                // 3. Create a fresh token for this request
+                // We don't use the SearchCancellationToken here because this is an explicit user action
+                var cts = new CancellationTokenSource();
+
+                // 4. Call your API
+                // IMPORTANT: You usually want to clear the list to remove old data
+                // or you can wait until data loads to avoid a "blank screen" flash.
+                Products.Clear();
+
+                await LoadProductAsync(cts.Token);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Refresh Failed: {ex.Message}");
+            }
+            finally
+            {
+                // 5. CRITICAL: You must turn off the spinner, 
+                // otherwise it spins forever.
+                IsRefreshing = false;
+            }
+        }
+
     }
 }

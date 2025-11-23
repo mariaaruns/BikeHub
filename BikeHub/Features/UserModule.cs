@@ -1,4 +1,5 @@
-﻿using BikeHub.Models;
+﻿
+using BikeHub.Models;
 using BikeHub.Service;
 using BikeHub.Shared.Common;
 using BikeHub.Shared.Dto.Request;
@@ -10,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BikeHub.Features
 {
@@ -24,36 +26,59 @@ namespace BikeHub.Features
         {
             app.MapPost("/createUser", async ([FromForm] RegisterDto dto, [FromServices] UserManager<ApplicationUser> userManager) =>
             {
-
-                if (dto.ImgFile?.Length > 0)
+                try
                 {
+                    string newfilePath = string.Empty;
 
+                    if (dto.ImgFile?.Length > 0)
+                    {
+                        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), commonInfo.USER_IMG_PATH);
+                        if (!Directory.Exists(uploadsFolder))
+                            Directory.CreateDirectory(uploadsFolder);
 
+                        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(dto.ImgFile.FileName)}";
+                        newfilePath = Path.Combine(uploadsFolder, fileName);
+
+                        using (var stream = new FileStream(newfilePath, FileMode.Create))
+                        {
+                            await dto.ImgFile.CopyToAsync(stream);
+                        }
+
+                        dto.Image = $"{fileName}";
+
+                    }
+
+                    var user = new ApplicationUser
+                    {
+                        FirstName = dto.FirstName,
+                        LastName = dto.LastName,
+                        UserName = dto.Email,
+                        NormalizedUserName = dto.Email.ToUpper(),
+                        Email = dto.Email,
+                        NormalizedEmail = dto.Email.ToUpper(),
+                        Image = dto.Image,
+                    };
+                    var result = await userManager.CreateAsync(user, dto.Password);
+
+                    if (result.Succeeded)
+                    {
+                        var id = await userManager.GetUserIdAsync(user);
+                        user.Id = int.Parse(id);
+                        await userManager.AddToRoleAsync(user, "Admin");
+                        return Results.Ok(ApiResponse<string>.Success("User Register Successfully"));
+                    }
+                    else
+                    {
+
+                        var errors = result.Errors.Select(e => e.Description);
+
+                       return Results.BadRequest(ApiResponse<string>.Fail("User Register failed", errors: errors));
+                    }
                 }
+                catch(Exception ex) {
 
-                var user = new ApplicationUser
-                {
-                    FirstName = dto.FirstName,
-                    LastName = dto.LastName,
-                    UserName = dto.Email,
-                    NormalizedUserName = dto.Email.ToUpper(),
-                    Email = dto.Email,
-                    NormalizedEmail = dto.Email.ToUpper(),
-                    Image = dto.Image,
-                };
-                var result = await userManager.CreateAsync(user, dto.Password);
+                    return Results.InternalServerError(ApiResponse<string>.Fail("User Register failed",ex.Message));
 
-                if (result.Succeeded)
-                {
-
-                    Results.Ok(ApiResponse<string>.Success("User Register Successfully"));
-                }
-                else
-                {
-
-                    var errors = result.Errors.Select(e => e.Description);
-
-                    Results.BadRequest(ApiResponse<string>.Fail("User Register failed", errors: errors));
                 }
 
             }).WithTags("Users").DisableAntiforgery();
@@ -61,7 +86,7 @@ namespace BikeHub.Features
 
             app.MapPost("/login", async ([FromBody] LoginDto dto,
                                         [FromServices] UserManager<ApplicationUser> userManager,
-                                        [FromServices] IConfiguration config) =>
+                                        [FromServices] IConfiguration config, HttpContext http) =>
             {
                 if (dto is null || string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
                 {
@@ -123,7 +148,8 @@ namespace BikeHub.Features
                     Token = tokenString,
                     Expires = expires,
                     Email = user.Email,
-                    Name = $"{user.FirstName} {user.LastName}".Trim()
+                    Name = $"{user.FirstName} {user.LastName}".Trim(),
+                    ProfileImage= $"/{commonInfo.USER_IMG_PATH}/{user.Image}"
                 };
 
                 return Results.Ok(ApiResponse<JwtResponse>.Success(payload));

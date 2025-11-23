@@ -5,16 +5,13 @@ public partial class LoadingPage : ContentPage
 	public LoadingPage()
 	{
 		InitializeComponent();
-        Loaded += LoadingPage_Loaded;
+        //Loaded += LoadingPage_Loaded;
 	}
 
-    private void LoadingPage_Loaded1(object? sender, EventArgs e)
-    {
-        throw new NotImplementedException();
-    }
 
-    private async void LoadingPage_Loaded(object sender, EventArgs e)
+    protected override async void OnAppearing()
     {
+        base.OnAppearing();
         await Task.Delay(100); // allow UI to load
 
         bool loggedIn = await IsLoggedInAsync();

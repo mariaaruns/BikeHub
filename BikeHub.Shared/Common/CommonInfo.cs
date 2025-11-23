@@ -13,5 +13,7 @@ namespace BikeHub.Shared.Common
 
 
         public const string PRODUCT_IMG_PATH ="Content/Images/Products";
+        public const string Brand_IMG_PATH ="Content/Images/Brands";
+        public const string USER_IMG_PATH ="Content/Images/User";
     }
 }

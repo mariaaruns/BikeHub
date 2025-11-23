@@ -4,6 +4,7 @@ using BikeHub.Shared.Common;
 using BikeHub.Shared.Dto.Request;
 using BikeHub.Shared.Dto.Response;
 using Dapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -190,6 +191,170 @@ namespace BikeHub.Repository
             }
 
             return isRowsAffected;
+        }
+
+
+        public async Task CreateCategoryAsync(AddCategoryDto dto)
+        {
+            var query = ProductQuery.CreateCategory;
+
+            try
+            {
+                using (var connection = new SqlConnection(_connection.ConnectionString))
+                {
+                    await connection.ExecuteAsync(query, new { category_name = dto.CategoryName});
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+        }
+        public async Task<IEnumerable<CategoryDto>> GetAllCategoryAsync()
+        {
+
+            try
+            {
+                var query = ProductQuery.GetAllCategory;
+                using (var connection = new SqlConnection(_connection.ConnectionString))
+                {
+                    var result = await connection.QueryAsync<CategoryDto>(query);
+                    return result.ToList();
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+        }
+
+        public async Task<CategoryDto> GetCategoryByIdAsync(int Id)
+        {
+            try
+            {
+
+                var query = ProductQuery.GetCategoryById;
+
+                //GetCategoryResponse FinalResult;
+                using (var connection = new SqlConnection(_connection.ConnectionString))
+                {
+                    var FinalResult = await _connection.QueryFirstOrDefaultAsync<CategoryDto>(query, new { @CategoryId = Id });
+                    return FinalResult;
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+        }
+
+        public async Task UpdateCategoryByIdAsync(UpdateCategoryDto dto)
+        {
+            try
+            {
+                var query = ProductQuery.UpdateCategorey;
+
+                using (var connection = new SqlConnection(_connection.ConnectionString))
+                {
+                    await _connection.ExecuteAsync(query, new { @id = dto.CategoryId, @CategoryName = dto.CategoryName });
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task DeleteCategoryByIdAsync(int Id)
+        {
+            try
+            {
+                var query = ProductQuery.DeleteCategory;
+
+                using (var connection = new SqlConnection(_connection.ConnectionString))
+                {
+                    await _connection.ExecuteAsync(query, new { @id = Id });
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task CreateBrandAsync(AddBrandDto dto)
+        {
+            try
+            {
+                var query = ProductQuery.CreateBrand;
+
+                using (var connection = new SqlConnection(_connection.ConnectionString))
+                {
+                    await _connection.ExecuteAsync(query, new { @BrandName = dto.BrandName, @Image = dto.ImageUrl });
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<BrandsDto>> GetAllBrandsAsync()
+        {
+            try
+            {
+                var query = ProductQuery.GetAllBrand;
+                using (var connection = new SqlConnection(_connection.ConnectionString))
+                {
+                    var result = await _connection.QueryAsync<BrandsDto>(query);
+                    return result;
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<BrandsDto> GetBrandByIdAsync(int Id)
+        {
+            try
+            {
+                var query = ProductQuery.GetBrandById;
+
+                using (var connection = new SqlConnection(_connection.ConnectionString))
+                {
+                    var FinalResult = await _connection.QueryFirstOrDefaultAsync<BrandsDto>(query, new { @id = Id });
+
+                    return FinalResult;
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task DeleteBrandByIdAsync(int Id)
+        {
+            try
+            {
+                var query = ProductQuery.DeleteById;
+
+                using (var connection = new SqlConnection(_connection.ConnectionString))
+                {
+                    await _connection.ExecuteAsync(query, new { @Id =Id });
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

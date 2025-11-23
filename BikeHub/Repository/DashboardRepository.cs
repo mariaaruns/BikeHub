@@ -16,6 +16,26 @@ namespace BikeHub.Repository
         {
             this._dbConnection = dbConnection;
         }
+
+        public async Task<DashboardResponseDto> GetCounts(int year, int month)
+        {
+            try
+            {
+                var sql = DashboardQuery.TotalProductsCount;
+                var parameters = new { @year = year ,@month=month};
+                using (var connection = new SqlConnection(_dbConnection.ConnectionString))
+                {
+                    var result = await connection.QueryFirstOrDefaultAsync<DashboardResponseDto>(sql, parameters);
+                    return result;
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         public async Task<IEnumerable<SalesAmountByYearDto>> GetSalesAmountByYearAsync(int year)
         {
             try

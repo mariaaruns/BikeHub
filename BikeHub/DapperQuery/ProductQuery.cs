@@ -60,6 +60,33 @@ namespace BikeHub.DapperQuery
         public const string deactivateProduct = @"update production.products set isactive=0 where product_id=@id";
 
 
+
+        public const string CreateCategory = @"INSERT INTO Production.Categories (category_name) VALUES (@category_name);";
+
+        public const string GetAllCategory = @"select category_id [CategoryId], category_name [CategoryName] from Production.Categories";
+
+        public const string GetCategoryById = @"select category_id [CategoryId],category_name [CategoryName] from production.categories
+                                                where category_id=@categoryId";
+        
+        public const string UpdateCategorey = @"update production.categories set category_name=@CategoryName where category_id=@id";
+        
+        public const string DeleteCategory = @"Update Production.categories set IsActive=0 where category_id =@id";
+
+
+
+        public const string CreateBrand = @"insert into production.brands values (@BrandName,1,@Image);select SCOPE_IDENTITY();";
+
+
+        public const string GetAllBrand = @"select brand_id [BrandId],brand_name [BrandName],[Image]  from production.brands
+                                            where IsActive <> '' or isActive <>0";
+
+        public const string GetBrandById = @"select brand_id [BrandId],brand_name [BrandName],[Image] from production.brands where brand_id=@id";
+
+        
+        public const string DeleteById = @"update  production.brands set Isactive=0 where brand_id=@id";
+
+
+
     }
 
 }

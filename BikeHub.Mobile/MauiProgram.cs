@@ -39,14 +39,9 @@ namespace BikeHub.Mobile
                  .ConfigureHttpClient(c => c.BaseAddress = new Uri(baseUrl));
             }
 
-            //builder.Services.AddRefitClient<IUserApi>()
-            //           .AddHttpMessageHandler<AuthHandler>()
-            //           .ConfigureHttpClient(c =>
-            //           {
-            //               c.BaseAddress = new Uri("https://f405rch9-7079.inc1.devtunnels.ms");
-            //           });
             AddApiClient<IUserApi>(builder, apiBase);
             AddApiClient<IDashBoardApi>(builder, apiBase);
+            AddApiClient<IProductApi>(builder, apiBase);
 
 
             builder.Services.AddTransient<LoginPage>().AddTransient<LoginViewModel>();

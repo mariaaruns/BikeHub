@@ -12,6 +12,6 @@ namespace BikeHub.Shared.Dto.Response
 
         public string BrandName { get; set; }
 
-        public string Logo { get; set; }
+        public string Image { get; set; }
     }
 }

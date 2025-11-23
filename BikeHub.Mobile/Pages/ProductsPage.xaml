@@ -37,76 +37,93 @@
                                 <Frame Grid.Row="0" CornerRadius="10"  BorderColor="#D1D5DB" HasShadow="False" Margin="16,8,16,0" Padding="0" >
                                     <Grid ColumnDefinitions="40,*,20">
                                         <Image Source="search.png" Grid.Column="0" HeightRequest="20"/>
-                                        <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Search Products..."/>
+                                        <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Search Products..." Text="{Binding ProductName}"/>
                                     </Grid>
                                 </Frame>
 
 
+                                <RefreshView Grid.Row="1" Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}" RefreshColor="Orange">
+                                    <CollectionView Grid.Row="1" ItemsSource="{Binding Products }" RemainingItemsThreshold="5" RemainingItemsThresholdReachedCommand="{Binding LoadProductCommand}">
+                                        <CollectionView.EmptyView>
+                                            <VerticalStackLayout HorizontalOptions="Center" Margin="0,50">
+                                                <Image Source="no_products.png" HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
+                                                <Label Text="No Products Found" FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
+                                            </VerticalStackLayout>
+                                        </CollectionView.EmptyView>
+                                        <CollectionView.ItemsLayout>
+                                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
+                                        </CollectionView.ItemsLayout>
+                                        <CollectionView.ItemTemplate>
+                                            <DataTemplate x:DataType="model:ProductsDto">
 
-                                <CollectionView Grid.Row="1" ItemsSource="{Binding Products }">
-                                    <CollectionView.EmptyView>
-                                        <VerticalStackLayout HorizontalOptions="Center" Margin="0,50">
-                                            <Image Source="no_products.png" HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
-                                            <Label Text="No Products Found" FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
-                                        </VerticalStackLayout>
-                                    </CollectionView.EmptyView>
-                                    <CollectionView.ItemsLayout>
-                                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
-                                    </CollectionView.ItemsLayout>
-                                    <CollectionView.ItemTemplate>
-                                        <DataTemplate x:DataType="model:ProductsDto">
-
-                                            <SwipeView>
-                                                <SwipeView.RightItems>
-                                                    <SwipeItems Mode="Execute">
+                                                <SwipeView>
+                                                    <SwipeView.RightItems>
+                                                        <SwipeItems Mode="Execute">
 
 
-                                                        <SwipeItemView
+                                                            <SwipeItemView
                                                          BackgroundColor="red"
                                                           Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path= DeleteProductCommand}"
                                                           CommandParameter="{Binding .}">
-                                                            <Grid Padding="12" HorizontalOptions="Center" VerticalOptions="Center">
-                                                                <Image Source="trash_white.png"  HeightRequest="20" WidthRequest="20"/>
-                                                            </Grid>
-                                                        </SwipeItemView>
+                                                                <Grid Padding="12" HorizontalOptions="Center" VerticalOptions="Center">
+                                                                    <Image Source="trash_white.png"  HeightRequest="20" WidthRequest="20"/>
+                                                                </Grid>
+                                                            </SwipeItemView>
 
-                                                    </SwipeItems>
+                                                        </SwipeItems>
 
-                                                </SwipeView.RightItems>
+                                                    </SwipeView.RightItems>
 
-                                                <Frame BorderColor="white" BackgroundColor="WhiteSmoke" CornerRadius="10" HasShadow="False" Margin="16,0,16,0" Padding="0" >
-                                                    <Grid RowDefinitions="Auto,*,Auto" Padding="10">
-                                                        <Grid  ColumnDefinitions="100,*,15" ColumnSpacing="10">
-                                                            <Image Source="{Binding ProductImage}" Grid.RowSpan="2" Grid.Column="0" HeightRequest="100" />
-                                                            <VerticalStackLayout Grid.Column="1" Grid.RowSpan="3" Spacing="20">
-                                                                <VerticalStackLayout Spacing="5">
-                                                                    <Label Text="{Binding ProductName}" FontSize="18" FontAttributes="Bold"/>
-                                                                    <HorizontalStackLayout Spacing="3">
-                                                                        <Image Source="category.png" HeightRequest="10"/>
-                                                                        <Label Text="{Binding CategoryName}" TextColor="Gray"/>
-                                                                    </HorizontalStackLayout>
-                                                                </VerticalStackLayout>
+                                                    <Frame BorderColor="white" BackgroundColor="WhiteSmoke" CornerRadius="10" HasShadow="False" Margin="16,0,16,0" Padding="0" >
+                                                        <Grid RowDefinitions="Auto,*,Auto" Padding="10">
+                                                            <Grid  ColumnDefinitions="100,*,15" ColumnSpacing="10">
+                                                                <Image Source="{Binding ProductImage}" Grid.RowSpan="2" Grid.Column="0" HeightRequest="100" />
+                                                                <VerticalStackLayout Grid.Column="1" Grid.RowSpan="3" Spacing="20">
+                                                                    <VerticalStackLayout Spacing="5">
+                                                                        <Label Text="{Binding ProductName}" FontSize="18" FontAttributes="Bold"/>
+                                                                        <HorizontalStackLayout Spacing="3">
+                                                                            <Image Source="category.png" HeightRequest="10"/>
+                                                                            <Label Text="{Binding CategoryName}" TextColor="Gray"/>
+                                                                        </HorizontalStackLayout>
+                                                                    </VerticalStackLayout>
 
-                                                                <HorizontalStackLayout Spacing="10">
-                                                                    <Label FontAttributes="Bold" Text="{Binding Stock,Converter={StaticResource StockDisplayConverter}}"
+                                                                    <HorizontalStackLayout Spacing="10">
+                                                                        <Label FontAttributes="Bold" Text="{Binding Stock,Converter={StaticResource StockDisplayConverter}}"
                                                                    TextColor="{Binding Stock,Converter={StaticResource StockDisplayConverter}}"/>
 
-                                                                    <Label  FontAttributes="Bold" Text="{Binding Price,StringFormat='$ {0:F2}'}"/>
-                                                                </HorizontalStackLayout>
+                                                                        <Label  FontAttributes="Bold" Text="{Binding Price,StringFormat='$ {0:F2}'}"/>
+                                                                    </HorizontalStackLayout>
 
-                                                            </VerticalStackLayout>
+                                                                </VerticalStackLayout>
 
-                                                           <!-- <ImageButton VerticalOptions="Start" Source="trash.png" Grid.Column="3" Grid.Row="0" HeightRequest="5" />-->
+                                                                <!-- <ImageButton VerticalOptions="Start" Source="trash.png" Grid.Column="3" Grid.Row="0" HeightRequest="5" />-->
 
 
+                                                            </Grid>
                                                         </Grid>
-                                                    </Grid>
-                                                </Frame>
-                                            </SwipeView>
-                                        </DataTemplate>
-                                    </CollectionView.ItemTemplate>
-                                </CollectionView>
+                                                    </Frame>
+                                                </SwipeView>
+                                            </DataTemplate>
+                                        </CollectionView.ItemTemplate>
 
+                                        <CollectionView.Footer>
+                                            <StackLayout Orientation="Horizontal"
+                                                    HorizontalOptions="Center"
+                                                    Padding="10"
+                                                    IsVisible="{Binding IsLoadingMore}">
+                                                <ActivityIndicator IsRunning="{Binding IsLoadingMore}" 
+                                                               IsVisible="{Binding IsLoadingMore}"
+                                                               Color="Blue"
+                                                               HeightRequest="20" 
+                                                               WidthRequest="20"/>
+
+                                                <Label Text="Loading more..." IsVisible="{Binding IsLoadingMore}"
+                                                   VerticalOptions="Center" 
+                                                   Margin="10,0,0,0"/>
+                                            </StackLayout>
+                                        </CollectionView.Footer>
+                                    </CollectionView>
+                                </RefreshView>
 
                             </Grid>
                             <Button Text="+"

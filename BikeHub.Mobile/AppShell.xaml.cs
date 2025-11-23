@@ -8,8 +8,8 @@ namespace BikeHub.Mobile
         public AppShell()
         {
             InitializeComponent();
-            this.Navigated += OnShellNavigated;
-            
+            Loaded += AppShell_Loaded;
+
             Routing.RegisterRoute(nameof(AddEditProductPage), typeof(AddEditProductPage));
             Routing.RegisterRoute(nameof(AddEditCustomer), typeof(AddEditCustomer));
             Routing.RegisterRoute(nameof(AddEditCategory), typeof(AddEditCategory));
@@ -22,16 +22,18 @@ namespace BikeHub.Mobile
 
 
         }
-
+        private void AppShell_Loaded(object sender, EventArgs e)
+        {
+            this.Navigated += OnShellNavigated;
+        }
         private void OnShellNavigated(object sender, ShellNavigatedEventArgs e)
         {
-            // Get the current page
-            var currentPage = (Shell.Current?.CurrentPage as ContentPage);
-            if (currentPage != null)
-            {
-                PageTitleLabel.Text = currentPage.Title;
-            }
+            var currentPage = Shell.Current?.CurrentPage as ContentPage;
+
+            if (PageTitleLabel != null && currentPage != null)
+                PageTitleLabel.Text = currentPage.Title ?? "";
         }
+
 
 
         private async void AvatarButton_Clicked(object sender, EventArgs e)

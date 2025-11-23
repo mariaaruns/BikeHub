@@ -12,7 +12,7 @@ namespace BikeHub.Mobile.ApiServices
     public interface IDashBoardApi
     {
         [Get("/getcount")]
-        Task<res.ApiResponse<DashboardResponseDto>> DashboardCount();
+        Task<res.ApiResponse<DashboardResponseDto>> DashboardCount(DateTime date);
 
         [Get("/dashboardSalesAmount")]
         Task<res.ApiResponse<IEnumerable<SalesAmountByYearDto>>> DashboardSalesAmount(int year);

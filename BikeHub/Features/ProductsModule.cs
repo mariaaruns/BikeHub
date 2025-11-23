@@ -4,6 +4,7 @@ using BikeHub.Shared.Common;
 using BikeHub.Shared.Dto.Request;
 using BikeHub.Shared.Dto.Response;
 using Carter;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
@@ -20,21 +21,21 @@ namespace BikeHub.Features
             {
                 try
                 {
-                    if (req.PageNumber is 0 || req.PageSize is 0) 
-                    { 
-                    return Results.BadRequest(ApiResponse<string>.Fail("Invalid Request", "PageNumber and PageSize must be greater than zero"));
+                    if (req.PageNumber is 0 || req.PageSize is 0)
+                    {
+                        return Results.BadRequest(ApiResponse<string>.Fail("Invalid Request", "PageNumber and PageSize must be greater than zero"));
                     }
 
                     var result = await productRepository.GetAllProductsAsync(req);
 
-                    return Results.Ok(ApiResponse<PagedResult<ProductsDto>>.Success(result,"Products fetched successfully"));
+                    return Results.Ok(ApiResponse<PagedResult<ProductsDto>>.Success(result, "Products fetched successfully"));
 
                 }
                 catch (Exception ex)
                 {
                     return Results.InternalServerError(ApiResponse<string>.Fail("Failed", ex.Message));
                 }
-                
+
             })
             .WithTags("Products")
             .Produces<ApiResponse<PagedResult<ProductsDto>>>(StatusCodes.Status200OK)
@@ -44,7 +45,8 @@ namespace BikeHub.Features
 
 
 
-            app.MapPost("/products/add", async (IProductRepository productRepository,[FromForm] AddProductsDto req) => {
+            app.MapPost("/products/add", async (IProductRepository productRepository, [FromForm] AddProductsDto req) =>
+            {
 
                 string newfilePath = string.Empty;
                 try
@@ -63,7 +65,7 @@ namespace BikeHub.Features
                             Directory.CreateDirectory(uploadsFolder);
 
                         var fileName = $"{Guid.NewGuid()}{Path.GetExtension(req.ProductImage.FileName)}";
-                         newfilePath = Path.Combine(uploadsFolder, fileName);
+                        newfilePath = Path.Combine(uploadsFolder, fileName);
 
                         using (var stream = new FileStream(newfilePath, FileMode.Create))
                         {
@@ -72,19 +74,19 @@ namespace BikeHub.Features
 
                         req.ImageUrl = $"{fileName}";
                     }
-                  
+
                     var result = await productRepository.CreateProductAsync(req);
-                    
-                    if(result == 0)
+
+                    if (result == 0)
                     {
                         if (File.Exists(newfilePath))
                         {
                             File.Delete(newfilePath);
                         }
                         return Results.BadRequest(ApiResponse<string>.Fail("Failed", "Product creation failed"));
-                        
+
                     }
-                    
+
                     return Results.Ok(ApiResponse<int>.Success(result, "Product created successfully"));
 
                 }
@@ -105,7 +107,7 @@ namespace BikeHub.Features
             .WithName("Create Product");
 
 
-            
+
             app.MapPut("/products/update", async (IProductRepository productRepository, [FromForm] UpdateProductDto req) =>
             {
                 string newFilePath = string.Empty;
@@ -191,7 +193,7 @@ namespace BikeHub.Features
                         return Results.BadRequest(ApiResponse<string>.Fail("Invalid Request", "Id must be greater than zero"));
                     }
                     var result = await productRepository.GetProductByIdAsync(id);
-                    if(result == null)
+                    if (result == null)
                     {
                         return Results.NotFound(ApiResponse<string>.Fail("Not Found", "Product not found"));
                     }
@@ -203,6 +205,7 @@ namespace BikeHub.Features
                 }
             })
             .WithTags("Products")
+            .DisableAntiforgery()
             .Produces<ApiResponse<GetProductByIdDto>>(StatusCodes.Status200OK)
             .WithName("Get Product");
 
@@ -215,6 +218,7 @@ namespace BikeHub.Features
                     ? Results.Ok(ApiResponse<bool>.Success(true, "Product deactivated"))
                     : Results.NotFound(ApiResponse<string>.Fail("Product not found"));
             }).WithTags("Products")
+            .DisableAntiforgery()
             .Produces<ApiResponse<bool>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<string>>(StatusCodes.Status404NotFound)
             .WithName("Deactivate Product");
@@ -223,8 +227,206 @@ namespace BikeHub.Features
 
 
             //category start
+            app.MapPost("/categoryAdd", async (IProductRepository repos, AddCategoryDto dto) =>
+            {
+                try
+                {
+                    await repos.CreateCategoryAsync(dto);
+
+                    return Results.Ok(ApiResponse<string>.Success("Category add Successfully"));
+
+                }
+                catch (Exception ex)
+                {
+                    return Results.InternalServerError(ApiResponse<string>.Fail("Faild", ex.Message));
+                }
+            }).WithTags("Category")
+            .DisableAntiforgery()
+         .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
+         .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
+         .WithName("CategoryProduct");
+
+            app.MapGet("GetCategory", async (IProductRepository repo) =>
+            {
+                try
+                {
+                    var result = await repo.GetAllCategoryAsync();
+                    if (result == null)
+                    {
+                        return Results.NotFound(ApiResponse<IEnumerable<CategoryDto>>.Fail("Data Not Found"));
+                    }
+                    return Results.Ok(ApiResponse<IEnumerable<CategoryDto>>.Success(result));
+
+                }
+                catch (Exception)
+                {
+                    return Results.InternalServerError(ApiResponse<IEnumerable<CategoryDto>>.Fail("Internal Server Error"));
+                }
+            }).WithTags("Category")
+            .DisableAntiforgery()
+            .Produces<ApiResponse<IEnumerable<CategoryDto>>>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponse<IEnumerable<CategoryDto>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<IEnumerable<CategoryDto>>>(StatusCodes.Status500InternalServerError);
+
+            app.MapGet("/GetCategoryById", async (IProductRepository product, int id) =>
+            {
+                try
+                {
+                    var FinalResults = await product.GetCategoryByIdAsync(id);
+
+                    if (FinalResults == null)
+                    {
+                        return Results.NotFound(ApiResponse<CategoryDto>.Fail("Data Not Found"));
+                    }
+
+                    return Results.Ok(ApiResponse<CategoryDto>.Success(FinalResults, "Data Was Successfully Fetched"));
+                }
+                catch (Exception)
+                {
+                    return Results.InternalServerError(ApiResponse<CategoryDto>.Fail("Internal Server Error"));
+                }
+            }).WithTags("Category")
+            .DisableAntiforgery()
+            .Produces<ApiResponse<CategoryDto>>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponse<CategoryDto>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<CategoryDto>>(StatusCodes.Status500InternalServerError);
+
+            app.MapPut("/UpdateCategory", async (IProductRepository Ipo, UpdateCategoryDto upt) =>
+            {
+                try
+                {
+                    await Ipo.UpdateCategoryByIdAsync(upt);
+
+                    return Results.Ok(ApiResponse<string>.Success("Data Was Update Successfully"));
+                }
+                catch (Exception)
+                {
+                    return Results.InternalServerError(ApiResponse<string>.Fail("Internal Server Error"));
+                }
+            }).WithTags("Category")
+            .DisableAntiforgery()
+            .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
+
+            app.MapDelete("/DeleteCategory", async (IProductRepository ipo, int id) =>
+            {
+                try
+                {
+                    await ipo.DeleteCategoryByIdAsync(id);
+                    return Results.Ok(ApiResponse<string>.Success("Data Was Successfully Removed"));
+                }
+                catch (Exception)
+                {
+                    return Results.InternalServerError(ApiResponse<string>.Fail("Internal Server Error"));
+                }
+            }).WithTags("Category")
+            .DisableAntiforgery()
+            .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
+
+            app.MapPost("/AddBrand", async (IProductRepository Ipo, [FromForm] AddBrandDto dto) =>
+            {
+                var fileNewPath = string.Empty;
+                try
+                {
+                    var Isvalid = ModelValidator.Validate(dto);
+                    if (!Isvalid.IsValid)
+                    {
+                        return Results.BadRequest(ApiResponse<string>.Fail("Invalid request", Isvalid.Errors));
+                    }
+                    if (dto.BrandImage != null && dto.BrandImage.Length > 0)
+                    {
+                        var uploadFilse = Path.Combine(Directory.GetCurrentDirectory(), commonInfo.Brand_IMG_PATH);
+
+                        if (!Directory.Exists(uploadFilse))
+                            Directory.CreateDirectory(uploadFilse);
+
+                        var folderpath = $"{Guid.NewGuid()}{Path.GetExtension(dto.BrandImage.FileName)}";
+                        fileNewPath = Path.Combine(uploadFilse, folderpath);
+
+                        using (var stream = new FileStream(fileNewPath, FileMode.Create))
+                        {
+                            await dto.BrandImage.CopyToAsync(stream);
+                        }
+                        dto.ImageUrl = folderpath;
+                    }
+                    await Ipo.CreateBrandAsync(dto);
+
+                    return Results.Ok(ApiResponse<string>.Success("Data Was Successfully"));
+                }
+                catch (Exception)
+                {
+                    return Results.InternalServerError(ApiResponse<string>.Fail("Data Was Not Insert"));
+                }
+            }).WithTags("Brand")
+            .DisableAntiforgery()
+            .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
 
 
+            app.MapGet("/GetAllBrand", async (IProductRepository respo) =>
+            {
+                try
+                {
+                    var rowsaffect = await respo.GetAllBrandsAsync();
+
+                    if (rowsaffect == null)
+                    {
+                        return Results.NotFound(ApiResponse<IEnumerable<string>>.Fail("Data Not Found"));
+                    }
+                    return Results.Ok(ApiResponse<IEnumerable<BrandsDto>>.Success(rowsaffect));
+
+                }
+                catch (Exception)
+                {
+                    return Results.InternalServerError(ApiResponse<IEnumerable<string>>.Fail("InternalServerError"));
+                }
+            }).WithTags("Brand")
+            .DisableAntiforgery()
+            .Produces<ApiResponse<BrandsDto>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<string>>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
+
+            app.MapGet("/GetBrandById", async (IProductRepository repos, int Id) =>
+            {
+                try
+                {
+                    var result = await repos.GetBrandByIdAsync(Id);
+
+                    if (result == null)
+                    {
+                        return Results.NotFound(ApiResponse<string>.Fail("Data Was Not Found"));
+                    }
+
+                    return Results.Ok(ApiResponse<BrandsDto>.Success(result));
+                }
+                catch (Exception)
+                {
+                    return Results.InternalServerError(ApiResponse<string>.Fail("InternalServerError"));
+                }
+            }).WithTags("Brand")
+            .DisableAntiforgery()
+            .Produces<ApiResponse<BrandsDto>>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponse<BrandsDto>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<BrandsDto>>(StatusCodes.Status500InternalServerError);
+
+            app.MapPut("/DeleteByIdBrand", async (IProductRepository repos, int Id) =>
+            {
+                try
+                {
+                    await repos.DeleteBrandByIdAsync(Id);
+
+                    return Results.Ok(ApiResponse<string>.Success("Data Was Deactive Successfully"));
+                }
+                catch (Exception)
+                {
+                    return Results.InternalServerError(ApiResponse<string>.Fail("InternalServerError"));
+                }
+            }).WithTags("Brand")
+            .DisableAntiforgery()
+            .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
         }
+
     }
 }

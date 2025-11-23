@@ -25,6 +25,8 @@ namespace BikeHub.Shared.Dto.Request
         public string LastName { get; set; } = string.Empty;
 
         public string Image { get; set; } = string.Empty;
+
+        public string Role { get; set; } = string.Empty;
         public IFormFile ImgFile { get; set; }
 
     }

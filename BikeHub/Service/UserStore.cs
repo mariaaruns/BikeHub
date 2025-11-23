@@ -192,9 +192,18 @@ namespace BikeHub.Service
             return Task.FromResult(user.SecurityStamp);
         }
 
-        public Task<string> GetUserIdAsync(ApplicationUser user, CancellationToken cancellationToken)
+        public async Task<string> GetUserIdAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            return Task.FromResult(user.Id.ToString());
+            const string sql = @"
+                SELECT top 1 Id FROM Users u where [UserName] =@username";
+
+            var userId = await _connection.QueryFirstOrDefaultAsync<ApplicationUser>(sql, new { @username = user.UserName });
+
+            if (userId is not null)
+            {
+                return userId.Id.ToString();
+            }
+            return null;
         }
 
         public Task<string?> GetUserNameAsync(ApplicationUser user, CancellationToken cancellationToken)
