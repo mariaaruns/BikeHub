@@ -6,7 +6,7 @@ namespace BikeHub.Mobile.Pages;
 
 public class AddEditProductPage : ContentPage
 {
-    public AddEditProductPage(ProductsViewModel viewModel)
+    public AddEditProductPage (AddEditProductViewModel viewModel)
     {
         
         this.BindingContext = viewModel;

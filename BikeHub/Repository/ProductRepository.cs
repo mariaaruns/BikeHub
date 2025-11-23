@@ -21,47 +21,48 @@ namespace BikeHub.Repository
 
         public async Task<int> CreateProductAsync(AddProductsDto dto)
         {
-            
+
             var sql = ProductQuery.CreateProduct;
             var StockSql = ProductQuery.AddProductStock;
             int LastInsertId = 0;
 
-                var parameters = new
+            var parameters = new
+            {
+                @productName = dto.ProductName,
+                @brandId = dto.BrandId,
+                @categoryId = dto.CategoryId,
+                @modelyear = dto.ModelYear,
+                @listPrice = dto.ListPrice,
+                @productImage = dto.ImageUrl,
+            };
+
+
+            using (var connection = new SqlConnection(_connection.ConnectionString))
+            {
+
+                var transaction = await connection.BeginTransactionAsync();
+                try
                 {
-                    @productName = dto.ProductName,
-                    @brandId = dto.BrandId,
-                    @categoryId = dto.CategoryId,
-                    @modelyear = dto.ModelYear,
-                    @listPrice = dto.ListPrice,
-                    @productImage = dto.ImageUrl,
-                };
+                    LastInsertId = await connection.ExecuteScalarAsync<int>(sql, parameters, transaction: transaction);
+                    //add stock for newly added product
 
-
-                using (var connection = new SqlConnection(_connection.ConnectionString)) {
-
-                    var transaction = await connection.BeginTransactionAsync();
-                    try
+                    var Stockparameters = new
                     {
-                        LastInsertId = await connection.ExecuteScalarAsync<int>(sql, parameters, transaction: transaction);
-                        //add stock for newly added product
+                        @productId = LastInsertId,
+                        @stockQty = dto.StockQty
+                    };
 
-                        var Stockparameters = new
-                        {
-                            @productId = LastInsertId,
-                            @stockQty = dto.StockQty
-                        };
+                    await connection.ExecuteAsync(StockSql, Stockparameters, transaction: transaction);
 
-                        await connection.ExecuteAsync(StockSql, Stockparameters, transaction: transaction);
-
-                        await transaction.CommitAsync();
-                    }
-                    catch (Exception)
-                    {
-                        await transaction.RollbackAsync();
-                        throw;
-                    }   
+                    await transaction.CommitAsync();
                 }
-                return LastInsertId;
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+            return LastInsertId;
         }
 
         public Task<PagedResult<ProductsDto>> GetAllProductsAsync(GetProductsDto dto)
@@ -73,7 +74,7 @@ namespace BikeHub.Repository
 
                 int TotalRecorscount = 0;
                 var productsList = new List<ProductsDto>();
-               
+
                 var parameters = new
                 {
                     Search = string.IsNullOrEmpty(dto.ProductNameFilter) ? null : $"%{dto.ProductNameFilter}%",
@@ -98,13 +99,13 @@ namespace BikeHub.Repository
             {
                 throw;
             }
-            
+
         }
 
         public async Task<GetProductByIdDto> GetProductByIdAsync(int id)
         {
             var sql = ProductQuery.GetProduct;
-            var product= new GetProductByIdDto();
+            var product = new GetProductByIdDto();
 
             try
             {
@@ -112,7 +113,7 @@ namespace BikeHub.Repository
                 {
                     product = await connection.QueryFirstOrDefaultAsync<GetProductByIdDto>(
                     sql,
-                    new { @id=id });
+                    new { @id = id });
                 }
             }
             catch (Exception)
@@ -127,11 +128,11 @@ namespace BikeHub.Repository
         {
             var sql = ProductQuery.updateProduct;
             var StockSql = ProductQuery.updateProductStock;
-            bool isRowsAffected= false;
+            bool isRowsAffected = false;
 
             var parameters = new
             {
-                @productId=dto.ProductId,
+                @productId = dto.ProductId,
                 @productName = dto.ProductName,
                 @brandId = dto.BrandId,
                 @categoryId = dto.CategoryId,
@@ -181,7 +182,7 @@ namespace BikeHub.Repository
             {
                 using (var connection = new SqlConnection(_connection.ConnectionString))
                 {
-                    int i = await connection.ExecuteAsync(sql,new { @id = id });
+                    int i = await connection.ExecuteAsync(sql, new { @id = id });
                     isRowsAffected = i > 0 ? true : false;
                 }
             }
@@ -202,7 +203,7 @@ namespace BikeHub.Repository
             {
                 using (var connection = new SqlConnection(_connection.ConnectionString))
                 {
-                    await connection.ExecuteAsync(query, new { category_name = dto.CategoryName});
+                    await connection.ExecuteAsync(query, new { category_name = dto.CategoryName });
                 }
             }
             catch (Exception)
@@ -211,7 +212,7 @@ namespace BikeHub.Repository
             }
 
         }
-        public async Task<IEnumerable<CategoryDto>> GetAllCategoryAsync()
+        public async Task<IEnumerable<CategoryDto>> GetAllCategoryAsync(string? CategoryNameFilter)
         {
 
             try
@@ -219,7 +220,10 @@ namespace BikeHub.Repository
                 var query = ProductQuery.GetAllCategory;
                 using (var connection = new SqlConnection(_connection.ConnectionString))
                 {
-                    var result = await connection.QueryAsync<CategoryDto>(query);
+                    var result = await connection.QueryAsync<CategoryDto>(query, new
+                    {
+                        @search = string.IsNullOrEmpty(CategoryNameFilter) ? null : $"%{CategoryNameFilter}%"
+                    });
                     return result.ToList();
                 }
             }
@@ -303,14 +307,19 @@ namespace BikeHub.Repository
             }
         }
 
-        public async Task<IEnumerable<BrandsDto>> GetAllBrandsAsync()
+        public async Task<IEnumerable<BrandsDto>> GetAllBrandsAsync(string? BrandNameFilter)
         {
             try
             {
                 var query = ProductQuery.GetAllBrand;
                 using (var connection = new SqlConnection(_connection.ConnectionString))
                 {
-                    var result = await _connection.QueryAsync<BrandsDto>(query);
+                    var result = await _connection.QueryAsync<BrandsDto>(query, new
+                    {
+
+                        @search = string.IsNullOrEmpty(BrandNameFilter) ? null : $"%{BrandNameFilter}%"
+
+                    });
                     return result;
                 }
 
@@ -348,7 +357,7 @@ namespace BikeHub.Repository
 
                 using (var connection = new SqlConnection(_connection.ConnectionString))
                 {
-                    await _connection.ExecuteAsync(query, new { @Id =Id });
+                    await _connection.ExecuteAsync(query, new { @Id = Id });
                 }
             }
             catch (Exception)

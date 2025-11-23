@@ -4,7 +4,7 @@ namespace BikeHub.Mobile.Pages;
 
 public partial class AddEditBrand : ContentPage
 {
-	public AddEditBrand(ProductsViewModel viewModel)
+	public AddEditBrand(AddEditBrandViewModel viewModel)
 	{
 		InitializeComponent();
 		this.BindingContext = viewModel;

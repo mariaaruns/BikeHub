@@ -59,8 +59,6 @@
                                                 <SwipeView>
                                                     <SwipeView.RightItems>
                                                         <SwipeItems Mode="Execute">
-
-
                                                             <SwipeItemView
                                                          BackgroundColor="red"
                                                           Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path= DeleteProductCommand}"
@@ -101,6 +99,17 @@
 
                                                             </Grid>
                                                         </Grid>
+                                                        <Frame.GestureRecognizers>
+                                                            <TapGestureRecognizer 
+                                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path=GotoAddProductCommand}"
+                                                                CommandParameter="{Binding .}" />
+                                                        </Frame.GestureRecognizers>
+
+                                                        <!--<Frame.Behaviors>
+                                                                <toolkit:EventToCommandBehavior EventName="Tapped"
+                                                                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path= GotoAddBrandCommand}"
+                                                                                                 CommandParameter="{Binding .}"/>
+                                                            </Frame.Behaviors>-->
                                                     </Frame>
                                                 </SwipeView>
                                             </DataTemplate>

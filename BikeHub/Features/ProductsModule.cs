@@ -16,7 +16,8 @@ namespace BikeHub.Features
 
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            //getAllProducts
+            //Products Start
+
             app.MapPost("/products", async (IProductRepository productRepository, GetProductsDto req) =>
             {
                 try
@@ -184,6 +185,8 @@ namespace BikeHub.Features
               .DisableAntiforgery()
               .WithName("Update Product");
 
+
+
             app.MapGet("/products/{id}", async (IProductRepository productRepository, [FromRoute, Required] int id) =>
             {
                 try
@@ -226,6 +229,7 @@ namespace BikeHub.Features
 
 
 
+
             //category start
             app.MapPost("/categoryAdd", async (IProductRepository repos, AddCategoryDto dto) =>
             {
@@ -242,15 +246,15 @@ namespace BikeHub.Features
                 }
             }).WithTags("Category")
             .DisableAntiforgery()
-         .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
-         .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
-         .WithName("CategoryProduct");
+            .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
+            .WithName("CategoryProduct");
 
-            app.MapGet("GetCategory", async (IProductRepository repo) =>
+            app.MapGet("GetCategory", async (IProductRepository repo,string? CategoryNameFilter) =>
             {
                 try
                 {
-                    var result = await repo.GetAllCategoryAsync();
+                    var result = await repo.GetAllCategoryAsync(CategoryNameFilter);
                     if (result == null)
                     {
                         return Results.NotFound(ApiResponse<IEnumerable<CategoryDto>>.Fail("Data Not Found"));
@@ -324,6 +328,10 @@ namespace BikeHub.Features
             .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
 
+
+
+
+            //brand start
             app.MapPost("/AddBrand", async (IProductRepository Ipo, [FromForm] AddBrandDto dto) =>
             {
                 var fileNewPath = string.Empty;
@@ -364,11 +372,11 @@ namespace BikeHub.Features
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
 
 
-            app.MapGet("/GetAllBrand", async (IProductRepository respo) =>
+            app.MapGet("/GetAllBrand", async (IProductRepository respo,string? BrandNameFilter) =>
             {
                 try
                 {
-                    var rowsaffect = await respo.GetAllBrandsAsync();
+                    var rowsaffect = await respo.GetAllBrandsAsync(BrandNameFilter);
 
                     if (rowsaffect == null)
                     {
@@ -426,6 +434,7 @@ namespace BikeHub.Features
             .DisableAntiforgery()
             .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
+
         }
 
     }

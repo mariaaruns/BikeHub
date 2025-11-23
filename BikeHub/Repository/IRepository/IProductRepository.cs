@@ -9,7 +9,7 @@ namespace BikeHub.Repository.IRepository
     {
         //brands
         Task CreateBrandAsync(AddBrandDto BRes);
-        Task<IEnumerable<BrandsDto>> GetAllBrandsAsync();
+        Task<IEnumerable<BrandsDto>> GetAllBrandsAsync(string? BrandNameFilter);
         Task<BrandsDto> GetBrandByIdAsync(int Id);
         
         //Task UpdateBrandByIdAsync();
@@ -17,7 +17,7 @@ namespace BikeHub.Repository.IRepository
 
         //category
         Task CreateCategoryAsync(AddCategoryDto dto);
-        Task<IEnumerable<CategoryDto>> GetAllCategoryAsync();
+        Task<IEnumerable<CategoryDto>> GetAllCategoryAsync(string? CategoryNameFilter);
         Task<CategoryDto> GetCategoryByIdAsync(int Id);
         Task UpdateCategoryByIdAsync(UpdateCategoryDto upt);
         Task DeleteCategoryByIdAsync(int Id);

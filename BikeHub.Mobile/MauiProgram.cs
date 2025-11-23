@@ -21,7 +21,6 @@ namespace BikeHub.Mobile
             builder
                 .UseMauiApp<App>()
                 .UseMauiCommunityToolkit()
-                
                 .ConfigureSyncfusionToolkit()
                 .UseSkiaSharp()
                 .ConfigureFonts(fonts =>
@@ -30,6 +29,7 @@ namespace BikeHub.Mobile
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
+            //Api Client Registrations with Refit and AuthHandler
             builder.Services.AddTransient<AuthHandler>();
             static void AddApiClient<TApi>(MauiAppBuilder b, string baseUrl) where TApi : class
             {
@@ -42,17 +42,21 @@ namespace BikeHub.Mobile
             AddApiClient<IUserApi>(builder, apiBase);
             AddApiClient<IDashBoardApi>(builder, apiBase);
             AddApiClient<IProductApi>(builder, apiBase);
+            //AddApiClient<ICategoryApi>(builder, apiBase);
+            //AddApiClient<IBrandApi>(builder, apiBase);
 
 
+
+            //Page and ViewModel Registrations
             builder.Services.AddTransient<LoginPage>().AddTransient<LoginViewModel>();
             builder.Services.AddTransient<MainPage>().AddTransient<DashboardViewModel>();
             builder.Services.AddTransient<ProductsPage>().AddTransient<ProductsViewModel>();
             builder.Services.AddTransient<CustomersPage>().AddTransient<CustomerViewModel>();
             builder.Services.AddTransient<OrdersPage>().AddTransient<OrderViewModel>();
             builder.Services.AddTransient<UsersPage>().AddTransient<UserViewModel>();
-            builder.Services.AddTransient<AddEditProductPage>();
-            builder.Services.AddTransient<AddEditCategory>();
-            builder.Services.AddTransient<AddEditBrand>();
+            builder.Services.AddTransient<AddEditProductPage>().AddTransient<AddEditProductViewModel>();
+            builder.Services.AddTransient<AddEditCategory>().AddTransient<AddEditCategoryViewModel>();
+            builder.Services.AddTransient<AddEditBrand>().AddTransient<AddEditBrandViewModel>();
             builder.Services.AddTransient<AddEditOrders>();
             builder.Services.AddTransient<AddEditUsers>();
             builder.Services.AddTransient<AddEditCustomer>();

@@ -4,10 +4,9 @@ namespace BikeHub.Mobile.Pages;
 
 public partial class AddEditCategory : ContentPage
 {
-	public AddEditCategory(ProductsViewModel viewModel)
+	public AddEditCategory(AddEditCategoryViewModel viewModel)
 	{
 		InitializeComponent();
-
 		this.BindingContext = viewModel;
 	}
 }
