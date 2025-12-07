@@ -29,6 +29,11 @@ namespace BikeHub.Repository.IRepository
         Task<bool> UpdateProductByIdAsync(UpdateProductDto dto);
         Task<bool> DeactivateProductAsync(int id);
 
-        
+        //CategoryDropDown
+        Task<IEnumerable<ProductDto1>> DropDownCatgoryAsync();
+
+        Task<IEnumerable<BrandsDto1>> DropDownBrandAsync();
+
+        Task<IEnumerable<productDto2>> DropDownStockAsync();
     }
 }

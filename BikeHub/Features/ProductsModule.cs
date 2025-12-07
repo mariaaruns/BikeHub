@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
+using System.Runtime.InteropServices;
 
 namespace BikeHub.Features
 {
@@ -435,6 +436,64 @@ namespace BikeHub.Features
             .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
 
+            app.MapGet("/DropDownCategory", async (IProductRepository respo) =>
+            {
+                try
+                {
+                    var rowsffect = await respo.DropDownCatgoryAsync();
+                    if(rowsffect == null)
+                    {
+                        return Results.NotFound(ApiResponse<string>.Fail("Data was not Found"));
+                    }
+                    return Results.Ok(ApiResponse<IEnumerable<ProductDto1>>.Success(rowsffect,"Data Was Successfully Fetch"));
+                }
+                catch (Exception ex)
+                {
+                    return Results.InternalServerError(ApiResponse<string>.Fail("InternalServerError"));
+                }
+            }).WithTags("DropDownList")
+            .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
+
+
+            app.MapGet("BrandDropDown", async (IProductRepository respo) =>
+            {
+                try
+                {
+                    var rowsaffect = await respo.DropDownBrandAsync();
+
+                    if (rowsaffect == null)
+                    {
+                        return Results.NotFound(ApiResponse<string>.Fail("Data was not found"));
+                    }
+                    return Results.Ok(ApiResponse<IEnumerable<BrandsDto1>>.Success(rowsaffect, "Row Successfull fetched"));
+                }
+                catch (Exception ex)
+                {
+                    return Results.InternalServerError(ApiResponse<string>.Fail("InternalError Issuses"));
+                }
+            });
+
+            app.MapGet("StockDropDown", async (IProductRepository respo) =>
+            {
+                try
+                {
+                    var rowsaffect = await respo.DropDownStockAsync();
+
+                    if (rowsaffect==null)
+                    {
+                        return Results.NotFound(ApiResponse<string>.Fail("Data was not found"));
+                    }
+                    return Results.Ok(ApiResponse<IEnumerable<productDto2>>.Success(rowsaffect,"Data was successfully fetched"));
+                }
+                catch (Exception ex)
+                {
+                    return Results.InternalServerError(ApiResponse<string>.Fail("InternalServer Issuses"));
+                }               
+            });
+            
+
+            
         }
 
     }

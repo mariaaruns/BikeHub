@@ -66,8 +66,12 @@ namespace BikeHub.DapperQuery
         public const string GetBrandById = @"select brand_id [BrandId],brand_name [BrandName],[Image] from production.brands where brand_id=@id";
         public const string DeleteById = @"update  production.brands set Isactive=0 where brand_id=@id";
 
-    }
+        public const string CategoryDropDown = @"select category_id,category_name from production.categories";
 
+        public const string BrandDropDown = @"select brand_id, brand_name from production.brands";
+
+        public const string ProductDropDown = @"select t1.product_id,t1.product_name,sum(t2.quantity) As TotalQuantity from production.products t1 join production.stocks t2 on t1.product_id=t2.product_id  group by t1.product_id,t1.product_name;";
+    }
 }
 
 
