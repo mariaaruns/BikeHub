@@ -1,4 +1,8 @@
 ﻿using BikeHub.Models;
+using BikeHub.Service.Interface;
+using BikeHub.Shared.Common;
+using BikeHub.Shared.Dto.Request;
+using BikeHub.Shared.Dto.Response;
 using Dapper;
 using Microsoft.AspNetCore.Identity;
 using System.Data;
@@ -6,7 +10,7 @@ using System.Security.Claims;
 
 namespace BikeHub.Service
 {
-    public class UserStore : IUserStore<ApplicationUser>,
+    public class UserStore : IApplicationUserStore<ApplicationUser>,
         IUserPasswordStore<ApplicationUser>,
         IUserEmailStore<ApplicationUser>,
         IUserRoleStore<ApplicationUser>,
@@ -131,6 +135,42 @@ namespace BikeHub.Service
             return Task.FromResult(user.AccessFailedCount);
         }
 
+        public async Task<PagedResult<UsersDto>> GetAllUsersAsync(UsersRequestDto dto, CancellationToken cancellationToken)
+        {
+            const string sql = @"
+                SELECT u.Id AS UserId, 
+                       (u.FirstName + ' ' + u.LastName) AS FullName, 
+                       r.Name AS Role, 
+                       CASE WHEN u.LockoutEnd IS NULL OR u.LockoutEnd < GETDATE() THEN 1 ELSE 0 END AS IsActive,
+                       u.Image
+                FROM Users u
+                LEFT JOIN UserRoles ur ON u.Id = ur.UserId
+                LEFT JOIN Roles r ON ur.RoleId = r.Id
+                WHERE (@SearchName IS NULL OR (u.FirstName + ' ' + u.LastName) LIKE '%' + @SearchName + '%')
+                  AND (@SearchRole IS NULL OR r.Name = @SearchRole)
+                ORDER BY u.Id
+                OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+                SELECT COUNT(*) FROM Users u
+                LEFT JOIN UserRoles ur ON u.Id = ur.UserId
+                LEFT JOIN Roles r ON ur.RoleId = r.Id
+                WHERE (@SearchName IS NULL OR (u.FirstName + ' ' + u.LastName) LIKE '%' + @SearchName + '%')
+                  AND (@SearchRole IS NULL OR r.Name = @SearchRole);";
+
+            var offset = (dto.PageNumber - 1) * dto.PageSize;
+            using var multi = await _connection.QueryMultipleAsync(sql, new
+            {
+                dto.SearchName,
+                dto.SearchRole,
+                Offset = offset,
+                dto.PageSize
+            }, commandTimeout: 60);
+
+            var users = multi.Read<UsersDto>().ToList();
+            var totalRecords = multi.ReadSingle<int>();
+
+            return new PagedResult<UsersDto>(totalRecords, dto.PageNumber, dto.PageSize, users);
+        }
+
         public async Task<IList<Claim>> GetClaimsAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
             const string sql = "SELECT ClaimType, ClaimValue FROM UserClaims WHERE UserId = @userId";
@@ -195,7 +235,7 @@ namespace BikeHub.Service
         public async Task<string> GetUserIdAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
             const string sql = @"
-                SELECT top 1 Id FROM Users u where [UserName] =@username";
+                SELECT top 1 * FROM Users u where [UserName] =@username";
 
             var userId = await _connection.QueryFirstOrDefaultAsync<ApplicationUser>(sql, new { @username = user.UserName });
 

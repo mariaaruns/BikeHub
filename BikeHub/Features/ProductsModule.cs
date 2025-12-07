@@ -42,7 +42,7 @@ namespace BikeHub.Features
             .Produces<ApiResponse<PagedResult<ProductsDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<string>>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
-            .WithName("GetAllProducts").RequireAuthorization();
+            .WithName("GetAllProducts");//.RequireAuthorization();
 
 
 
@@ -362,7 +362,7 @@ namespace BikeHub.Features
 
                     return Results.Ok(ApiResponse<string>.Success("Data Was Successfully"));
                 }
-                catch (Exception)
+                catch (Exception E)
                 {
                     return Results.InternalServerError(ApiResponse<string>.Fail("Data Was Not Insert"));
                 }

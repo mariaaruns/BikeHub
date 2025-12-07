@@ -6,6 +6,7 @@ using BikeHub.Shared.Dto.Response;
 using Dapper;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Data.SqlClient;
+using Npgsql;
 using System.Data;
 
 namespace BikeHub.Repository
@@ -37,8 +38,9 @@ namespace BikeHub.Repository
             };
 
 
-            using (var connection = new SqlConnection(_connection.ConnectionString))
+            using (var connection = new SqlConnection(_connection.ConnectionString)) 
             {
+                await connection.OpenAsync();
 
                 var transaction = await connection.BeginTransactionAsync();
                 try
@@ -176,14 +178,22 @@ namespace BikeHub.Repository
         {
 
             var sql = ProductQuery.GetProduct;
+            var deactivateSql = ProductQuery.deactivateProduct;
+
             bool isRowsAffected = false;
 
             try
             {
                 using (var connection = new SqlConnection(_connection.ConnectionString))
                 {
-                    int i = await connection.ExecuteAsync(sql, new { @id = id });
-                    isRowsAffected = i > 0 ? true : false;
+                    var i = await connection.QueryAsync<ProductsDto>(sql, new { @id = id });
+
+                    if (i.Count() > 0)
+                    {
+                        await connection.ExecuteAsync( deactivateSql, new { @id = id });
+                        isRowsAffected = true;
+                    }
+                    
                 }
             }
             catch (Exception)
@@ -320,6 +330,7 @@ namespace BikeHub.Repository
                         @search = string.IsNullOrEmpty(BrandNameFilter) ? null : $"%{BrandNameFilter}%"
 
                     });
+
                     return result;
                 }
 

@@ -10,7 +10,7 @@ namespace BikeHub.Features
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapGet("/getcount",async (DateTime date, [FromServices]IDashboardRepository _dashboardRepository) =>
+            app.MapGet("/getcount", async (DateTime date, [FromServices] IDashboardRepository _dashboardRepository) =>
             {
 
                 try
@@ -25,9 +25,9 @@ namespace BikeHub.Features
                     throw;
                 }
 
-                
-            }).WithTags("Dashboard")
-              .RequireAuthorization("AdminOnly");
+
+            }).WithTags("Dashboard");
+          //    .RequireAuthorization("AdminOnly");
 
             app.MapGet("/dashboardSalesAmount", async (int year,IDashboardRepository _dashboardRepository) =>
             {

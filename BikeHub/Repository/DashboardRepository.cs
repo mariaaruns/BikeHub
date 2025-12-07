@@ -3,6 +3,7 @@ using BikeHub.Repository.IRepository;
 using BikeHub.Shared.Dto.Response;
 using Dapper;
 using Microsoft.Data.SqlClient;
+using Npgsql;
 using System.Data;
 using System.Data.Common;
 
@@ -35,7 +36,7 @@ namespace BikeHub.Repository
                 throw;
             }
         }
-
+          
         public async Task<IEnumerable<SalesAmountByYearDto>> GetSalesAmountByYearAsync(int year)
         {
             try

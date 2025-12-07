@@ -1,6 +1,7 @@
 ﻿
 using BikeHub.Models;
 using BikeHub.Service;
+using BikeHub.Service.Interface;
 using BikeHub.Shared.Common;
 using BikeHub.Shared.Dto.Request;
 using BikeHub.Shared.Dto.Response;
@@ -64,7 +65,7 @@ namespace BikeHub.Features
                     {
                         var id = await userManager.GetUserIdAsync(user);
                         user.Id = int.Parse(id);
-                        await userManager.AddToRoleAsync(user, "Admin");
+                        await userManager.AddToRoleAsync(user, dto.Role);
                         return Results.Ok(ApiResponse<string>.Success("User Register Successfully"));
                     }
                     else
@@ -82,8 +83,7 @@ namespace BikeHub.Features
                 }
 
             }).WithTags("Users").DisableAntiforgery();
-
-
+            
             app.MapPost("/login", async ([FromBody] LoginDto dto,
                                         [FromServices] UserManager<ApplicationUser> userManager,
                                         [FromServices] IConfiguration config, HttpContext http) =>
@@ -153,6 +153,36 @@ namespace BikeHub.Features
                 };
 
                 return Results.Ok(ApiResponse<JwtResponse>.Success(payload));
+
+            }).WithTags("Users").DisableAntiforgery();
+
+            app.MapGet("/users", async ([AsParameters]  UsersRequestDto req, [FromServices] IApplicationUserStore<ApplicationUser> userStore) =>
+            {
+                try
+                {
+                    var IsValid = ModelValidator.Validate(req);
+
+                    if (!IsValid.IsValid)
+                    {
+                        return Results.BadRequest(ApiResponse<string>.Fail("Invalid Request", IsValid.Errors));
+                    }
+
+                    var pagedUsers = await userStore.GetAllUsersAsync(req, CancellationToken.None);
+
+                    if (pagedUsers.Data is { })
+                    {
+                        return Results.Ok(ApiResponse<PagedResult<UsersDto>>.Success(pagedUsers));
+                    }
+
+                    return Results.BadRequest(ApiResponse<string>.Fail("No users list", IsValid.Errors));
+                }
+                catch (Exception ex)
+                {
+                    return Results.InternalServerError(ApiResponse<string>.Fail("Failed to retreive users list", ex.Message));
+                    throw;
+                }
+
+
 
             }).WithTags("Users").DisableAntiforgery();
         }

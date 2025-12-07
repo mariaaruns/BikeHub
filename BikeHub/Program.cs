@@ -2,6 +2,7 @@ using BikeHub.Models;
 using BikeHub.Repository;
 using BikeHub.Repository.IRepository;
 using BikeHub.Service;
+using BikeHub.Service.Interface;
 using Carter;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -9,13 +10,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using System.Data;
 using System.Security.Claims;
 using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
-
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -24,10 +25,9 @@ builder.Services.AddTransient<IDbConnection>(sp =>new SqlConnection(builder.Conf
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IOrderRepository,OrderRepository >();
 builder.Services.AddScoped<IDashboardRepository,DashboardRepository>();
-builder.Services.AddTransient<IUserStore<ApplicationUser>, UserStore>();
+builder.Services.AddTransient<IApplicationUserStore<ApplicationUser>, UserStore>();
 builder.Services.AddTransient<IRoleStore<ApplicationRole>, RoleStore>();
-
-
+builder.Services.AddTransient<IUserStore<ApplicationUser>, UserStore>();
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
 {
@@ -38,7 +38,6 @@ builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
     options.Password.RequireLowercase = true;
     //options.User.RequireUniqueEmail = true;
 }).AddDefaultTokenProviders();
-
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
