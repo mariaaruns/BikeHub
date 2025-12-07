@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
@@ -16,4 +17,15 @@ namespace BikeHub.Shared.Dto.Response
             public string? ProductImage { get; set; }
     };
 
+    public class ProductDto1 
+    {
+      public int category_id { get; set; }
+      public string? category_name { get; set; }
+    }
+    public class productDto2
+    {
+        public int product_id { get; set; }
+        public string? product_name { get; set; }
+        public int TotalQuantity { get; set; }
+    }
 }
