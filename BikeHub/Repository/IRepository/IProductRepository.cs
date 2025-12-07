@@ -1,4 +1,5 @@
-﻿using BikeHub.Shared.Common;
+﻿using BikeHub.DapperQuery;
+using BikeHub.Shared.Common;
 using BikeHub.Shared.Dto.Request;
 using BikeHub.Shared.Dto.Response;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -30,10 +31,10 @@ namespace BikeHub.Repository.IRepository
         Task<bool> DeactivateProductAsync(int id);
 
         //CategoryDropDown
-        Task<IEnumerable<ProductDto1>> DropDownCatgoryAsync();
+        Task<IEnumerable<DropdownDto>> DropDownCatgoryAsync();
 
-        Task<IEnumerable<BrandsDto1>> DropDownBrandAsync();
+        Task<IEnumerable<DropdownDto>> DropDownBrandAsync();
 
-        Task<IEnumerable<productDto2>> DropDownStockAsync();
+        Task<IEnumerable<ProductDropdownDto>> DropDownProductAndStockAsync(int brandId,int categoryId);
     }
 }

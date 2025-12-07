@@ -71,11 +71,16 @@ namespace BikeHub.DapperQuery
         
         public const string DeleteById = @"update  production.brands set Isactive=0 where brand_id=@id";
 
-        public const string CategoryDropDown = @"select category_id,category_name from production.categories";
+        public const string CategoryDropDown = @"select category_id [Value],category_name[Text] from production.categories";
 
-        public const string BrandDropDown = @"select brand_id, brand_name from production.brands";
+        public const string BrandDropDown = @"select brand_id [Value], brand_name [Text] from production.brands";
 
-        public const string ProductDropDown = @"select t1.product_id,t1.product_name,sum(t2.quantity) As TotalQuantity from production.products t1 join production.stocks t2 on t1.product_id=t2.product_id  group by t1.product_id,t1.product_name;";
+
+        public const string ProductDropDown = @"select t1.product_id [ProductId],t1.product_name [ProductName],quantity [StockQty],list_price [Price] from production.products t1
+                                                inner join production.brands t2 on t1.brand_id=t2.brand_id
+                                                inner join production.categories t3 on t1.category_id=t3.category_id
+                                                inner join (select * from production.stocks where store_id=1) t4 on t1.product_id=t4.product_id
+                                                where t1.brand_id=@brandId and t1.category_id=@categoryId";
     }
 }
 

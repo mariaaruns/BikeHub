@@ -377,7 +377,7 @@ namespace BikeHub.Repository
             }
         }
 
-        public async Task<IEnumerable<ProductDto1>> DropDownCatgoryAsync()
+        public async Task<IEnumerable<DropdownDto>> DropDownCatgoryAsync()
         {
             try
             {
@@ -385,7 +385,7 @@ namespace BikeHub.Repository
 
                 using (var Connection = new SqlConnection(_connection.ConnectionString))
                 {
-                    var FinalResult = await _connection.QueryAsync<ProductDto1>(query);
+                    var FinalResult = await _connection.QueryAsync<DropdownDto>(query);
 
                     return FinalResult.ToList();
                 }
@@ -397,7 +397,7 @@ namespace BikeHub.Repository
             }
         }
 
-        public async Task<IEnumerable<BrandsDto1>> DropDownBrandAsync()
+        public async Task<IEnumerable<DropdownDto>> DropDownBrandAsync()
         {
             try
             {
@@ -406,7 +406,7 @@ namespace BikeHub.Repository
                 using (var connection = new SqlConnection(_connection.ConnectionString))
                 {
 
-                    var ResultSet = await _connection.QueryAsync<BrandsDto1>(query);
+                    var ResultSet = await _connection.QueryAsync<DropdownDto>(query);
 
                     return ResultSet;
 
@@ -419,14 +419,17 @@ namespace BikeHub.Repository
             }
         }
 
-        public async Task<IEnumerable<productDto2>> DropDownStockAsync()
+        public async Task<IEnumerable<ProductDropdownDto>> DropDownProductAndStockAsync(int brandId, int categoryId)
         {
             try
             {
                 var query = ProductQuery.ProductDropDown;
                 using(var connection = new SqlConnection(_connection.ConnectionString))
                 {
-                    var results = await _connection.QueryAsync<productDto2>(query);
+                    var results = await _connection.QueryAsync<ProductDropdownDto>(query,new {
+                         brandId,
+                         categoryId
+                    });
                     return results;
                 }                                           
             }
