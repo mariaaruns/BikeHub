@@ -21,9 +21,9 @@ public partial class ProductsPage : ContentPage
 		base.OnAppearing();
         if (_ProductsLoaded) return;
         _ProductsLoaded = true;
-        if (_vm?.LoadProductCommand is not null && _vm.LoadProductCommand.CanExecute(null))
+        if (_vm?.LoadAllDataCommand is not null && _vm.LoadAllDataCommand.CanExecute(null))
         {
-            await _vm.LoadProductCommand.ExecuteAsync(null);
+            await _vm.LoadAllDataCommand.ExecuteAsync(null);
         }
 
     }
@@ -32,9 +32,9 @@ public partial class ProductsPage : ContentPage
     {
         base.OnDisappearing();
        
-        if (_vm?.LoadProductCommand is not null && _vm.LoadProductCommand.IsRunning)
+        if (_vm?.LoadAllDataCommand is not null && _vm.LoadAllDataCommand.IsRunning)
         {
-            _vm.LoadProductCommand.Cancel();
+            _vm.LoadAllDataCommand.Cancel();
         }
     }
 

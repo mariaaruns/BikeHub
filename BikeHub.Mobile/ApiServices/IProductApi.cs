@@ -14,6 +14,11 @@ namespace BikeHub.Mobile.ApiServices
     {
 
         [Post("/products")]
-        Task<res.ApiResponse<res.PagedResult<ProductsDto>>> GetProducts(GetProductsDto dto, CancellationToken cancellationToken);
+        Task<res.ApiResponse<res.PagedResult<ProductsDto>>> GetProductsAsync(GetProductsDto dto, CancellationToken cancellationToken);
+
+        [Get("/GetAllBrand")]
+        Task<res.ApiResponse<IEnumerable<BrandsDto>>> GetAllBrandsAsync(string? BrandNameFilter,CancellationToken cancellationToken);
+        [Get("/GetCategory")]
+        Task<res.ApiResponse<IEnumerable<CategoryDto>>> GetAllCategoriesAsync(string? BrandNameFilter, CancellationToken cancellationToken);
     }
 }

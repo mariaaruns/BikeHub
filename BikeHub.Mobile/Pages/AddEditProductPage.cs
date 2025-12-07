@@ -6,10 +6,16 @@ namespace BikeHub.Mobile.Pages;
 
 public class AddEditProductPage : ContentPage
 {
+    private readonly AddEditProductViewModel _vm;
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+       
+    }
     public AddEditProductPage (AddEditProductViewModel viewModel)
     {
         
-        this.BindingContext = viewModel;
+        this.BindingContext = _vm=viewModel;
         this.SetBinding(TitleProperty, new Binding(nameof(viewModel.PageTitle)));
         var glossyOrange = new LinearGradientBrush
         {
