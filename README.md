@@ -92,7 +92,7 @@ Visual Studio 2022+
 
 🔮 Future Enhancements
 
-📱 Mobile app (Flutter)
+📱 Mobile & web app (will planning to develop Flutter and angular or blazor)
 
 🔔 Service status notifications
 
