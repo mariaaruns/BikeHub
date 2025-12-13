@@ -1,4 +1,4 @@
-🚲 BikeHub
+🚲 BikeHub (hobby project)
 
 BikeHub is a .NET-based bike store and service management system designed for internal business use.
 It helps manage bikes, customers, inventory, service orders, and staff operations in a single platform.
