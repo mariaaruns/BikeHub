@@ -1,0 +1,83 @@
+﻿using BikeHub.Repository.IRepository;
+using BikeHub.Shared.Common;
+using BikeHub.Shared.Dto.Response;
+using Carter;
+using Microsoft.AspNetCore.Mvc;
+namespace BikeHub.Features
+{
+    public class CommonModule : ICarterModule
+    {
+        public void AddRoutes(IEndpointRouteBuilder app)
+        {
+
+            app.MapGet("/Dropdown", async (string type, IProductRepository productRepository,IOrderRepository orderRepository) =>
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(type))
+                    {
+
+                        return Results.BadRequest(ApiResponse<string>.Fail("Dropdown type is required"));
+                    }
+
+                    IEnumerable<DropdownDto> result;
+
+                    switch (type.ToLower())
+                    {
+
+                        case "category":
+                            result = await productRepository.DropDownCatgoryAsync();
+                            break;
+                        case "brand":
+                            result = await productRepository.DropDownBrandAsync();
+                            break;
+                        case "orderstatus":
+                             result=await orderRepository.GetOrderStatusDropdownAsync();
+                            break;
+
+                        default:
+                            return Results.BadRequest(ApiResponse<string>.Fail("Invalid Type"));
+                    }
+
+
+                    if (result == null)
+                    {
+                        return Results.NotFound(ApiResponse<string>.Fail("Data was not Found"));
+                    }
+
+                    return Results.Ok(ApiResponse<IEnumerable<DropdownDto>>.Success(result, "Data Was Successfully Fetch"));
+                }
+                catch (Exception ex)
+                {
+                    return Results.InternalServerError(ApiResponse<string>.Fail("InternalServerError"));
+                }
+            }).WithTags("DropDownList")
+            .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
+
+
+            app.MapGet("/ProductAndStockDropDown", async (int brandId, int categoryId, [FromServices] IProductRepository respo) =>
+            {
+                try
+                {
+                    var result = await respo.DropDownProductAndStockAsync(brandId, categoryId);
+
+                    if (result == null)
+                    {
+                        return Results.NotFound(ApiResponse<string>.Fail("Data was not found"));
+                    }
+                    return Results.Ok(ApiResponse<IEnumerable<ProductDropdownDto>>.Success(result, "Data was successfully fetched"));
+                }
+                catch (Exception ex)
+                {
+                    return Results.InternalServerError(ApiResponse<string>.Fail("InternalServer error"));
+                }
+
+            }).WithTags("DropDownList")
+              .Produces<ApiResponse<string>>(StatusCodes.Status400BadRequest)
+              .Produces<ApiResponse<string>>(StatusCodes.Status404NotFound)
+              .Produces<ApiResponse<IEnumerable<ProductDropdownDto>>>(StatusCodes.Status404NotFound);
+
+        }
+    }
+}

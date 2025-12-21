@@ -1,4 +1,4 @@
-﻿namespace BikeHub.DapperQuery
+﻿namespace BikeHub.Shared.Dto.Response
 {
     public class DropdownDto
     {

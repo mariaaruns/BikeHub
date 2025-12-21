@@ -146,7 +146,7 @@ namespace BikeHub.Repository
 
             using (var connection = new SqlConnection(_connection.ConnectionString))
             {
-
+                await connection.OpenAsync();
                 var transaction = await connection.BeginTransactionAsync();
                 try
                 {

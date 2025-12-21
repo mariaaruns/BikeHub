@@ -27,7 +27,7 @@ namespace BikeHub.DapperQuery
                                                       order by t1.CreatedAt desc
                                                       OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;";
         public const string CreateProduct = @"insert into production.products
-                                               values(@productName,@brandId,@categoryId,@modelyear,@listprice,@productImage,getdate());select SCOPE_IDENTITY();";
+                                               values(@productName,@brandId,@categoryId,@modelyear,@listprice,@productImage,getdate(),1);select SCOPE_IDENTITY();";
         public const string AddProductStock = @"insert into production.stocks values(1,@productId,@stockQty)";
         public const string GetProduct = @"select t1.product_id[ProductId],
                                             t1.brand_id[BrandId],

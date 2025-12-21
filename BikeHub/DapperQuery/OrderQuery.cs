@@ -58,11 +58,11 @@
                                             where order_id=@OrderId";
         
         public const string GetOrderStatusLookup = @"
-                            select Id,Value from t000_lookup where LookupName='OrderStatus'";
+                            select Id [Value],Value [Text] from t000_lookup where LookupName='OrderStatus'";
 
         public const string AddOrder = @"INSERT INTO sales.orders
                                          (customer_id,order_status,order_date,required_date,shipped_date,store_id,staff_id)
-                                         VALUES (@CustomerId,@OrderStatus,@OrderDate,@RequiredDate,@ShippedDate,@StoreId,@StaffId);
+                                         VALUES (@CustomerId,@OrderStatus,@OrderDate,@RequiredDate,@ShippedDate,1,@StaffId);
                                          SELECT CAST(SCOPE_IDENTITY() as int);";
 
         public const string AddOrderItems = @"INSERT INTO sales.order_items

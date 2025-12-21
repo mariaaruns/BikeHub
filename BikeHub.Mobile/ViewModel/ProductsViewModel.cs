@@ -201,7 +201,12 @@ namespace BikeHub.Mobile.ViewModel
                 "Yes", "No");
 
             if (confirm && Categories.Contains(category))
+            {
+               var result= await _productApi.DeleteCategoryByIdAsync(category.CategoryId,CancellationToken.None);
+                if(result.Status)
                 Categories.Remove(category);
+
+            }
         }
 
 
@@ -209,10 +214,7 @@ namespace BikeHub.Mobile.ViewModel
         [RelayCommand]
         public async Task GotoAddProductAsync(ProductsDto? dto)
         {
-
-
             await Shell.Current.GoToAsync($"{nameof(AddEditProductPage)}?productId={dto?.ProductId}");
-
         }
 
 
@@ -221,17 +223,13 @@ namespace BikeHub.Mobile.ViewModel
         {
 
             await Shell.Current.GoToAsync($"{nameof(AddEditBrand)}?brandId={dto?.BrandId}");
-
         }
-
 
         [RelayCommand]
         public async Task GotoAddCategory(CategoryDto? dto)
         {
-            await Shell.Current.GoToAsync($"{nameof(AddEditCategory)}?categoryId={dto?.CategoryId}");
+            await Shell.Current.GoToAsync($"{nameof(AddEditCategory)}?categoryId={dto?.CategoryId}&categoryName={dto?.CategoryName}");
         }
-
-
 
         [RelayCommand]
         public async Task LoadProductAsync(CancellationToken cancellationToken)
@@ -306,8 +304,6 @@ namespace BikeHub.Mobile.ViewModel
             }
         }
 
-
-
         [RelayCommand]
         public async Task LoadBrandAsync(CancellationToken cancellationToken)
         {
@@ -378,9 +374,6 @@ namespace BikeHub.Mobile.ViewModel
                 IsBrandRefreshing = false;
             }
         }
-
-
-
 
         [RelayCommand]
         public async Task LoadCategoryAsync(CancellationToken cancellationToken)

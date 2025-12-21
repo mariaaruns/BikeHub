@@ -252,7 +252,7 @@ namespace BikeHub.Features
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
             .WithName("CategoryProduct");
 
-            app.MapGet("GetCategory", async (IProductRepository repo,string? CategoryNameFilter) =>
+            app.MapGet("/GetCategory", async (IProductRepository repo,string? CategoryNameFilter) =>
             {
                 try
                 {
@@ -420,7 +420,7 @@ namespace BikeHub.Features
             .Produces<ApiResponse<BrandsDto>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<BrandsDto>>(StatusCodes.Status500InternalServerError);
 
-            app.MapPut("/DeleteByIdBrand", async (IProductRepository repos, int Id) =>
+            app.MapPut("/DeleteBrandById", async (IProductRepository repos, int Id) =>
             {
                 try
                 {
@@ -436,66 +436,6 @@ namespace BikeHub.Features
             .DisableAntiforgery()
             .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
-
-            app.MapGet("/Dropdown", async (string type,IProductRepository respo) =>
-            {
-                try
-                {
-                    if (string.IsNullOrEmpty(type)) { 
-                            
-                        return Results.BadRequest(ApiResponse<string>.Fail("Dropdown type is required"));
-                    }
-
-                    IEnumerable<DropdownDto> result;
-                    
-                    switch (type.ToLower()) { 
-                    
-                        case "category":
-                                result= await respo.DropDownCatgoryAsync();
-                            break;
-                        case "brand":
-                            result= await respo.DropDownBrandAsync();
-                            break;
-
-                        default:
-                            return Results.BadRequest(ApiResponse<string>.Fail("Invalid Type"));
-                    }
-
-                    
-                    if(result == null)
-                    {
-                        return Results.NotFound(ApiResponse<string>.Fail("Data was not Found"));
-                    }
-
-                    return Results.Ok(ApiResponse<IEnumerable<DropdownDto>>.Success(result,"Data Was Successfully Fetch"));
-                }
-                catch (Exception ex)
-                {
-                    return Results.InternalServerError(ApiResponse<string>.Fail("InternalServerError"));
-                }
-            }).WithTags("DropDownList")
-            .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
-
-
-            app.MapGet("ProductAndStockDropDown", async (int brandId, int categoryId, [FromServices] IProductRepository respo) =>
-            {
-                try
-                {
-                    var result = await respo.DropDownProductAndStockAsync(brandId,categoryId);
-
-                    if (result==null)
-                    {
-                        return Results.NotFound(ApiResponse<string>.Fail("Data was not found"));
-                    }
-                    return Results.Ok(ApiResponse<IEnumerable<ProductDropdownDto>>.Success(result,"Data was successfully fetched"));
-                }
-                catch (Exception ex)
-                {
-                    return Results.InternalServerError(ApiResponse<string>.Fail("InternalServer error"));
-                }               
-            }).WithTags("DropDownList");
-            
 
             
         }

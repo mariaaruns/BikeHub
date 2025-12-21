@@ -64,17 +64,18 @@ namespace BikeHub.Repository
 
         }
 
-        public async Task<bool> AddOrder(AddOrderRequest req)
+        public async Task<bool> AddOrderAsync(AddOrderRequest req)
         {
             bool isSuccess = false;
             try
             {
-                var AddOrderSql =OrderQuery.AddOrder;
+                var AddOrderSql = OrderQuery.AddOrder;
                 var OrderItemsSql = OrderQuery.AddOrderItems;
 
                 using (var connection = new SqlConnection(_dbConnection.ConnectionString))
                 {
-                    var transaction = connection.BeginTransaction();
+                    await connection.OpenAsync();
+                    var transaction = await connection.BeginTransactionAsync();
                     try
                     {
                         var lastInsertedOrderId = await connection.QuerySingleAsync<int>(AddOrderSql, new
@@ -85,6 +86,7 @@ namespace BikeHub.Repository
                             req.RequiredDate,
                             req.ShippedDate,
                             req.StaffId
+                            
                         }, commandType: CommandType.Text, transaction: transaction);
 
                         int serialNo = 0;
@@ -97,8 +99,10 @@ namespace BikeHub.Repository
                                 OrderId = lastInsertedOrderId,
                                 item.ProductId,
                                 item.Quantity,
-                                item.UnitPrice,
-                                item.Discount
+                                @ListPrice=item.UnitPrice,
+                                item.Discount,
+                                
+                                
                             }, commandType: CommandType.Text, transaction: transaction);
                         }
 
@@ -123,16 +127,16 @@ namespace BikeHub.Repository
 
         }
 
-        public async Task<bool> UpdateOrderStatus(string staus)
+        public async Task<bool> UpdateOrderStatusAsync(UpdateOrderStatusDto dto)
         {
             var sql = OrderQuery.UpdateOrderStatus;
             int isRowAffected = 0;
-            
+
             try
             {
                 using (var connection = new SqlConnection(_dbConnection.ConnectionString))
-                { 
-                  isRowAffected=  await connection.ExecuteAsync(sql, new { staus }, commandType: CommandType.Text);   
+                {
+                    isRowAffected = await connection.ExecuteAsync(sql, new { @OrderStatus=dto.OrderStatusId, @OrderId=dto.OrderId }, commandType: CommandType.Text);
                 }
             }
             catch (Exception)
@@ -145,8 +149,79 @@ namespace BikeHub.Repository
 
         }
 
+        public async Task<IEnumerable<DropdownDto>> GetOrderStatusDropdownAsync()
+        {
+            var sql = OrderQuery.GetOrderStatusLookup;
+            try
+            {
+                using (var connection = new SqlConnection(_dbConnection.ConnectionString))
+                {
+                    var result = await connection.QueryAsync<DropdownDto>(sql);
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
 
+        public async Task<IEnumerable<OrderDetailsDto>> GetOrderDetailsAsync(int OrderId)
+        {
+            var sql = OrderQuery.GetOrderDetailByOrderId;
+            try
+            {
 
-        
+                using (var connection = new SqlConnection(_dbConnection.ConnectionString))
+                {
+                    var result = await connection.QueryAsync<OrderItemFlatDto>(sql, new { @OrderId=OrderId });
+
+                    var GroupedResult = result
+                            .GroupBy(o => new { o.OrderId,
+                                o.StaffId,
+                                o.StoreId,
+                                o.RequiredDate,
+                                o.ShippedDate,
+                                o.OrderDate,
+                                o.OrderStatus,
+                                o.Image,
+                                o.CustomerId,
+                                o.CustomerName,
+                                o.Email,
+                                o.Phone })
+                            .Select(g => new OrderDetailsDto
+                             {
+                                 OrderId=g.Key.OrderId,
+                                 OrderStatus=g.Key.OrderStatus,
+                                 CustomerId=g.Key.CustomerId,
+                                 OrderDate=g.Key.OrderDate,
+                                 RequiredDate=g.Key.RequiredDate,
+                                 ShippedDate=g.Key.ShippedDate,
+                                 StoreId=g.Key.StoreId,
+                                 StaffId=g.Key.StaffId,
+                                 CustomerName=g.Key.CustomerName,
+                                 Email=g.Key.Email,
+                                 Phone=g.Key.Phone,
+                                 Image=g.Key.Image,
+                                 OrderItems=g.Select(oi=>new OrderItemDetail
+                                 {
+                                     ItemId=oi.ItemId,
+                                     ProductId=oi.ProductId,
+                                     Quantity=oi.Quantity,
+                                     ListPrice=oi.ListPrice,
+                                     ProductName=oi.ProductName
+                                 }).ToArray()
+
+                             });
+
+                    return GroupedResult;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
     }
 }

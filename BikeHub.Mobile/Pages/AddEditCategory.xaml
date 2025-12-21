@@ -7,7 +7,7 @@ xmlns:controls="clr-namespace:BikeHub.Mobile.Controls"
 xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
 xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
 xmlns:conv="clr-namespace:BikeHub.Mobile.Converters"
-x:DataType="vm:ProductsViewModel"
+x:DataType="vm:AddEditCategoryViewModel"
              Title="{Binding PageTitle}">
 
 
@@ -18,7 +18,7 @@ x:DataType="vm:ProductsViewModel"
 
                 <Label Text="Category" FontAttributes="Bold" FontSize="20"/>
                 <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
-                    <controls:NoUnderlineEntry Placeholder="Category Name"/>
+                    <controls:NoUnderlineEntry Placeholder="Category Name" Text="{Binding CategoryName,Mode=TwoWay}"/>
                 </Border>
 
 
@@ -27,7 +27,7 @@ x:DataType="vm:ProductsViewModel"
 
         </ScrollView>
 
-        <Button Text="+"
+        <Button ImageSource="save.png"
       WidthRequest="60"
       HeightRequest="60"
       CornerRadius="30"
@@ -39,7 +39,7 @@ x:DataType="vm:ProductsViewModel"
       AbsoluteLayout.LayoutFlags="PositionProportional"
       TranslationX="-20"
       TranslationY="-20"
-      Command="{Binding GotoAddCustomerCommand}"/>
+      Command="{Binding SaveCommand}"/>
 
 
     </AbsoluteLayout>

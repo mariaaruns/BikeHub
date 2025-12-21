@@ -48,6 +48,8 @@ namespace BikeHub.Features
                     throw;
                 }
             }).WithTags("Dashboard");
+       
+        
         }
     }
 }
