@@ -138,7 +138,7 @@ namespace BikeHub.Service
         public async Task<PagedResult<UsersDto>> GetAllUsersAsync(UsersRequestDto dto, CancellationToken cancellationToken)
         {
             const string sql = @"
-                SELECT u.Id AS UserId, 
+                SELECT u.Id AS UserId, u.FirstName,u.LastName,
                        (u.FirstName + ' ' + u.LastName) AS FullName, 
                        r.Name AS Role, 
                        CASE WHEN u.LockoutEnd IS NULL OR u.LockoutEnd < GETDATE() THEN 1 ELSE 0 END AS IsActive,
@@ -147,14 +147,14 @@ namespace BikeHub.Service
                 LEFT JOIN UserRoles ur ON u.Id = ur.UserId
                 LEFT JOIN Roles r ON ur.RoleId = r.Id
                 WHERE (@SearchName IS NULL OR (u.FirstName + ' ' + u.LastName) LIKE '%' + @SearchName + '%')
-                  AND (@SearchRole IS NULL OR r.Name = @SearchRole)
+                  AND (@SearchRole IS NULL OR @SearchRole='' OR  r.Name = @SearchRole)
                 ORDER BY u.Id
                 OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
                 SELECT COUNT(*) FROM Users u
                 LEFT JOIN UserRoles ur ON u.Id = ur.UserId
                 LEFT JOIN Roles r ON ur.RoleId = r.Id
                 WHERE (@SearchName IS NULL OR (u.FirstName + ' ' + u.LastName) LIKE '%' + @SearchName + '%')
-                  AND (@SearchRole IS NULL OR r.Name = @SearchRole);";
+                  AND (@SearchRole IS NULL OR @SearchRole='' OR r.Name = @SearchRole);";
 
             var offset = (dto.PageNumber - 1) * dto.PageSize;
             using var multi = await _connection.QueryMultipleAsync(sql, new
@@ -210,10 +210,7 @@ namespace BikeHub.Service
 
         public Task<string?> GetPasswordHashAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-              
-        
             return Task.FromResult(user.PasswordHash);
-        
         }
 
         public async Task<IList<string>> GetRolesAsync(ApplicationUser user, CancellationToken cancellationToken)
@@ -222,7 +219,6 @@ namespace BikeHub.Service
                 SELECT r.Name FROM Roles r
                 INNER JOIN UserRoles ur ON r.Id = ur.RoleId
                 WHERE ur.UserId = @userId";
-
             var roles = await _connection.QueryAsync<string>(sql, new { userId = user.Id });
             return roles.ToList();
         }
@@ -234,8 +230,7 @@ namespace BikeHub.Service
 
         public async Task<string> GetUserIdAsync(ApplicationUser user, CancellationToken cancellationToken)
         {
-            const string sql = @"
-                SELECT top 1 * FROM Users u where [UserName] =@username";
+            const string sql = @"SELECT top 1 * FROM Users u where [UserName] = @username";
 
             var userId = await _connection.QueryFirstOrDefaultAsync<ApplicationUser>(sql, new { @username = user.UserName });
 
@@ -253,13 +248,18 @@ namespace BikeHub.Service
 
         public async Task<IList<ApplicationUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
         {
-            const string sql = @"
-                SELECT u.* FROM Users u
-                INNER JOIN UserClaims uc ON u.Id = uc.UserId
-                WHERE uc.ClaimType = @ClaimType AND uc.ClaimValue = @ClaimValue";
+            const string sql = @"SELECT u.* FROM Users u
+                                 INNER JOIN UserClaims uc ON u.Id = uc.UserId
+                                 WHERE uc.ClaimType = @ClaimType AND uc.ClaimValue = @ClaimValue";
 
-            var users = await _connection.QueryAsync<ApplicationUser>(sql, new { ClaimType = claim.Type, ClaimValue = claim.Value });
+
+            var users = await _connection.QueryAsync<ApplicationUser>(sql, 
+                new { ClaimType = claim.Type, 
+                    ClaimValue = claim.Value }
+            );
+
             return users.ToList();
+
         }
 
         public async Task<IList<ApplicationUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
@@ -271,6 +271,7 @@ namespace BikeHub.Service
                 WHERE r.NormalizedName = @roleName";
 
             var users = await _connection.QueryAsync<ApplicationUser>(sql, new { roleName });
+
             return users.ToList();
         }
 

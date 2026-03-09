@@ -1,71 +1,89 @@
 using BikeHub.Mobile.Controls;
 using BikeHub.Mobile.ViewModel;
+using CommunityToolkit.Maui.Markup;
+using static CommunityToolkit.Maui.Markup.GridRowsColumns;
 using System.Net.Mime;
-
+using System.Collections.ObjectModel;
+using BikeHub.Shared.Dto.Response;
 namespace BikeHub.Mobile.Pages;
 
 public class AddEditProductPage : ContentPage
 {
     private readonly AddEditProductViewModel _vm;
-    protected override void OnAppearing()
+
+    public AddEditProductPage(AddEditProductViewModel viewModel)
+    {
+        _vm = viewModel;
+        BindingContext = _vm;
+
+        this.Bind(TitleProperty, nameof(_vm.PageTitle));
+
+        Content = new ScrollView
+        {
+            Content = new VerticalStackLayout
+            {
+                Spacing = 15,
+                Margin = new Thickness(10, 5),
+
+                Children =
+                    {
+                            BuildProfileImage(),
+
+                            CreateLabel("Product Name"),
+                            CreateEntryFrame("Product Name", nameof(_vm.ProductName)),
+
+                            CreateLabel("Price"),
+                            CreateEntryFrame("Price", nameof(_vm.Price)),
+
+                            CreateLabel("Quantity"),
+                            CreateEntryFrame("Quantity", nameof(_vm.Quantity)),
+
+                            CreateLabel("Model Year"),
+                            CreateModelYearPickerFrame("ModelYear",nameof(_vm.SelectedModelYear),_vm.ModelyearList),
+
+                            CreateLabel("Brand"),
+                            CreatePickerFrame("Select Brand", nameof(_vm.SelectedBrand), _vm.BrandList),
+
+                            CreateLabel("Category"),
+                            CreatePickerFrame("Select Category", nameof(_vm.SelectedCategory), _vm.CategoryList),
+
+                            new Button{
+                            Text="SAVE",BackgroundColor=Colors.Orange,
+                            Command=_vm.SaveProductCommand
+                            }
+
+
+                    }
+            }
+        };
+            
+    }
+
+
+    protected  override  async void OnAppearing()
     {
         base.OnAppearing();
-       
+        if (_vm.LoadDropDownCommand is not null && 
+            _vm.LoadDropDownCommand.CanExecute(null)) 
+        { 
+                await _vm.LoadDropDownCommand.ExecuteAsync(null);
+        }
     }
-    public AddEditProductPage (AddEditProductViewModel viewModel)
+
+    private View BuildProfileImage()
     {
-        
-        this.BindingContext = _vm=viewModel;
-        this.SetBinding(TitleProperty, new Binding(nameof(viewModel.PageTitle)));
-        var glossyOrange = new LinearGradientBrush
-        {
-            StartPoint = new Point(0, 0),
-            EndPoint = new Point(0, 1),
-            GradientStops = new GradientStopCollection
-    {
-        new GradientStop(Color.FromRgb(255, 200, 100), 0.0f), // bright top
-        new GradientStop(Color.FromRgb(255, 140, 0), 0.5f),   // mid tone
-        new GradientStop(Color.FromRgb(200, 80, 0), 1.0f)     // darker bottom
-    }
-        };
+        var glossyOrange = new LinearGradientBrush(
+            new GradientStopCollection
+            {
+            new( Color.FromRgb(255, 200, 100), 0f ),
+            new( Color.FromRgb(255, 140, 0),   0.5f ),
+            new( Color.FromRgb(200, 80, 0),    1f )
+            },
+            new Point(0, 0),
+            new Point(0, 1)
+        );
 
-        var imageGrid = new Grid
-        {
-            HeightRequest = 150,
-            WidthRequest = 150
-        };
-
-        // Product Image
-        var productImage = new Image
-        {
-            Aspect = Aspect.AspectFill,
-            HeightRequest = 150,
-            WidthRequest = 150
-        };
-        productImage.SetBinding(Image.SourceProperty, nameof(viewModel.ProductImage));
-
-        // Upload Icon Button (overlay)
-        var uploadIconBtn = new ImageButton
-        {
-            Source = "pencil.png", // your camera/upload icon image
-            //BackgroundColor = Colors.LightGray,
-            Background = glossyOrange,
-            BorderWidth =1,
-            BorderColor = Color.FromRgb(180, 60, 0),
-            CornerRadius = 0,
-            WidthRequest = 150,
-            HeightRequest = 10,
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.End,
-        };
-        uploadIconBtn.SetBinding(ImageButton.CommandProperty, nameof(viewModel.UploadPhotoCommand));
-
-        // Add both to grid (image first, then button overlay)
-        imageGrid.Children.Add(productImage);
-        imageGrid.Children.Add(uploadIconBtn);
-
-        // Frame for circular border
-        var profileFrame = new Frame
+        return new Frame
         {
             HeightRequest = 150,
             WidthRequest = 150,
@@ -74,45 +92,141 @@ public class AddEditProductPage : ContentPage
             HasShadow = false,
             Padding = 0,
             HorizontalOptions = LayoutOptions.Center,
-            Content = imageGrid
-        };
 
-        Content = new ScrollView
-        {
-            Content = new VerticalStackLayout
+            Content = new Grid
             {
-                Spacing = 15,
-                Margin = new Thickness(10, 5),
                 Children =
             {
-                profileFrame,
-                
+                new Image
+                {
+                    Aspect = Aspect.AspectFill,
+                    HeightRequest = 150,
+                    WidthRequest = 150
+                }
+              .Bind(Image.SourceProperty, nameof(_vm.ProductImage)),
 
-                CreateLabel("Product Name"),
-                CreateEntryFrame("Product Name", nameof(viewModel.ProductName)),
-
-                CreateLabel("Price"),
-                CreateEntryFrame("Price", nameof(viewModel.Price)),
-
-                CreateLabel("Quantity"),
-                CreateEntryFrame("Quantity", nameof(viewModel.Quantity)),
-
-
-                
-                CreateLabel("Brand"),
-                CreatePickerFrame("Select Brand", nameof(viewModel.SelectedBrand), viewModel.BrandList),
-                
-                CreateLabel("Category"),
-                CreatePickerFrame("Select Category", nameof(viewModel.SelectedCategory), viewModel.CategoryList)
+                new ImageButton
+                {
+                    Source = "pencil.png",
+                    Background = glossyOrange,
+                    BorderWidth = 1,
+                    BorderColor = Color.FromRgb(180, 60, 0),
+                    WidthRequest = 150,
+                    HeightRequest = 30,
+                    VerticalOptions = LayoutOptions.End
+                }
+                .BindCommand(nameof(_vm.UploadPhotoCommand))
             }
             }
         };
+    }
+    private View CreateEntryFrame(string placeholder, string bindingProperty)
+    {
+        return new Frame
+        {
+            BorderColor = Colors.LightGray,
+            CornerRadius = 10,
+            Padding = new Thickness(10, 0),
+            HasShadow = false,
+            HorizontalOptions = LayoutOptions.Fill,
 
-
-
-
+            Content = new NoUnderlineEntry
+            {
+                Placeholder = placeholder
+            }
+            .Bind(Entry.TextProperty, bindingProperty)
+        };
     }
 
+    private View CreatePickerFrame(string title, string bindingProperty, ObservableCollection<DropdownDto> itemsSource)
+    {
+        return new Frame
+        {
+            BorderColor = Colors.LightGray,
+            CornerRadius = 10,
+            Padding = new Thickness(10, 0),
+            HasShadow = false,
+            HorizontalOptions = LayoutOptions.Fill,
+
+            Content = new Grid
+            {
+                ColumnDefinitions = Columns.Define(
+                   Star,
+                    Auto
+                ),
+
+                Children =
+            {
+                new NoUnderlinePicker
+                {
+                    Title = title,
+                    ItemsSource = (itemsSource ?? new ObservableCollection<DropdownDto>()),
+                    ItemDisplayBinding = new Binding("Text"),
+                    
+                }
+                .Bind(Picker.SelectedItemProperty, bindingProperty)
+                .Column(0),
+
+                new Image
+                {
+                    Source = "angle_down.png",
+                    HeightRequest = 24,
+                    WidthRequest = 24,
+                    VerticalOptions = LayoutOptions.Center
+                }
+                .Column(1)
+            }
+            }
+        };
+    }
+
+    private View CreateModelYearPickerFrame(string title, string bindingProperty, ObservableCollection<int> itemsSource)
+    {
+        return new Frame
+        {
+            BorderColor = Colors.LightGray,
+            CornerRadius = 10,
+            Padding = new Thickness(10, 0),
+            HasShadow = false,
+            HorizontalOptions = LayoutOptions.Fill,
+            Content = new Grid
+            {
+                ColumnDefinitions = Columns.Define(
+                   Star,
+                    Auto
+                ),
+                Children =
+            {
+                new NoUnderlinePicker
+                {
+                    Title = title,
+                    ItemsSource = (itemsSource ?? new ObservableCollection<int>()),
+                    
+                }
+                .Bind(Picker.SelectedItemProperty, bindingProperty)
+                .Column(0),
+                new Image
+                {
+                    Source = "angle_down.png",
+                    HeightRequest = 24,
+                    WidthRequest = 24,
+                    VerticalOptions = LayoutOptions.Center
+                }
+                .Column(1)
+            }
+            }
+        };
+    }
+    private Label CreateLabel(string text, double fontSize = 18, bool bold = true)
+    {
+        return new Label
+        {
+            Text = text,
+            FontSize = fontSize,
+            FontAttributes = bold ? FontAttributes.Bold : FontAttributes.None
+        };
+    }
+/*
     private Frame CreateEntryFrame(string placeholder, string bindingProperty)
     {
         var entry = new NoUnderlineEntry
@@ -191,5 +305,5 @@ public class AddEditProductPage : ContentPage
 
         return label;
     }
-
+*/
 }

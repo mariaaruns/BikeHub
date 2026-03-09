@@ -31,7 +31,7 @@ namespace BikeHub.Repository
                     Offset = (dto.PageNumber - 1) * dto.PageSize,
                     PageSize = dto.PageSize,
                     OrderStatus = dto.OrderStatus,
-                    OrderDate = dto.StartDate?.Date
+                    OrderDate = dto.StartDate
                 };
 
                 using (var connection = new SqlConnection(_dbConnection.ConnectionString))
@@ -166,7 +166,7 @@ namespace BikeHub.Repository
             }
         }
 
-        public async Task<IEnumerable<OrderDetailsDto>> GetOrderDetailsAsync(int OrderId)
+        public async Task<OrderDetailsDto> GetOrderDetailsAsync(int OrderId)
         {
             var sql = OrderQuery.GetOrderDetailByOrderId;
             try
@@ -212,7 +212,7 @@ namespace BikeHub.Repository
                                      ProductName=oi.ProductName
                                  }).ToArray()
 
-                             });
+                             }).FirstOrDefault();
 
                     return GroupedResult;
                 }

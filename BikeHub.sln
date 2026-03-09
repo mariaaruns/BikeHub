@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36127.28
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BikeHub", "BikeHub\BikeHub.csproj", "{CC78108A-F17A-44C4-9F05-722A5237286A}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client", "client", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BikeHub.Mobile", "BikeHub.Mobile\BikeHub.Mobile.csproj", "{0C1B05CA-AFF1-4BF8-AE38-DB89D1050C20}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bikehub.WebClient", "Bikehub.WebClient\Bikehub.WebClient.csproj", "{2A6B60BA-E97D-4A83-8B8B-DF5F7FA3096D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,17 +27,23 @@ Global
 		{0991DBBA-BD9B-4A58-92D5-BFCF49889599}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0991DBBA-BD9B-4A58-92D5-BFCF49889599}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0991DBBA-BD9B-4A58-92D5-BFCF49889599}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0C1B05CA-AFF1-4BF8-AE38-DB89D1050C20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0C1B05CA-AFF1-4BF8-AE38-DB89D1050C20}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0C1B05CA-AFF1-4BF8-AE38-DB89D1050C20}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{0C1B05CA-AFF1-4BF8-AE38-DB89D1050C20}.Debug|Any CPU.ActiveCfg = Debug|ARM64
+		{0C1B05CA-AFF1-4BF8-AE38-DB89D1050C20}.Debug|Any CPU.Build.0 = Debug|ARM64
+		{0C1B05CA-AFF1-4BF8-AE38-DB89D1050C20}.Debug|Any CPU.Deploy.0 = Debug|ARM64
 		{0C1B05CA-AFF1-4BF8-AE38-DB89D1050C20}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C1B05CA-AFF1-4BF8-AE38-DB89D1050C20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C1B05CA-AFF1-4BF8-AE38-DB89D1050C20}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{2A6B60BA-E97D-4A83-8B8B-DF5F7FA3096D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A6B60BA-E97D-4A83-8B8B-DF5F7FA3096D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A6B60BA-E97D-4A83-8B8B-DF5F7FA3096D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A6B60BA-E97D-4A83-8B8B-DF5F7FA3096D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0C1B05CA-AFF1-4BF8-AE38-DB89D1050C20} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{2A6B60BA-E97D-4A83-8B8B-DF5F7FA3096D} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B8F8AA83-0192-441D-9E02-DA70AD2641EA}

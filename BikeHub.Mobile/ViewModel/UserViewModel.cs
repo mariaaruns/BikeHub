@@ -1,6 +1,8 @@
-﻿using BikeHub.Mobile.ApiServices;
+﻿using Android.Webkit;
+using BikeHub.Mobile.ApiServices;
 using BikeHub.Mobile.Pages;
 using BikeHub.Shared.Dto.Response;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System;
@@ -16,77 +18,184 @@ namespace BikeHub.Mobile.ViewModel
     [QueryProperty(nameof(UserId), "UserId")]
     public partial class UserViewModel : ObservableObject
     {
-     
+        private readonly IUserApi _userApi;
+
+        public UserViewModel(IUserApi userApi)
+        {
+            rolestatus = new List<string> { "ALL", "Admin", "User", "Mechanic" };
+            selectedRole = "ALL";
+            _userApi = userApi;
+        }
+
+
+
         [ObservableProperty]
         private string userId;
 
-        public string PageTitle =>string.IsNullOrEmpty(UserId)
+        public string PageTitle => string.IsNullOrEmpty(UserId)
           ? "Add User"
           : "Edit User";
 
-        partial void OnUserIdChanged(string value) { 
-        
+        partial void OnUserIdChanged(string value)
+        {
+
             OnPropertyChanged(nameof(PageTitle));
         }
 
-        public ObservableCollection<UsersDto> Users { get; set; }
+        [ObservableProperty]
+        private ObservableCollection<UsersDto> _users = new();
 
         [ObservableProperty]
         private string selectedRole;
 
+
+        private CancellationTokenSource _roleChangedCts;
+        async partial void OnSelectedRoleChanged(string value)
+        {
+            if (value is not null)
+            {
+                _roleChangedCts?.Cancel();
+
+                _roleChangedCts = new CancellationTokenSource();
+
+                var token = _roleChangedCts.Token;
+
+                await Task.Delay(500, token);
+
+                Users.Clear();
+
+                _ = LoadUsersAsync(token);
+
+            }
+        }
+
+        [ObservableProperty]
+        private bool _isBusy;
+
+        [ObservableProperty]
+        private bool _isRefreshing;
+
+        [ObservableProperty]
+        private string _searchUser;
+
+        [ObservableProperty]
+        private bool _isLoadingMore;
+
+
+        private CancellationTokenSource _searchUserCts;
+        async partial void OnSearchUserChanged(string value)
+        {
+
+            try
+            {
+                if (value is not null)
+                {
+                    _searchUserCts?.Cancel();
+                    _searchUserCts = new CancellationTokenSource();
+                    var token = _searchUserCts.Token;
+                    await Task.Delay(500, token);
+
+                    Users.Clear();
+
+                    _ = LoadUsersAsync(token);
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                //igonre
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+     
+        }
+
         [ObservableProperty]
         private List<string> rolestatus;
 
-        public UserViewModel()
-        {
-            Users = new ObservableCollection<UsersDto>
-        {
-            new UsersDto { UserId = 1, FullName = "John Doe", Role = "Admin", Image = "man.png" ,IsActive=true},
-            new UsersDto { UserId = 2, FullName = "Jane Smith", Role = "Manager", Image = "woman.png",IsActive=true },
-            new UsersDto { UserId = 3, FullName = "Michael Johnson", Role = "Employee", Image = "man.png",IsActive=true },
-            new UsersDto { UserId = 4, FullName = "Emily Davis", Role = "Employee", Image = "woman.png",IsActive=true },
-            new UsersDto { UserId = 5, FullName = "William Brown", Role = "Manager", Image = "man.png" ,IsActive=false},
-            new UsersDto { UserId = 6, FullName = "Olivia Wilson", Role = "Employee", Image = "woman.png",IsActive=false },
-            new UsersDto { UserId = 7, FullName = "James Taylor", Role = "Admin", Image = "man.png" , IsActive = true},
-            new UsersDto { UserId = 8, FullName = "Sophia Martinez", Role = "Employee", Image = "woman.png",IsActive=true },
-            new UsersDto { UserId = 9, FullName = "Benjamin Anderson", Role = "Manager", Image = "man.png",IsActive=false },
-            new UsersDto { UserId = 10, FullName = "Ava Thomas", Role = "Employee", Image = "woman.png",IsActive=true }
-        };
-
-            rolestatus = new List<string> { "ALL", "Admin", "Manager", "Employee" };
-        }
-
 
         [RelayCommand]
-        private void RoleChanged(object selectedItem) 
-        {
-
-
-            if (selectedItem != null)
-            {
-                SelectedRole= selectedItem.ToString();
-            }
-
-        }
-
-        [RelayCommand]
-        public async Task GotoAddUser()
+        public async Task GotoAddUserAsync()
         {
 
             await Shell.Current.GoToAsync(nameof(AddEditUsers));
 
         }
 
+
+        private int _currentPage = 1;
+        private int _pageSize = 20;
         [RelayCommand]
-        public async Task RoleChipsChanged(object obj)
+        public async Task LoadUsersAsync(CancellationToken cancellationToken)
         {
-            if (obj is string role)
+
+            try
             {
-                SelectedRole = role;
-                // Optional: Add your logic here (API call, filter, etc.)
-                await Application.Current.MainPage.DisplayAlert("Role Changed", $"Selected: {SelectedRole}", "OK");
+                if (IsLoadingMore) return;
+
+                IsLoadingMore = true;
+
+                var requestDto = new Shared.Dto.Request.UsersRequestDto
+                {
+                    SearchRole = SelectedRole == "ALL" ? string.Empty : SelectedRole,
+                    SearchName = SearchUser ?? string.Empty,
+                    PageNumber = _currentPage,
+                    PageSize = _pageSize
+                };
+
+                var result = await _userApi.GetUsersAsync(requestDto, cancellationToken);
+                if (result?.Data?.Data == null)
+                {
+                    return;
+                }
+
+                if (result != null && result.Status && result.Data != null)
+                {
+                    foreach (var user in result?.Data?.Data)
+                    {
+                        Users.Add(user);
+                    }
+                    _pageSize++;
+                }
+
             }
+            catch(OperationCanceledException)
+            {
+                // Ignore cancellation
+            }
+            catch (Exception ex)
+            {
+                await Toast.Make("Failed to Load users").Show();
+            }
+            finally
+            {
+                IsLoadingMore = false;
+                IsRefreshing = false;
+            }
+
         }
 
+        [RelayCommand]
+        public async Task RefreshUsersAsync()
+        {
+            try
+            {
+                IsRefreshing = true;
+                _currentPage = 1;
+                Users.Clear();
+                await LoadUsersAsync(CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                await Toast.Make("Failed to refresh users").Show();
+            }
+            finally
+            {
+                IsRefreshing = false;
+            }
+        }
     }
 }

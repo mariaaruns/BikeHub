@@ -1,0 +1,209 @@
+@page "/users"
+@using BikeHub.Models
+@inject DataService Data
+@inject AuthService Auth
+
+<div class="page-content">
+    <div class="page-toolbar">
+        <input class="tb-search-inp" type="text" placeholder="🔍 Search users..." @bind="search" @bind:event="oninput" />
+        <button class="btn-primary" @onclick="()=>OpenForm(null)">+ Add User</button>
+    </div>
+
+    <div class="card">
+        <table class="bh-table">
+            <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+            <tbody>
+            @foreach (var u in Filtered)
+            {
+                <tr>
+                    <td>
+                        <div class="cust-cell">
+                            <div class="cust-avatar" style="background:@RoleGradient(u.Role)">@u.Avatar</div>
+                            <span class="fw6">@u.Name</span>
+                        </div>
+                    </td>
+                    <td class="muted">@u.Email</td>
+                    <td><span class="role-badge @u.Role.ToString().ToLower()">@u.Role</span></td>
+                    <td><span class="status-badge @(u.IsActive?"s-completed":"s-cancelled")">@(u.IsActive?"Active":"Inactive")</span></td>
+                    <td class="muted">@u.CreatedAt.ToString("MMM d, yyyy")</td>
+                    <td>
+                        <button class="act-btn edit" @onclick="()=>OpenForm(u)">✎ Edit</button>
+                        <button class="act-btn perm" @onclick="()=>OpenPerms(u)">🔑 Permissions</button>
+                        @if (u.Id != Auth.CurrentUser?.Id)
+                        { <button class="act-btn del" @onclick="()=>Data.DeleteUser(u.Id)">✕</button> }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@* Edit User Modal *@
+@if (showForm)
+{
+    <div class="modal-overlay" @onclick="CloseForm">
+        <div class="modal" @onclick:stopPropagation>
+            <div class="modal-header">
+                <div class="modal-title">@(editing==null?"Add User":"Edit User")</div>
+                <button class="modal-close" @onclick="CloseForm">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row two">
+                    <div class="form-group"><label>Full Name *</label><input class="form-input" @bind="form.Name" /></div>
+                    <div class="form-group"><label>Email *</label><input class="form-input" type="email" @bind="form.Email" /></div>
+                </div>
+                <div class="form-row two">
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select class="form-input" @bind="form.Role" @bind:after="ApplyDefaultPerms">
+                            @foreach (var r in Enum.GetValues<UserRole>())
+                            { <option value="@r">@r</option> }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Avatar Initials</label>
+                        <input class="form-input" @bind="form.Avatar" maxlength="2" placeholder="AB" />
+                    </div>
+                </div>
+                <div class="form-row two">
+                    <div class="form-group"><label>Password @(editing!=null?"(leave blank to keep)":"")</label><input class="form-input" type="password" @bind="form.Password" /></div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select class="form-input" @bind="form.IsActive">
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost" @onclick="CloseForm">Cancel</button>
+                <button class="btn-primary" @onclick="SaveUser">Save</button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Permissions Modal *@
+@if (showPerms && permUser != null)
+{
+    <div class="modal-overlay" @onclick="ClosePerms">
+        <div class="modal lg-modal" @onclick:stopPropagation>
+            <div class="modal-header">
+                <div class="modal-title">🔑 Permissions — @permUser.Name</div>
+                <button class="modal-close" @onclick="ClosePerms">✕</button>
+            </div>
+            <div class="modal-body perm-body">
+                <PermSection Title="Products" Icon="🚲"
+                    Perms="@(new[]{("View",permUser.Permissions.CanViewProducts,"CanViewProducts"),("Create",permUser.Permissions.CanCreateProducts,"CanCreateProducts"),("Edit",permUser.Permissions.CanEditProducts,"CanEditProducts"),("Delete",permUser.Permissions.CanDeleteProducts,"CanDeleteProducts")})"
+                             OnToggle="EventCallback.Factory.Create<(string,bool)>(this,SetPerm)" />
+                <PermSection Title="Categories" Icon="📁"
+                    Perms="@(new[]{("View",permUser.Permissions.CanViewCategories,"CanViewCategories"),("Create",permUser.Permissions.CanCreateCategories,"CanCreateCategories"),("Edit",permUser.Permissions.CanEditCategories,"CanEditCategories"),("Delete",permUser.Permissions.CanDeleteCategories,"CanDeleteCategories")})"
+                             OnToggle="EventCallback.Factory.Create<(string,bool)>(this,SetPerm)" />
+                <PermSection Title="Brands" Icon="🏷"
+                    Perms="@(new[]{("View",permUser.Permissions.CanViewBrands,"CanViewBrands"),("Create",permUser.Permissions.CanCreateBrands,"CanCreateBrands"),("Edit",permUser.Permissions.CanEditBrands,"CanEditBrands"),("Delete",permUser.Permissions.CanDeleteBrands,"CanDeleteBrands")})"
+                             OnToggle="EventCallback.Factory.Create<(string,bool)>(this,SetPerm)" />
+                <PermSection Title="Customers" Icon="👥"
+                    Perms="@(new[]{("View",permUser.Permissions.CanViewCustomers,"CanViewCustomers"),("Create",permUser.Permissions.CanCreateCustomers,"CanCreateCustomers"),("Edit",permUser.Permissions.CanEditCustomers,"CanEditCustomers"),("Delete",permUser.Permissions.CanDeleteCustomers,"CanDeleteCustomers")})"
+                             OnToggle="EventCallback.Factory.Create<(string,bool)>(this,SetPerm)" />
+                <PermSection Title="Orders" Icon="📋"
+                    Perms="@(new[]{("View",permUser.Permissions.CanViewOrders,"CanViewOrders"),("Create",permUser.Permissions.CanCreateOrders,"CanCreateOrders"),("Update Status",permUser.Permissions.CanUpdateOrderStatus,"CanUpdateOrderStatus"),("Delete",permUser.Permissions.CanDeleteOrders,"CanDeleteOrders")})"
+                             OnToggle="EventCallback.Factory.Create<(string,bool)>(this,SetPerm)" />
+                <PermSection Title="Workshop" Icon="🔧"
+                    Perms="@(new[]{("Mechanic Dashboard",permUser.Permissions.CanViewMechanicDashboard,"CanViewMechanicDashboard"),("View Tasks",permUser.Permissions.CanViewTasks,"CanViewTasks"),("Manage Users",permUser.Permissions.CanManageUsers,"CanManageUsers")})"
+                    OnToggle="EventCallback.Factory.Create<(string,bool)>(this,SetPerm)" />
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost" @onclick="ClosePerms">Cancel</button>
+                <button class="btn-primary" @onclick="SavePerms">Save Permissions</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    string search="";
+    bool showForm, showPerms;
+    AppUser? editing, permUser;
+    AppUser form = new();
+
+    IEnumerable<AppUser> Filtered => Data.Users.Where(u=>string.IsNullOrEmpty(search)||u.Name.Contains(search,StringComparison.OrdinalIgnoreCase)||u.Email.Contains(search,StringComparison.OrdinalIgnoreCase));
+
+    string RoleGradient(UserRole r) => r switch
+    {
+        UserRole.Admin    => "linear-gradient(135deg,#FF6B35,#F7B731)",
+        UserRole.Staff    => "linear-gradient(135deg,#4ECDC4,#44CF6C)",
+        UserRole.Mechanic => "linear-gradient(135deg,#6C8EF5,#A29BFE)",
+        _ => "#888"
+    };
+
+    void OpenForm(AppUser? u)
+    {
+        editing = u;
+        form = u == null ? new AppUser { Permissions = new() }
+            : new AppUser { Id=u.Id, Name=u.Name, Email=u.Email, Role=u.Role, Avatar=u.Avatar, IsActive=u.IsActive, Password=u.Password, Permissions=u.Permissions };
+        showForm = true;
+    }
+    void ApplyDefaultPerms() { form.Permissions = AuthService.DefaultPermissions(form.Role); }
+    void CloseForm() { showForm=false; editing=null; }
+    void SaveUser()
+    {
+        if (editing == null) Data.AddUser(form);
+        else Data.UpdateUser(form);
+        CloseForm();
+    }
+
+    void OpenPerms(AppUser u) { permUser = new AppUser { Id=u.Id, Name=u.Name, Permissions=ClonePerms(u.Permissions) }; showPerms=true; }
+    void ClosePerms() { showPerms=false; permUser=null; }
+    void SavePerms()
+    {
+        var u = Data.Users.FirstOrDefault(x=>x.Id==permUser!.Id);
+        if (u!=null) { u.Permissions=permUser!.Permissions; }
+        ClosePerms();
+    }
+
+    void SetPerm((string key, bool val) data)
+    {
+        var (key, val) = data;
+
+        if (permUser == null) return;
+        var p = permUser.Permissions;
+        switch(key)
+        {
+            case "CanViewProducts":    p.CanViewProducts=val;    break;
+            case "CanCreateProducts":  p.CanCreateProducts=val;  break;
+            case "CanEditProducts":    p.CanEditProducts=val;     break;
+            case "CanDeleteProducts":  p.CanDeleteProducts=val;  break;
+            case "CanViewCategories":  p.CanViewCategories=val;  break;
+            case "CanCreateCategories":p.CanCreateCategories=val;break;
+            case "CanEditCategories":  p.CanEditCategories=val;  break;
+            case "CanDeleteCategories":p.CanDeleteCategories=val;break;
+            case "CanViewBrands":      p.CanViewBrands=val;      break;
+            case "CanCreateBrands":    p.CanCreateBrands=val;    break;
+            case "CanEditBrands":      p.CanEditBrands=val;      break;
+            case "CanDeleteBrands":    p.CanDeleteBrands=val;    break;
+            case "CanViewCustomers":   p.CanViewCustomers=val;   break;
+            case "CanCreateCustomers": p.CanCreateCustomers=val; break;
+            case "CanEditCustomers":   p.CanEditCustomers=val;   break;
+            case "CanDeleteCustomers": p.CanDeleteCustomers=val; break;
+            case "CanViewOrders":      p.CanViewOrders=val;      break;
+            case "CanCreateOrders":    p.CanCreateOrders=val;    break;
+            case "CanUpdateOrderStatus":p.CanUpdateOrderStatus=val;break;
+            case "CanDeleteOrders":    p.CanDeleteOrders=val;    break;
+            case "CanViewMechanicDashboard":p.CanViewMechanicDashboard=val;break;
+            case "CanViewTasks":       p.CanViewTasks=val;       break;
+            case "CanManageUsers":     p.CanManageUsers=val;     break;
+        }
+    }
+
+    UserPermissions ClonePerms(UserPermissions src) => new()
+    {
+        CanViewProducts=src.CanViewProducts, CanCreateProducts=src.CanCreateProducts, CanEditProducts=src.CanEditProducts, CanDeleteProducts=src.CanDeleteProducts,
+        CanViewCategories=src.CanViewCategories, CanCreateCategories=src.CanCreateCategories, CanEditCategories=src.CanEditCategories, CanDeleteCategories=src.CanDeleteCategories,
+        CanViewBrands=src.CanViewBrands, CanCreateBrands=src.CanCreateBrands, CanEditBrands=src.CanEditBrands, CanDeleteBrands=src.CanDeleteBrands,
+        CanViewCustomers=src.CanViewCustomers, CanCreateCustomers=src.CanCreateCustomers, CanEditCustomers=src.CanEditCustomers, CanDeleteCustomers=src.CanDeleteCustomers,
+        CanViewOrders=src.CanViewOrders, CanCreateOrders=src.CanCreateOrders, CanUpdateOrderStatus=src.CanUpdateOrderStatus, CanDeleteOrders=src.CanDeleteOrders,
+        CanViewMechanicDashboard=src.CanViewMechanicDashboard, CanViewTasks=src.CanViewTasks, CanManageUsers=src.CanManageUsers,
+    };
+}

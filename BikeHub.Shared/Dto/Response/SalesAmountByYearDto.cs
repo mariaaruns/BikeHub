@@ -12,4 +12,10 @@ namespace BikeHub.Shared.Dto.Response
 
         public decimal NetAmount { get; set; } = 0m;
     }
+
+    public class BrandYearlySalesDto
+    {
+        public string Brand { get; set; } = string.Empty;
+        public decimal NetAmount { get; set; } = 0m;
+    }
 }

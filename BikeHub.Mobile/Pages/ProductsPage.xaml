@@ -15,6 +15,7 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <converters:StockDisplayConverter x:Key="StockDisplayConverter"/>
+            <converters:InvertedBooleanConverter x:Key="InvertedBooleanConverter"/>
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -45,10 +46,25 @@
                                 <RefreshView Grid.Row="1" Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}" RefreshColor="Orange">
                                     <CollectionView Grid.Row="1" ItemsSource="{Binding Products }" RemainingItemsThreshold="5" RemainingItemsThresholdReachedCommand="{Binding LoadProductCommand}">
                                         <CollectionView.EmptyView >
-                                            <VerticalStackLayout HorizontalOptions="Center" Margin="0,50">
-                                                <Image Source="no_products.png" HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
-                                                <Label Text="No Products Found" FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
-                                            </VerticalStackLayout>
+                                            
+                                            <Grid>
+                                                <VerticalStackLayout VerticalOptions="Center" IsVisible="{Binding IsLoadingMore}">
+                                                    <ActivityIndicator IsRunning="True" 
+                                                                       Color="Gray" 
+                                                                       HorizontalOptions="Center"/>
+                                                    <Label Text="Loading..." HorizontalOptions="Center"/>
+                                                </VerticalStackLayout>
+
+                                                <VerticalStackLayout VerticalOptions="Center" 
+                                                                    IsVisible="{Binding IsLoadingMore, Converter={StaticResource InvertedBooleanConverter}}">
+                                                    <Image Source="no_products.png" 
+                                                           HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
+                                                    
+                                                    <Label Text="No products Found" 
+                                                           FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
+                                                </VerticalStackLayout>
+                                            </Grid>
+                                            
                                         </CollectionView.EmptyView>
                                         <CollectionView.ItemsLayout>
                                             <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
@@ -75,7 +91,7 @@
                                                     <Frame BorderColor="white" BackgroundColor="WhiteSmoke" CornerRadius="10" HasShadow="False" Margin="16,0,16,0" Padding="0" >
                                                         <Grid RowDefinitions="Auto,*,Auto" Padding="10">
                                                             <Grid  ColumnDefinitions="100,*,15" ColumnSpacing="10">
-                                                                <Image Source="{Binding ProductImage}" Grid.RowSpan="2" Grid.Column="0" HeightRequest="100" />
+                                                                <Image Source="{Binding ProductImageUrl}" Grid.RowSpan="2" Grid.Column="0" HeightRequest="100" />
                                                                 <VerticalStackLayout Grid.Column="1" Grid.RowSpan="3" Spacing="20">
                                                                     <VerticalStackLayout Spacing="5">
                                                                         <Label Text="{Binding ProductName}" FontSize="18" FontAttributes="Bold"/>
@@ -105,11 +121,6 @@
                                                                 CommandParameter="{Binding .}" />
                                                         </Frame.GestureRecognizers>
 
-                                                        <!--<Frame.Behaviors>
-                                                                <toolkit:EventToCommandBehavior EventName="Tapped"
-                                                                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path= GotoAddBrandCommand}"
-                                                                                                 CommandParameter="{Binding .}"/>
-                                                            </Frame.Behaviors>-->
                                                     </Frame>
                                                 </SwipeView>
                                             </DataTemplate>
@@ -166,13 +177,26 @@
                                 </Frame>
 
 
-                                <RefreshView Grid.Row="1" Command="{Binding RefreshBrandCommand}" IsRefreshing="{Binding IsCategoryRefreshing}" RefreshColor="Orange">
+                                <RefreshView Grid.Row="1" Command="{Binding RefreshBrandCommand}" IsRefreshing="{Binding IsBrandRefreshing}" RefreshColor="Orange">
                                     <CollectionView Grid.Row="1" ItemsSource="{Binding Brands }">
                                         <CollectionView.EmptyView>
-                                            <VerticalStackLayout HorizontalOptions="Center" Margin="0,50">
-                                                <Image Source="no_products.png" HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
-                                                <Label Text="No Products Found" FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
-                                            </VerticalStackLayout>
+                                            <Grid>
+                                                <VerticalStackLayout VerticalOptions="Center" IsVisible="{Binding IsBrandBusy}">
+                                                    <ActivityIndicator IsRunning="True" 
+                            Color="Gray" 
+                            HorizontalOptions="Center"/>
+                                                    <Label Text="Loading..." HorizontalOptions="Center"/>
+                                                </VerticalStackLayout>
+
+                                                <VerticalStackLayout VerticalOptions="Center" 
+                         IsVisible="{Binding IsBrandBusy, Converter={StaticResource InvertedBooleanConverter}}">
+                                                    <Image Source="no_products.png" 
+                HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
+
+                                                    <Label Text="No brand Found" 
+                FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
+                                                </VerticalStackLayout>
+                                            </Grid>
                                         </CollectionView.EmptyView>
                                         <CollectionView.ItemsLayout>
                                             <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
@@ -204,7 +228,7 @@
                                                         <Grid RowDefinitions="Auto,*" Padding="10">
                                                             <Grid  ColumnDefinitions="50,*,15" ColumnSpacing="10">
 
-                                                                <Image Source="{Binding Logo}" Grid.Column="0" HeightRequest="50" />
+                                                                <Image Source="{Binding Image}" Grid.Column="0" HeightRequest="50" />
 
                                                                 <Label Grid.Column="1" VerticalOptions="Center" Text="{Binding BrandName}"  FontAttributes="Bold" FontSize="16"/>
 
@@ -258,10 +282,28 @@
                                 <RefreshView Grid.Row="1" Command="{Binding RefreshCategoryCommand}" IsRefreshing="{Binding IsCategoryRefreshing}" RefreshColor="Orange">
                                     <CollectionView Grid.Row="1" ItemsSource="{Binding Categories }">
                                         <CollectionView.EmptyView>
-                                            <VerticalStackLayout HorizontalOptions="Center" Margin="0,50">
-                                                <Image Source="no_products.png" HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
-                                                <Label  FontSize="20" TextColor="Gray" HorizontalOptions="Center" Text="{Binding CategoryName}"/>
-                                            </VerticalStackLayout>
+                                            <Grid>
+                                                <VerticalStackLayout VerticalOptions="Center" IsVisible="{Binding IsCategoryBusy}">
+                                                    
+                                                    <ActivityIndicator IsRunning="True" 
+                                                                       Color="Gray" 
+                                                                       HorizontalOptions="Center"/>
+                                                    
+                                                    <Label Text="Loading..." HorizontalOptions="Center"/>
+                                                    
+                                                </VerticalStackLayout>
+
+                                                <VerticalStackLayout VerticalOptions="Center" 
+                                                                     IsVisible="{Binding IsCategoryBusy, Converter={StaticResource InvertedBooleanConverter}}">
+                                                    <Image Source="no_products.png" 
+                                                           HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
+
+                                                    <Label Text="No category Found" 
+                                                            FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
+                                                </VerticalStackLayout>
+                                                
+                                                
+                                            </Grid>
                                         </CollectionView.EmptyView>
                                         <CollectionView.ItemsLayout>
                                             <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>

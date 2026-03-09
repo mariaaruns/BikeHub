@@ -8,6 +8,7 @@
              xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
              xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
              xmlns:converters="clr-namespace:BikeHub.Mobile.Converters"
+             
              x:DataType="vm:UserViewModel" 
              Title="User Manager">
 
@@ -15,6 +16,7 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <converters:UserRoleDisplayConverter x:Key="UserRoleDisplayConverter"/>
+            <converters:InvertedBooleanConverter x:Key="InvertedBooleanConverter"/>
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -24,7 +26,7 @@
             <Frame Grid.Row="0" CornerRadius="10"  BorderColor="#D1D5DB" HasShadow="False" Margin="16,8,16,0" Padding="0" >
                 <Grid ColumnDefinitions="40,*,20">
                     <Image Source="search.png" Grid.Column="0" HeightRequest="20"/>
-                    <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Search Users..."/>
+                    <controls:NoUnderlineEntry Grid.Column="1" Text="{Binding SearchUser}" Placeholder="Search Users..."/>
                 </Grid>
             </Frame>
 
@@ -32,97 +34,96 @@
                 <ChipControl:SfChipGroup
                             ItemsSource="{Binding Rolestatus}"
                             ChipPadding="8,8,0,0"
-                            ChipBackground="{Binding SelectedRole, Converter={StaticResource UserRoleDisplayConverter}}"
+                            SelectedChipBackground="orange"
+                            SelectedChipTextColor="white"
                             ChipTextColor="Black"
+                            ChipBackground="white"
                             HorizontalOptions="Start"
                             VerticalOptions="Center"
                             ChipType="Choice"
-                            SelectedItem="{Binding SelectedRole, Mode=TwoWay}"
-                            Command="{Binding RoleChipsChangedCommand}">
+                            SelectedItem="{Binding SelectedRole, Mode=TwoWay}">
+                    
                 </ChipControl:SfChipGroup>
             </Grid>
-            <!--<HorizontalStackLayout Grid.Row="1" HorizontalOptions="End" Margin="0,0,16,0">
-
-                <VerticalStackLayout>
-                    <Label Text="Role" />
-                    <Border BackgroundColor="#e6f4ff" Style="{StaticResource entryWrapper}">
-                        <controls:NoUnderlinePicker
-                                    x:Name="StatusPicker"
-                                    Title="Select Role"
-                                    ItemsSource="{Binding Rolestatus}"
-                                    SelectedItem="{Binding SelectedRoles, Mode=TwoWay}"
-                                    SelectionChangedCommand="{Binding RoleChangedCommand}"
-                                    TextColor="{Binding SelectedRole,Converter={StaticResource UserRoleDisplayConverter}}"/>
-                    </Border>
-                </VerticalStackLayout>
 
 
+            <RefreshView Grid.Row="2" Command="{Binding RefreshUsersCommand}" IsRefreshing="{Binding IsRefreshing}" RefreshColor="Orange">
+                <CollectionView  ItemsSource="{Binding Users }">
+                    <CollectionView.EmptyView>
 
-            </HorizontalStackLayout>-->
+                        <Grid>
+                            <VerticalStackLayout VerticalOptions="Center" 
+                             IsVisible="{Binding IsLoadingMore}">
+                                <ActivityIndicator IsRunning="True" 
+                                Color="Gray" 
+                                HorizontalOptions="Center"/>
+                                <Label Text="Loading..." HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
 
+                            <VerticalStackLayout VerticalOptions="Center" 
+                             IsVisible="{Binding IsLoadingMore, Converter={StaticResource InvertedBooleanConverter}}">
+                                <Image Source="no_products.png" 
+                    HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
+                                <Label Text="No users Found" 
+                    FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Grid>
 
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="model:UsersDto">
 
-            <CollectionView Grid.Row="2" ItemsSource="{Binding Users }">
-                <CollectionView.EmptyView>
-                    <VerticalStackLayout HorizontalOptions="Center" Margin="0,50">
-                        <Image Source="no_products.png" HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
-                        <Label Text="No Products Found" FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
-                    </VerticalStackLayout>
-                </CollectionView.EmptyView>
-                <CollectionView.ItemsLayout>
-                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
-                </CollectionView.ItemsLayout>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="model:UsersDto">
+                            <SwipeView >
+                                <SwipeView.RightItems>
+                                    <SwipeItems Mode="Execute" >
 
-                        <SwipeView >
-                            <SwipeView.RightItems>
-                                <SwipeItems Mode="Execute" >
-
-                                    <SwipeItemView
+                                        <SwipeItemView
                                   BackgroundColor="red"
                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path= DeleteBrandsCommand}"
                                    CommandParameter="{Binding .}">
-                                        <Grid Padding="12" HorizontalOptions="Center" VerticalOptions="Center">
-                                            <Image Source="trash_white.png"  HeightRequest="20" WidthRequest="20"/>
+                                            <Grid Padding="12" HorizontalOptions="Center" VerticalOptions="Center">
+                                                <Image Source="trash_white.png"  HeightRequest="20" WidthRequest="20"/>
+                                            </Grid>
+                                        </SwipeItemView>
+
+                                    </SwipeItems>
+
+                                </SwipeView.RightItems>
+
+
+
+                                <Frame BorderColor="white" BackgroundColor="WhiteSmoke" CornerRadius="10" HasShadow="true" Margin="16,0,16,0" Padding="0" >
+
+                                    <Grid RowDefinitions="Auto,*" Padding="10">
+                                        <Grid  ColumnDefinitions="50,*,15" ColumnSpacing="20">
+
+                                            <Image Source="man.png" Grid.Column="0" HeightRequest="50" />
+
+                                            <VerticalStackLayout Grid.Column="1">
+                                                <Label  VerticalOptions="Center" Text="{Binding FullName}"  FontAttributes="Bold" FontSize="16"/>
+
+
+                                                <Border WidthRequest="80" HorizontalOptions="Start" BackgroundColor="#e6f4ff" StrokeThickness="0" StrokeShape="RoundRectangle 5" Padding="1">
+                                                    <Label Text="{Binding Role}" FontAttributes="Bold" HorizontalOptions="Center" FontSize="12" TextColor="{Binding Role,Converter={StaticResource UserRoleDisplayConverter}}" />
+                                                </Border>
+
+                                            </VerticalStackLayout>
+
+                                            <ImageButton VerticalOptions="Center" Source="angle_right.png" Grid.Column="3" Grid.Row="0" HeightRequest="5" />
+
+
                                         </Grid>
-                                    </SwipeItemView>
-
-                                </SwipeItems>
-
-                            </SwipeView.RightItems>
-
-
-
-                            <Frame BorderColor="white" BackgroundColor="WhiteSmoke" CornerRadius="10" HasShadow="true" Margin="16,0,16,0" Padding="0" >
-
-                                <Grid RowDefinitions="Auto,*" Padding="10">
-                                    <Grid  ColumnDefinitions="50,*,15" ColumnSpacing="20">
-
-                                        <Image Source="{Binding Image}" Grid.Column="0" HeightRequest="50" />
-
-                                        <VerticalStackLayout Grid.Column="1">
-                                            <Label  VerticalOptions="Center" Text="{Binding FullName}"  FontAttributes="Bold" FontSize="16"/>
-
-
-                                            <Border WidthRequest="80" HorizontalOptions="Start" BackgroundColor="#e6f4ff" StrokeThickness="0" StrokeShape="RoundRectangle 5" Padding="1">
-                                                <Label Text="{Binding Role}" FontAttributes="Bold" HorizontalOptions="Center" FontSize="12" TextColor="{Binding Role,Converter={StaticResource UserRoleDisplayConverter}}" />
-                                            </Border>
-
-                                        </VerticalStackLayout>
-
-                                        <ImageButton VerticalOptions="Center" Source="angle_right.png" Grid.Column="3" Grid.Row="0" HeightRequest="5" />
-
-
                                     </Grid>
-                                </Grid>
-                            </Frame>
-                        </SwipeView>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+                                </Frame>
+                            </SwipeView>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
 
-
+            </RefreshView>
         </Grid>
         <Button Text="+"
              WidthRequest="60"

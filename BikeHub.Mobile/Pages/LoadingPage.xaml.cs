@@ -1,3 +1,5 @@
+using BikeHub.Mobile.Helper;
+
 namespace BikeHub.Mobile.Pages;
 
 public partial class LoadingPage : ContentPage
@@ -12,7 +14,7 @@ public partial class LoadingPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await Task.Delay(100); // allow UI to load
+        await Task.Delay(100);
 
         bool loggedIn = await IsLoggedInAsync();
 
@@ -28,14 +30,14 @@ public partial class LoadingPage : ContentPage
     private async Task<bool> IsLoggedInAsync()
     {
         var token = await SecureStorage.GetAsync("access_token");
-        var expiry = await SecureStorage.GetAsync("access_token_expires");
+        //var expiry = await SecureStorage.GetAsync("access_token_expires");
 
-        if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(expiry))
-            return false;
+        //if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(expiry))
+        //    return false;
 
-        if (!DateTime.TryParse(expiry, out var expiryDate))
-            return false;
+        //if (!DateTime.TryParse(expiry, out var expiryDate))
+        //    return false;
 
-        return expiryDate > DateTime.UtcNow;
+        return JwtHelper.IsTokenExpired(token) == false;
     }
 }

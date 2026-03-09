@@ -16,98 +16,112 @@
             <Frame Grid.Row="0" CornerRadius="10"  BorderColor="#D1D5DB" HasShadow="False" Margin="16,8,16,0" Padding="0" >
                 <Grid ColumnDefinitions="40,*,20">
                     <Image Source="search.png" Grid.Column="0" HeightRequest="20"/>
-                    <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Search Customers..."/>
+                    <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Search Customers..." Text="{Binding CustomerName}"/>
                 </Grid>
             </Frame>
 
 
+            <RefreshView Grid.Row="1" IsRefreshing="{Binding IsRefreshing}" Command="{Binding RefreshCommand}">
+                <CollectionView Grid.Row="1" ItemsSource="{Binding Customers}" RemainingItemsThreshold="5" RemainingItemsThresholdReachedCommand="{Binding LoadCustomersCommand }">
 
-            <CollectionView Grid.Row="1" ItemsSource="{Binding Customers  }">
-                <CollectionView.EmptyView>
-                    <VerticalStackLayout HorizontalOptions="Center" Margin="0,50">
-                        <Image Source="no_products.png" HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
-                        <Label Text="No Products Found" FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
-                    </VerticalStackLayout>
-                </CollectionView.EmptyView>
-                <CollectionView.ItemsLayout>
-                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
-                </CollectionView.ItemsLayout>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="model:CustomersDto">
+                    <CollectionView.EmptyView>
+                        <Grid>
+                            <VerticalStackLayout VerticalOptions="Center" 
+                            IsVisible="{Binding IsLoadingMore}">
+                                <ActivityIndicator IsRunning="True" 
+                              Color="Gray" 
+                              HorizontalOptions="Center"/>
+                                <Label Text="Loading..." HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
 
-                        <SwipeView >
-                            <SwipeView.RightItems>
-                                <SwipeItems Mode="Execute" >
+                            <VerticalStackLayout VerticalOptions="Center" 
+                                  IsVisible="{Binding IsLoadingMore, Converter={StaticResource InvertedBooleanConverter}}">
+                                <Image Source="no_products.png" 
+                                       HeightRequest="100" Opacity="0.5" HorizontalOptions="Center"/>
+                                <Label Text="No Customer Found" 
+                                      FontSize="20" TextColor="Gray" HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </CollectionView.EmptyView>
 
-                                    <SwipeItemView
-                                   BackgroundColor="red"
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path= DeleteCustomerCommand}"
-                                    CommandParameter="{Binding .}">
-                                        <Grid Padding="12" HorizontalOptions="Center" VerticalOptions="Center">
-                                            <Image Source="trash_white.png"  HeightRequest="20" WidthRequest="20"/>
-                                        </Grid>
-                                    </SwipeItemView>
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
+                    </CollectionView.ItemsLayout>
 
-                                </SwipeItems>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="model:CustomersDto">
 
-                            </SwipeView.RightItems>
+                            <SwipeView >
+                                <SwipeView.RightItems>
+                                    <SwipeItems Mode="Execute" >
+
+                                        <SwipeItemView BackgroundColor="red" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CustomerViewModel}}, Path= DeleteCustomerCommand}"
+                                     CommandParameter="{Binding .}">
+                                            <Grid Padding="12" HorizontalOptions="Center" VerticalOptions="Center">
+                                                <Image Source="trash_white.png"  HeightRequest="20" WidthRequest="20"/>
+                                            </Grid>
+                                        </SwipeItemView>
+
+                                    </SwipeItems>
+
+                                </SwipeView.RightItems>
 
 
 
-                            <Frame BorderColor="GhostWhite" BackgroundColor="WhiteSmoke" CornerRadius="10" HasShadow="False" Margin="16,0,16,0" Padding="0" >
+                                <Frame BorderColor="GhostWhite" BackgroundColor="WhiteSmoke" CornerRadius="10" HasShadow="False" Margin="16,0,16,0" Padding="0" >
 
-                                <Grid RowDefinitions="Auto,*" Padding="10">
-                                    <Grid  ColumnDefinitions="70,*,15" ColumnSpacing="20">
+                                    <Grid RowDefinitions="Auto,*" Padding="10">
+                                        <Grid  ColumnDefinitions="70,*,15" ColumnSpacing="20">
 
-                                        <Frame Grid.Column="0" WidthRequest="70"
+                                            <Frame Grid.Column="0" WidthRequest="70"
                                                HeightRequest="70"
                                                CornerRadius="35"
                                                Padding="0"
                                                HasShadow="False"
                                                BorderColor="WhiteSmoke">
-                                            <Image Source="{Binding Image}"  HeightRequest="70" />
+                                                <Image Source="{Binding Image}"  HeightRequest="70" />
 
-                                        </Frame>
-                                      
+                                            </Frame>
 
-                                        <VerticalStackLayout Grid.Column="1" Spacing="3">
-                                            <HorizontalStackLayout Spacing="5">
-                                                <Image Source="id_card.png" WidthRequest="16" VerticalOptions="Center"/>
-                                                <Label VerticalOptions="Center" Text="{Binding CustomerName}"  FontAttributes="Bold" FontSize="16"/>
-                                            </HorizontalStackLayout>
-                                            <HorizontalStackLayout Spacing="5">
-                                                <Image Source="phone_flip.png" WidthRequest="12" VerticalOptions="Center"/>
-                                                <Label VerticalOptions="Center" Text="{Binding Phone}"  FontSize="12" TextColor="Gray"/>
-                                            </HorizontalStackLayout>
-                                            <HorizontalStackLayout Spacing="5">
-                                                <Image Source="envelope.png" WidthRequest="12" VerticalOptions="Center"/>
-                                                <Label VerticalOptions="Center" Text="{Binding Email}"  FontSize="12" TextColor="Gray"/>
-                                            </HorizontalStackLayout>
-                                            
-                                            
-                                            
-                                        </VerticalStackLayout>
 
-                                        <ImageButton  Grid.Column="3" Grid.Row="0"  VerticalOptions="Center" Source="angle_right.png" HeightRequest="5" />
-                                        
+                                            <VerticalStackLayout Grid.Column="1" Spacing="3">
+                                                <HorizontalStackLayout Spacing="5">
+                                                    <Image Source="id_card.png" WidthRequest="16" VerticalOptions="Center"/>
+                                                    <Label VerticalOptions="Center" Text="{Binding CustomerName}"  FontAttributes="Bold" FontSize="16"/>
+                                                </HorizontalStackLayout>
+                                                <HorizontalStackLayout Spacing="5">
+                                                    <Image Source="phone_flip.png" WidthRequest="12" VerticalOptions="Center"/>
+                                                    <Label VerticalOptions="Center" Text="{Binding Phone}"  FontSize="12" TextColor="Gray"/>
+                                                </HorizontalStackLayout>
+                                                <HorizontalStackLayout Spacing="5">
+                                                    <Image Source="envelope.png" WidthRequest="12" VerticalOptions="Center"/>
+                                                    <Label VerticalOptions="Center" Text="{Binding Email}"  FontSize="12" TextColor="Gray"/>
+                                                </HorizontalStackLayout>
+
+
+
+                                            </VerticalStackLayout>
+
+                                            <ImageButton  Grid.Column="3" Grid.Row="0"  VerticalOptions="Center" Source="angle_right.png" HeightRequest="5" />
+
+                                        </Grid>
                                     </Grid>
-                                </Grid>
-                                <Frame.GestureRecognizers>
+                                    <Frame.GestureRecognizers>
 
-                                    <TapGestureRecognizer 
+                                        <TapGestureRecognizer 
                                         Command="{Binding Source={RelativeSource AncestorType={x:Type vm:CustomerViewModel}},Path=GoToDetailsCommand}"
                                         CommandParameter="{Binding .}">
-                                        
-                                    </TapGestureRecognizer>
-                                    
-                                </Frame.GestureRecognizers>
-                            </Frame>
-                        </SwipeView>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
 
+                                        </TapGestureRecognizer>
 
+                                    </Frame.GestureRecognizers>
+                                </Frame>
+                            </SwipeView>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </RefreshView>
         </Grid>
         <Button Text="+"
               WidthRequest="60"
@@ -121,8 +135,7 @@
               AbsoluteLayout.LayoutFlags="PositionProportional"
               TranslationX="-20"
               TranslationY="-20"
-                Command="{Binding GotoAddCustomerCommand}"
-                />
+              Command="{Binding GotoAddCustomerCommand}"/>
 
     </AbsoluteLayout>
 

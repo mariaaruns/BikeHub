@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,10 +10,12 @@ namespace BikeHub.Shared.Dto.Request
 {
     public class AddBrandDto
     {
+
+        [Required]
         public string   BrandName { get; set; }
 
         public string?  ImageUrl  { get; set; } 
 
-        public IFormFile? BrandImage { get; set; }  
+        public byte[]? Imagebyte{ get; set; }  
     }
 }

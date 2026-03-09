@@ -19,16 +19,16 @@ namespace BikeHub.Mobile.ApiServices
         Task<res.ApiResponse<res.PagedResult<ProductsDto>>> GetProductsAsync(GetProductsDto dto, CancellationToken cancellationToken);
 
         [Post("/products/add")]
-        Task<res.ApiResponse<string>> AddProductAsync(AddProductsDto dto, CancellationToken cancellationToken);
+        Task<res.ApiResponse<int>> AddProductAsync(MultipartFormDataContent dto, CancellationToken cancellationToken);
 
         [Get("/products/{id}")]
         Task<res.ApiResponse<GetProductByIdDto>> GetProductByIdAsync(int id, CancellationToken cancellationToken);
 
         [Put("/products/update")]
-        Task<res.ApiResponse<string>> UpdateProductAsync(UpdateProductDto dto, CancellationToken cancellationToken);
+        Task<res.ApiResponse<string>> UpdateProductAsync(MultipartFormDataContent dto, CancellationToken cancellationToken);
 
         [Patch("/products/{id}/deactivate")]
-        Task<res.ApiResponse<string>> DeactivateProductAsync(int id, CancellationToken cancellationToken);
+        Task<res.ApiResponse<bool>> DeactivateProductAsync(int id, CancellationToken cancellationToken);
 
 
 
@@ -56,12 +56,12 @@ namespace BikeHub.Mobile.ApiServices
         Task<res.ApiResponse<IEnumerable<BrandsDto>>> GetAllBrandsAsync(string? BrandNameFilter, CancellationToken cancellationToken);
 
         [Post("/AddBrand")]
-        Task<res.ApiResponse<string>> AddBrandAsync(AddBrandDto dto, CancellationToken cancellationToken);
+        Task<res.ApiResponse<string>> AddBrandAsync(MultipartFormDataContent dto, CancellationToken cancellationToken);
         
         [Get("/GetBrandById")]
         Task<res.ApiResponse<BrandsDto>> GetBrandByIdAsync(int Id, CancellationToken cancellationToken);
 
-        [Delete("/DeleteBrandById")]
+        [Put("/DeleteBrandById")]
         Task<res.ApiResponse<string>> DeleteBrandByIdAsync(int Id, CancellationToken cancellationToken);
 
 
@@ -70,6 +70,6 @@ namespace BikeHub.Mobile.ApiServices
         Task<res.ApiResponse<IEnumerable<DropdownDto>>> GetDropdownAsync(string type,CancellationToken cancellationToken);
 
         [Get("/ProductAndStockDropDown")]
-        Task<res.ApiResponse<IEnumerable<ProductDropdownDto>>> GetProductAndStockDropDownAsync(CancellationToken cancellationToken);
+        Task<res.ApiResponse<IEnumerable<ProductDropdownDto>>> GetProductAndStockDropDownAsync(int brandId,int categoryId, CancellationToken cancellationToken);
     }
 }

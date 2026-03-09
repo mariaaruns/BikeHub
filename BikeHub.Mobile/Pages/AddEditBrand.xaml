@@ -7,7 +7,7 @@
              xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
              xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
              xmlns:conv="clr-namespace:BikeHub.Mobile.Converters"
-             x:DataType="vm:ProductsViewModel"
+             x:DataType="vm:AddEditBrandViewModel"
              Title="Add Brand">
 
 
@@ -16,13 +16,34 @@
         <ScrollView AbsoluteLayout.LayoutBounds="0,0,1,1" AbsoluteLayout.LayoutFlags="All">
             <VerticalStackLayout Margin="16,5" Spacing="20" >
 
-                <Border BackgroundColor="Grey" HeightRequest="150" StrokeShape="RoundRectangle 75" StrokeThickness="0" HorizontalOptions="Center" >
-                    <Image Source="man.png" Aspect="Fill"/>
-                </Border>
-            <Label Text="Upload new brand logo here." TextColor="DeepSkyBlue" HorizontalOptions="Center"/>
+                <Border BackgroundColor="Grey" HeightRequest="150" WidthRequest="150" StrokeShape="RoundRectangle 75" StrokeThickness="0" HorizontalOptions="Center" >
+                    <Grid>
+                        <Image Source="{Binding BrandLogo,Mode=TwoWay}" Aspect="Fill"/>
 
-            <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
-                <controls:NoUnderlineEntry Placeholder="Brand Name"/>
+
+                        <Border
+                        HeightRequest="20"
+                        WidthRequest="20"
+                        Padding="0">
+                            <Image
+                        Source="pencil.png"
+                        HeightRequest="16"
+                        WidthRequest="16">
+                                <Image.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding PickImageCommand}" />
+                                </Image.GestureRecognizers>
+                            </Image>
+                        </Border>
+
+                    </Grid>
+                    
+                    
+                </Border>
+                
+            
+                <Label Text="Upload new brand logo here." TextColor="DeepSkyBlue" HorizontalOptions="Center"/>
+                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                <controls:NoUnderlineEntry Text="{Binding BrandName}" Placeholder="Brand Name"/>
             </Border>
             
 
@@ -31,7 +52,7 @@
             
         </ScrollView>
 
-        <Button Text="+"
+        <Button Text="Save"
       WidthRequest="60"
       HeightRequest="60"
       CornerRadius="30"
@@ -43,8 +64,7 @@
       AbsoluteLayout.LayoutFlags="PositionProportional"
       TranslationX="-20"
       TranslationY="-20"
-      Command="{Binding GotoAddCustomerCommand}"/>
-
+      Command="{Binding SaveBrandCommand}"/>
 
     </AbsoluteLayout>
 

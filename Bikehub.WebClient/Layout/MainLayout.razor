@@ -1,0 +1,35 @@
+@inherits LayoutComponentBase
+@inject AuthService Auth
+@inject ThemeService Theme
+@inject NavigationManager Nav
+@implements IDisposable
+
+@if (!Auth.IsAuthenticated)
+{
+    <Login />
+}
+else
+{
+    <div class="bh-wrapper @Theme.ThemeClass">
+        <Sidebar />
+        <div class="bh-main">
+            <TopBar />
+            <div class="bh-body">
+                @Body
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        Auth.OnAuthChanged += StateHasChanged;
+        Theme.OnChanged    += StateHasChanged;
+    }
+    public void Dispose()
+    {
+        Auth.OnAuthChanged -= StateHasChanged;
+        Theme.OnChanged    -= StateHasChanged;
+    }
+}

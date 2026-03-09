@@ -3,104 +3,309 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="BikeHub.Mobile.Pages.AddEditOrders"
              xmlns:controls="clr-namespace:BikeHub.Mobile.Controls"
+             xmlns:bottomSheet="clr-namespace:Syncfusion.Maui.Toolkit.BottomSheet;assembly=Syncfusion.Maui.Toolkit"
+              xmlns:popup="clr-namespace:Syncfusion.Maui.Toolkit.Popup;assembly=Syncfusion.Maui.Toolkit"
              xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
              xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
+             xmlns:Pagedmodel="clr-namespace:BikeHub.Mobile.Models"
              xmlns:conv="clr-namespace:BikeHub.Mobile.Converters"
-             x:DataType="vm:OrderViewModel"
+             x:DataType="vm:AddOrderViewModel"
              Title="{Binding PageTitle}">
 
+    <Grid>
+        <ScrollView>
 
-    <ScrollView>
-        <VerticalStackLayout Margin="15,5" Spacing="10">
-            <Label FontSize="18" FontAttributes="Bold" Text="Customer Information"/>
+            <VerticalStackLayout Margin="15,5" Spacing="10">
 
-            <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
 
-                <Grid ColumnDefinitions="40,*,10">
-                    <Image Source="userfill.png"
+                <Label FontSize="18" FontAttributes="Bold" Text="Customer Information"/>
+
+                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+
+                    <Grid ColumnDefinitions="40,*,10">
+                        <Image Source="userfill.png"
                                    HeightRequest="24"
                                    WidthRequest="24"
                                    VerticalOptions="Center"
                                    HorizontalOptions="Center" />
 
-                    <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Search Customer Name"/>
+                        <controls:NoUnderlineEntry Grid.Column="1"  Text="{Binding SelectedCustomer.Text}" IsReadOnly="True">
 
-                </Grid>
+                            <controls:NoUnderlineEntry.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding OpenCustomerSelectionCommand}"/>
+                            </controls:NoUnderlineEntry.GestureRecognizers>
+                        </controls:NoUnderlineEntry>
 
-            </Border>
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenCustomerSelectionCommand}"/>
+                        </Grid.GestureRecognizers>
 
-            <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
-                <Grid ColumnDefinitions="40,*,10">
-                    <Image Source="envelope.png"
-                    HeightRequest="24"
-                    WidthRequest="24"
-                    VerticalOptions="Center"
-                    HorizontalOptions="Center" />
-                    <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Customer Email"/>
-                </Grid>
+                    </Grid>
 
-            </Border>
+                </Border>
 
+               
 
-            <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
-                <Grid ColumnDefinitions="40,*,10">
-                    <Image Source="phone_flip.png"
-                            HeightRequest="24"
-                            WidthRequest="24"
-                            VerticalOptions="Center"
-                            HorizontalOptions="Center" />
-                    <controls:NoUnderlineEntry Grid.Column="1" Placeholder="Customer Phone"/>
-                </Grid>
+                <Label FontSize="18" FontAttributes="Bold" Text="Order Status"/>
 
-            </Border>
-
-            <Label FontSize="18" FontAttributes="Bold" Text="Order Status"/>
-
-            <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
-                <Grid ColumnDefinitions="*,30">
-                    <Image  Grid.Column="1" Source="angle_down.png"
-                             HeightRequest="24"
-                             WidthRequest="24"
+                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                    <Grid ColumnDefinitions="*,30">
+                        <Image  Grid.Column="1" Source="anglecircledown.png"
+                             HeightRequest="15"
+                             WidthRequest="15"
                              VerticalOptions="Center"
-                             HorizontalOptions="Center" />  
-                    <controls:NoUnderlinePicker  Title="Order Status" />
+                             HorizontalOptions="Center" />
+                        <controls:NoUnderlinePicker  Title="Order Status" ItemDisplayBinding="{Binding Text}"  ItemsSource="{Binding OrderStatusList}"/>
+                    </Grid>
+
+                </Border>
+
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <Label Grid.Column="0" FontSize="18" FontAttributes="Bold" Text="Products" VerticalOptions="Center"/>
+
+                    <Button Grid.Column="1" Text="+ Add Products" HorizontalOptions="End" Command="{Binding  AddProductsCommand}" BackgroundColor="orange" />
                 </Grid>
-                
-            </Border>
 
-            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                <Label Grid.Column="0" FontSize="18" FontAttributes="Bold" Text="Products" VerticalOptions="Center"/>
+                <Border Padding="10"  StrokeShape="RoundRectangle 10">
+                    <CollectionView ItemsSource="{Binding OrderItemsCart}" HeightRequest="150">
 
-                <Button Grid.Column="1" Text="+ Add Products" HorizontalOptions="End" BackgroundColor="orange" />
-            </Grid>
+                        <CollectionView.EmptyView>
+                            <Label Text="No Products Added"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"
+                                   TextColor="Gray"/>
+                        </CollectionView.EmptyView>
 
-            <Border Padding="80"  StrokeShape="RoundRectangle 10">
-                <Label Text="No Products Added" HorizontalOptions="Center" VerticalOptions="Center" TextColor="Gray"/>
-            </Border>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="Pagedmodel:OrderItemsCartDto">
+                                <Grid ColumnDefinitions="120,60,10,30,10"
+                                      ColumnSpacing="25"
+                                      Padding="5">
 
-            <Border StrokeThickness="0"  StrokeShape="RoundRectangle 10">
-                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="20" BackgroundColor="#F0F0F0" Padding="10">
-                    <!-- Subtotal Row -->
-                    <Label Grid.Column="0" Text="Subtotal" TextColor="Gray" FontSize="16" />
-                    <Label Grid.Column="1" Text="$0.0" TextColor="Gray" FontSize="16" HorizontalOptions="End" />
+                                    <!-- Product Name -->
+                                    <Label Grid.Column="0"
+                                    Text="{Binding ProductName}"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    VerticalOptions="Center"/>
 
-                    <!-- Tax Row -->
-                    <Label Grid.Row="1" Grid.Column="0" Text="Tax(8%)" TextColor="Gray" FontSize="16" />
-                    <Label Grid.Row="1" Grid.Column="1" Text="$0.0" TextColor="Gray" FontSize="16" HorizontalOptions="End" />
+                                    <!-- Price -->
+                                    <Label Grid.Column="1"
+                                    Text="{Binding Price, StringFormat='${0:F2}'}"
+                                    FontAttributes="Bold"
+                                           FontSize="12"
+                                    VerticalOptions="Center"/>
 
-                    <!-- Grand Total Row -->
-                    <Label Grid.Row="2" Grid.Column="0" Text="Grand Total" FontSize="20" FontAttributes="Bold" />
-                    <Label Grid.Row="2" Grid.Column="1" Text="$0.0" FontSize="20" FontAttributes="Bold" HorizontalOptions="End" />
+                                    <!-- Minus Button -->
+                                    <Button Grid.Column="2"
+                                           Text="−"
+                                           WidthRequest="36"
+                                           HeightRequest="36"
+                                           MinimumWidthRequest="36"
+                                           MinimumHeightRequest="36"
+                                           CornerRadius="18"
+    
+                                    Background="Orange"
+                                    Command="{Binding DecreaseQtyCommand}" />
+
+                                    <!-- Quantity -->
+                                    <Label Grid.Column="3"
+                                    Text="{Binding Quantity}"
+                                    FontAttributes="Bold"
+                                    FontSize="16"
+                                    HorizontalTextAlignment="Center"
+                                    VerticalOptions="Center"
+                                    WidthRequest="30"/>
+
+                                    <!-- Plus Button -->
+                                    <Button Grid.Column="4"
+                                            Text="+"
+                                            WidthRequest="36"
+                                            HeightRequest="36"
+                                            MinimumWidthRequest="36"
+                                            MinimumHeightRequest="36"
+                                            CornerRadius="18"
+                                            Background="Orange"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center"
+                                            Command="{Binding IncreaseQtyCommand}" />                       
+
+
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+
+                    </CollectionView>
+
+                </Border>
+
+                <Border StrokeThickness="0"  StrokeShape="RoundRectangle 10">
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="20" BackgroundColor="#F0F0F0" Padding="10">
+                        <!-- Subtotal Row -->
+                        <Label Grid.Column="0" Text="Subtotal" TextColor="Gray" FontSize="16" />
+                        <Label Grid.Column="1" Text="{Binding SubTotal,StringFormat='${0:F2}'}" TextColor="Gray" FontSize="16" HorizontalOptions="End" />
+
+                        <!-- Tax Row -->
+                        <Label Grid.Row="1" Grid.Column="0" Text="Discount" TextColor="Gray" FontSize="16" />
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Discount,StringFormat='${0:F2}'}"  TextColor="Gray" FontSize="16" HorizontalOptions="End" />
+
+                        <!-- Grand Total Row -->
+                        <Label Grid.Row="2" Grid.Column="0" Text="Grand Total" FontSize="20" FontAttributes="Bold" />
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding TotalPrice,StringFormat='${0:F2}'}"  FontSize="20" FontAttributes="Bold" HorizontalOptions="End" />
+                    </Grid>
+                </Border>
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+
+                    <Button Grid.Column="0" BackgroundColor="Orange" Text="Create Order" Command="{Binding SaveOrderCommand}"/>
+                    <Button Grid.Column="1" BackgroundColor="LightGrey" Text="Cancel" Command="{Binding GoBackPageCommand}"/>
                 </Grid>
-            </Border>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
 
-                <Button Grid.Column="0" BackgroundColor="Orange" Text="Create Order" Command="{Binding CreateNewOrderCommand}"/>
-                <Button Grid.Column="1" BackgroundColor="LightGrey" Text="Cancel"/>
-            </Grid>
+            </VerticalStackLayout>
 
-        </VerticalStackLayout>
 
-    </ScrollView>
+        </ScrollView>
+        
+        <bottomSheet:SfBottomSheet x:Name="bottomSheet" AllowedState="All" IsOpen="{Binding IsOpen}" IsModal="False" CornerRadius="20" GrabberBackground="orange" Background="Cornsilk">
+            <bottomSheet:SfBottomSheet.BottomSheetContent>
+                <Grid RowDefinitions="50,Auto ,*" ColumnSpacing="20">
+
+                    <Grid Grid.Row="0" ColumnDefinitions="150,150,*" ColumnSpacing="10">
+
+                        <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                            <Grid ColumnDefinitions="*,30">
+                                <Image  Grid.Column="1" Source="anglecircledown.png"
+                                          HeightRequest="15"
+                                          WidthRequest="15"
+                                          VerticalOptions="Center"
+                                          HorizontalOptions="Center" />
+                                <controls:NoUnderlinePicker   Title="Brand" SelectedItem="{Binding SelectedBrand}" ItemDisplayBinding="{Binding Text}"  ItemsSource="{Binding BrandList}"/>
+                            </Grid>
+
+                        </Border>
+
+                        <Border Grid.Column="1"  StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
+                            <Grid ColumnDefinitions="*,30">
+                                <Image  Grid.Column="1" Source="anglecircledown.png"
+                                          HeightRequest="15"
+                                          WidthRequest="15"
+                                          VerticalOptions="Center"
+                                          HorizontalOptions="Center" />
+                                <controls:NoUnderlinePicker  Title="Category"  SelectedItem="{Binding SelectedCategory}" ItemDisplayBinding="{Binding Text}"  ItemsSource="{Binding CategoryList}" />
+                            </Grid>
+
+                        </Border>
+                        
+                        <ImageButton Grid.Column="2" Source="anglecircledown.png" WidthRequest="5" MinimumWidthRequest="25" HorizontalOptions="End" Command="{Binding ClosePopupCommand}"/>
+                    </Grid>
+
+                    <Border  Grid.Row="1" StrokeShape="RoundRectangle 5" StrokeThickness="0"  Margin="5" >
+                    <Grid  ColumnDefinitions="150,50,50,*" ColumnSpacing="25" 
+                           VerticalOptions="Center" Padding="10"
+                           BackgroundColor="Orange" >
+
+                        <Label Grid.Column="0" Text="Product" FontSize="12" FontAttributes="Bold" VerticalOptions="Center"
+                               HorizontalOptions="Center"/>
+                        <Label Grid.Column="1" Text="Price" FontSize="12" FontAttributes="Bold" VerticalOptions="Center"
+                               HorizontalOptions="Center"/>
+                        <Label Grid.Column="2" Text="Qty" FontSize="12" FontAttributes="Bold" 
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center"/>
+                        
+                    </Grid>
+                    </Border>
+                    <CollectionView Grid.Row="2"  ItemsSource="{Binding ProductList}">
+                        <CollectionView.EmptyView>
+                            <Label Text="No Products Available" HorizontalOptions="Center" VerticalOptions="Center" TextColor="Gray"/>
+                        </CollectionView.EmptyView>
+
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="model:ProductDropdownDto">
+
+                                <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="10" Margin="2">
+                                    <Grid ColumnDefinitions="150,50,50,*" ColumnSpacing="25" VerticalOptions="Center" >
+                                        <Label Grid.Column="0" Text="{Binding ProductName}" FontAttributes="Bold" FontSize="10" VerticalOptions="Center"/>
+                                        <Label Grid.Column="1" Text="{Binding Price, StringFormat='${0:F2}'}" FontAttributes="Bold" FontSize="12" VerticalOptions="Center" HorizontalOptions="Center"/>
+                                        <Label Grid.Column="2" Text="{Binding StockQty}" FontSize="16" VerticalOptions="Center" HorizontalOptions="Center"/>
+                                        <Button Grid.Column="3" Text="+" CornerRadius="10" WidthRequest="5" HeightRequest="15" BackgroundColor="Orange" HorizontalOptions="End" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddOrderViewModel}},Path=AddToCartCommand}" CommandParameter="{Binding .}"/>
+                                    </Grid>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddOrderViewModel}},Path=AddToCartCommand}" CommandParameter="{Binding .}"/>
+                                    </Border.GestureRecognizers>
+
+                                </Border>
+
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+
+                    </CollectionView>
+                </Grid>
+
+            </bottomSheet:SfBottomSheet.BottomSheetContent>
+        </bottomSheet:SfBottomSheet>
+
+
+        <popup:SfPopup   AnimationMode="SlideOnTop" IsOpen="{Binding IsCustomerSelectionOpen}"  
+                         HeaderHeight="70" HeightRequest="500" FooterHeight="50" 
+                         >
+
+            <popup:SfPopup.PopupStyle>
+                <popup:PopupStyle CornerRadius="10" HeaderBackground="Cornsilk" MessageBackground="Cornsilk"/>
+            </popup:SfPopup.PopupStyle>
+
+            <popup:SfPopup.HeaderTemplate>
+                <DataTemplate>
+                    <Grid Padding="10" ColumnDefinitions="*,Auto" ColumnSpacing="20">
+                        <Border Grid.Column="0" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" HeightRequest="50">
+
+                            <Grid ColumnDefinitions="40,*">
+                                <Image Source="search.png"
+                      HeightRequest="15"
+                      WidthRequest="15"
+                      VerticalOptions="Center"
+                      HorizontalOptions="Center" />
+
+                                <controls:NoUnderlineEntry Grid.Column="1"  FontSize="12" Text="{Binding SearchCustomer}" Placeholder="Search Customer here..."/>
+
+
+                            </Grid>
+
+                        </Border>
+                        <Button Grid.Column="1" 
+                                HorizontalOptions="End" 
+                                Text="X" FontSize="16" CornerRadius="25" WidthRequest="10" 
+                                HeightRequest="10"  BackgroundColor="Coral" Command="{Binding CloseCustomerSelectionCommand}"/>
+                    </Grid>
+                </DataTemplate>
+            </popup:SfPopup.HeaderTemplate>
+            <popup:SfPopup.ContentTemplate>
+                <DataTemplate>
+                    <Grid Margin="15,15,15,25">
+                        <CollectionView ItemsSource="{Binding CustomerList}">
+                            <CollectionView.EmptyView>
+                                <Label Text="No Customers Found"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center"
+                                       TextColor="Gray"/>
+                            </CollectionView.EmptyView>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="model:DropdownDto">
+                                    <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="10" Margin="2">
+                                        <Label Text="{Binding Text}" FontAttributes="Bold" FontSize="12" VerticalOptions="Center"/>
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:AddOrderViewModel}},Path=SelectCustomerCommand}" CommandParameter="{Binding .}"/>
+                                        </Border.GestureRecognizers>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Grid>
+                </DataTemplate>
+            </popup:SfPopup.ContentTemplate>
+
+        </popup:SfPopup>
+
+    </Grid>
+
 </ContentPage>

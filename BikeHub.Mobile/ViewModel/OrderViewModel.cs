@@ -1,5 +1,8 @@
-﻿using BikeHub.Mobile.Pages;
+﻿
+using BikeHub.Mobile.ApiServices;
+using BikeHub.Mobile.Pages;
 using BikeHub.Shared.Dto.Response;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Syncfusion.Maui.Toolkit.Picker;
@@ -12,56 +15,111 @@ using System.Threading.Tasks;
 
 namespace BikeHub.Mobile.ViewModel
 {
-    [QueryProperty(nameof(OrderId), "OrderId")]
+    
     public partial class OrderViewModel : ObservableObject
     {
         [ObservableProperty]
         private string orderId;
 
+        [ObservableProperty]
+        private bool _isRefreshing;
+
+        [ObservableProperty]
+        private bool _isLoadingMore;
+
         public string PageTitle => string.IsNullOrEmpty(OrderId)
                                       ? "Add Order"
                                       : "Edit Order - #" + OrderId;
-        private void OnUserIdChanged(string value)
-        {
+     
+        [ObservableProperty]
+        private ObservableCollection<OrdersDto> _orders = new();
 
-            OnPropertyChanged(nameof(PageTitle));
+        [ObservableProperty]
+        private DropdownDto selectedStatus;
+
+        [ObservableProperty]
+        private DateTime _selectedOrderDate =DateTime.Now;
+        
+        [ObservableProperty]
+        private int? _searchOrderId;
+
+        private CancellationTokenSource _searchOrderIdCts;
+        async partial void OnSearchOrderIdChanged(int? value)
+        {
+            try
+            {
+                _searchOrderIdCts?.Cancel();
+
+                _searchOrderIdCts = new CancellationTokenSource();
+
+                var token = _searchOrderIdCts.Token;
+
+                await Task.Delay(500, token);
+                Orders.Clear();
+                _ = LoadOrdersAsync(token);
+
+            }
+            catch (TaskCanceledException)
+            {
+                //ignore
+            }
+            catch (Exception)
+            {
+
+                
+            }
+
+
         }
 
-        public ObservableCollection<OrdersDto> Orders { get; set; }
+        private CancellationTokenSource _selectedOrderDateCts;
 
-        [ObservableProperty]
-        private string selectedStatus;
-
-        [ObservableProperty]
-        private List<string> statusSource;
-
-        public OrderViewModel()
+        async partial void OnSelectedOrderDateChanged(DateTime value)
         {
+            try
+            {
+                _selectedOrderDateCts?.Cancel();
+                
+                _selectedOrderDateCts = new CancellationTokenSource();
+         
+                var token = _selectedOrderDateCts.Token;
 
-            StatusSource = new List<string> { "Processing", "Shipped", "Delivered", "Cancelled" };
-            selectedStatus = StatusSource[0];
-            Orders = new ObservableCollection<OrdersDto>();
+                await Task.Delay(500, token);
+                Orders.Clear();
+                _currentPage = 1;
+                _ = LoadOrdersAsync(token);
 
-            Orders.Add(new OrdersDto() { OrderId = 1, CustomerName = "John Doe", Status = "Delivered", TotalAmount = 250.75m, Image = "woman.png" });
-            Orders.Add(new OrdersDto() { OrderId = 2, CustomerName = "Jane Smith", Status = "Processing", TotalAmount = 120.50m, Image = "man.png" });
-            Orders.Add(new OrdersDto() { OrderId = 3, CustomerName = "Michael Johnson", Status = "Shipped", TotalAmount = 75.99m, Image = "woman.png" });
-            Orders.Add(new OrdersDto() { OrderId = 4, CustomerName = "Emily Davis", Status = "Delivered", TotalAmount = 180.00m, Image = "man.png" });
-            Orders.Add(new OrdersDto() { OrderId = 5, CustomerName = "William Brown", Status = "Cancelled", TotalAmount = 95.25m, Image = "woman.png" });
-            Orders.Add(new OrdersDto() { OrderId = 6, CustomerName = "Olivia Wilson", Status = "Processing", TotalAmount = 210.40m, Image = "man.png" });
-            Orders.Add(new OrdersDto() { OrderId = 7, CustomerName = "James Taylor", Status = "Shipped", TotalAmount = 300.00m, Image = "woman.png" });
-            Orders.Add(new OrdersDto() { OrderId = 8, CustomerName = "Sophia Martinez", Status = "Delivered", TotalAmount = 50.75m, Image = "man.png" });
-            Orders.Add(new OrdersDto() { OrderId = 9, CustomerName = "Benjamin Anderson", Status = "Processing", TotalAmount = 400.00m, Image = "woman.png" });
-            Orders.Add(new OrdersDto() { OrderId = 10, CustomerName = "Ava Thomas", Status = "Delivered", TotalAmount = 150.20m, Image = "man.png" });
+            }
+            catch (TaskCanceledException) 
+            { 
+            //ignore
+            }
+            catch (Exception)
+            {
+            }
+                
+            
+        }
+
+        [ObservableProperty]
+        private List<DropdownDto> _statusSource=new();
 
 
+        private readonly IOrderApi _orderApi;
+        public OrderViewModel(IOrderApi orderApi)
+        {
+            _orderApi = orderApi;
         }
 
         [RelayCommand]
-        private void StatusChanged(object selectedItem)
+        private async Task StatusChangedAsync(object selectedItem)
         {
-            if (selectedItem != null)
+            if (selectedItem != null && selectedItem is DropdownDto obj)
             {
-                SelectedStatus = selectedItem.ToString();
+                Orders.Clear();
+                SelectedStatus = obj;
+                _currentPage = 1;
+                await LoadOrdersCommand.ExecuteAsync(null);
             }
 
         }
@@ -83,5 +141,90 @@ namespace BikeHub.Mobile.ViewModel
             await Shell.Current.GoToAsync($"{nameof(OrderPlacedPage)}");
         }
 
+        [RelayCommand]
+        private async Task LoadOrderstaus() 
+        {
+            try
+            {
+                var result= await _orderApi.GetOrderStatusAsync(CancellationToken.None);
+
+                StatusSource   = result?.Data?.ToList();
+                SelectedStatus = StatusSource?.FirstOrDefault();
+            }
+            catch (Exception)
+            {
+
+                
+            }
+        }
+
+
+
+
+        private int _currentPage = 1;
+        private int _pageSize = 20;
+        [RelayCommand]
+        private async Task LoadOrdersAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (IsLoadingMore) return;
+
+                IsLoadingMore = true;
+
+                var dto = new BikeHub.Shared.Dto.Request.GetOrderDto
+                {
+                    StartDate = SelectedOrderDate,
+                    OrderStatus = SelectedStatus.Value,
+                    PageSize = _pageSize,
+                    PageNumber = _currentPage,
+                    OrderId = SearchOrderId
+                };
+
+                var orders = await _orderApi.GetOrdersAsync(dto, cancellationToken);
+
+                if (orders?.Data == null || !orders.Data.Data.Any())
+                {
+                    IsLoadingMore = false;
+                    return;
+
+                }
+
+                foreach (var order in orders.Data.Data)
+                {
+                    Orders.Add(order);
+                }
+
+                _currentPage++;
+
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions (e.g., log error, show message to user)
+            }
+            finally 
+            { 
+                IsLoadingMore = false;
+                IsRefreshing=false;
+            }
+
+        }
+
+        [RelayCommand]
+        private async Task RefreshOrdersAsync() 
+        {
+            try
+            {
+                IsRefreshing = true;
+                Orders.Clear();
+                _currentPage = 1;
+                await LoadOrdersAsync(CancellationToken.None);
+            }
+            catch (Exception)
+            {
+
+            }
+            finally { IsRefreshing = false; }
+        }
     }
 }

@@ -1,0 +1,78 @@
+@page "/customers"
+@inject DataService Data
+@inject AuthService Auth
+
+<div class="page-content">
+    <div class="page-toolbar">
+        <input class="tb-search-inp" type="text" placeholder="🔍 Search customers..." @bind="search" @bind:event="oninput" />
+        @if (Auth.HasPermission(p=>p.CanCreateCustomers))
+        { <button class="btn-primary" @onclick="()=>OpenForm(null)">+ Add Customer</button> }
+    </div>
+
+    <div class="card">
+        <table class="bh-table">
+            <thead><tr><th>Customer</th><th>Email</th><th>Phone</th><th>Address</th><th>Joined</th><th>Orders</th><th>Actions</th></tr></thead>
+            <tbody>
+            @foreach (var c in Filtered)
+            {
+                <tr>
+                    <td>
+                        <div class="cust-cell">
+                            <div class="cust-avatar" style="background:@AvatarColor(c.Id)">@c.ImageUrl</div>
+                            <span class="fw6">@c.Name</span>
+                        </div>
+                    </td>
+                    <td class="muted">@c.Email</td>
+                    <td class="mono">@c.Phone</td>
+                    <td class="muted small">@c.Address</td>
+                    <td class="muted">@c.CreatedAt.ToString("MMM d, yyyy")</td>
+                    <td><span class="count-badge">@Data.Orders.Count(o=>o.CustomerId==c.Id)</span></td>
+                    <td>
+                        @if (Auth.HasPermission(p=>p.CanEditCustomers))
+                        { <button class="act-btn edit" @onclick="()=>OpenForm(c)">✎</button> }
+                        @if (Auth.HasPermission(p=>p.CanDeleteCustomers))
+                        { <button class="act-btn del" @onclick="()=>Data.DeleteCustomer(c.Id)">✕</button> }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (showForm)
+{
+    <div class="modal-overlay" @onclick="Close">
+        <div class="modal" @onclick:stopPropagation>
+            <div class="modal-header">
+                <div class="modal-title">@(editing==null?"Add Customer":"Edit Customer")</div>
+                <button class="modal-close" @onclick="Close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row two">
+                    <div class="form-group"><label>Full Name *</label><input class="form-input" @bind="form.Name" /></div>
+                    <div class="form-group"><label>Email *</label><input class="form-input" type="email" @bind="form.Email" /></div>
+                </div>
+                <div class="form-row two">
+                    <div class="form-group"><label>Phone</label><input class="form-input" @bind="form.Phone" /></div>
+                    <div class="form-group"><label>Initials / Avatar</label><input class="form-input" @bind="form.ImageUrl" placeholder="SC" maxlength="2" /></div>
+                </div>
+                <div class="form-group"><label>Address</label><input class="form-input" @bind="form.Address" /></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost" @onclick="Close">Cancel</button>
+                <button class="btn-primary" @onclick="Save">Save</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    string search=""; bool showForm; Customer? editing; Customer form = new();
+    IEnumerable<Customer> Filtered => Data.Customers.Where(c=>string.IsNullOrEmpty(search)||c.Name.Contains(search,StringComparison.OrdinalIgnoreCase)||c.Email.Contains(search,StringComparison.OrdinalIgnoreCase));
+    string[] colors = { "#FF6B35","#4ECDC4","#6C8EF5","#F7B731","#FC5C7D","#44CF6C","#A29BFE" };
+    string AvatarColor(int id) => colors[id % colors.Length];
+    void OpenForm(Customer? c) { editing=c; form=c==null?new():new Customer{Id=c.Id,Name=c.Name,Email=c.Email,Phone=c.Phone,Address=c.Address,ImageUrl=c.ImageUrl}; showForm=true; }
+    void Save() { if(editing==null) Data.AddCustomer(form); else Data.UpdateCustomer(form); Close(); }
+    void Close() { showForm=false; editing=null; }
+}

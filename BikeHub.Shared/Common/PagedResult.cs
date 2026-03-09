@@ -13,7 +13,7 @@ namespace BikeHub.Shared.Common
         
         public int TotalPages => (int)Math.Ceiling((double)TotalRecords / PageSize);
 
-        public bool HasNextPage => TotalPages < Page;
+        public bool HasNextPage => Page < TotalPages;
         public bool HasPrevPage => Page > 1;
 
         public List<T> Data { get; set; } = new();

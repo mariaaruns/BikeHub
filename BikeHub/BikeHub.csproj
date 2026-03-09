@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Service\Interface\IApplicationUserStore.cs" />
+    <Compile Remove="Service\RoleStore.cs" />
+    <Compile Remove="Service\UserDetails.cs" />
+    <Compile Remove="Service\UserStore.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Carter" Version="9.0.0" />
     <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
@@ -14,6 +21,8 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.3" />
     <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="9.0.0" />
     <PackageReference Include="Npgsql" Version="10.0.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.1" />
@@ -25,6 +34,7 @@
 
   <ItemGroup>
     <Folder Include="Content\Images\Brands\" />
+    <Folder Include="Content\Images\Customers\" />
     <Folder Include="Content\Images\User\" />
     <Folder Include="Content\Images\Products\" />
   </ItemGroup>

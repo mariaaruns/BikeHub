@@ -3,17 +3,26 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="BikeHub.Mobile.Pages.AddEditCustomer"
              xmlns:controls="clr-namespace:BikeHub.Mobile.Controls"
+              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
              xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
              xmlns:conv="clr-namespace:BikeHub.Mobile.Converters"
-             x:DataType="vm:CustomerViewModel"
+             x:DataType="vm:AddEditCustomerViewmodel"
              Title="{Binding PageTitle}">
 
 
     <ScrollView>
         <VerticalStackLayout Margin="16,10" Spacing="20" >
-            <Border BackgroundColor="Grey" HeightRequest="150" StrokeShape="RoundRectangle 75" StrokeThickness="0" HorizontalOptions="Center" >
-                <Image Source="man.png" Aspect="Fill"/>
+            <Border BackgroundColor="Grey" HeightRequest="150" WidthRequest="150" StrokeShape="RoundRectangle 75" StrokeThickness="0" HorizontalOptions="Center" >
+                <Grid>
+                    <Image Source="{Binding Image,Mode=TwoWay}" Aspect="Fill">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ChoosePhotoCommand}" />
+                        </Image.GestureRecognizers>
+                    </Image>
+                </Grid>
+
+
             </Border>
             <Label Text="Upload Customer profile here." TextColor="DeepSkyBlue" HorizontalOptions="Center"/>
 
@@ -23,26 +32,26 @@
                 <Grid RowDefinitions="Auto,Auto" >
 
                     <Grid ColumnDefinitions="*,*"
-          RowDefinitions="Auto,Auto"
-          ColumnSpacing="10"
-          RowSpacing="5">
+                          RowDefinitions="Auto,Auto"
+                          ColumnSpacing="10"
+                          RowSpacing="5">
 
                         <!-- First Name -->
                         <Label Grid.Row="0" Grid.Column="0" Text="First Name" FontSize="16"/>
                         <Border Grid.Row="1" Grid.Column="0"
-                StrokeThickness="1"
-                StrokeShape="RoundRectangle 10"
-                Padding="5,5">
-                            <controls:NoUnderlineEntry Placeholder="First Name"/>
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="5,5">
+                            <controls:NoUnderlineEntry Placeholder="First Name" Text="{Binding FirstName}"/>
                         </Border>
 
                         <!-- Last Name -->
                         <Label Grid.Row="0" Grid.Column="1" Text="Last Name" FontSize="16"/>
                         <Border Grid.Row="1" Grid.Column="1"
-                StrokeThickness="1"
-                StrokeShape="RoundRectangle 10"
-                Padding="5,5">
-                            <controls:NoUnderlineEntry Placeholder="Last Name"/>
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="5,5">
+                            <controls:NoUnderlineEntry Placeholder="Last Name" Text="{Binding LastName}"/>
                         </Border>
                     </Grid>
 
@@ -51,20 +60,20 @@
                 <Label Text="Email Address" FontSize="16"/>
 
                 <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
-                    <controls:NoUnderlineEntry Placeholder="youremailaddress@email.com"/>
+                    <controls:NoUnderlineEntry Placeholder="youremailaddress@email.com" Text="{Binding Email}"/>
                 </Border>
 
                 <Label Text="Phone Number" FontSize="16"/>
 
                 <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
-                    <controls:NoUnderlineEntry Placeholder="Phone Number"/>
+                    <controls:NoUnderlineEntry Placeholder="Phone Number" Text="{Binding Phone}"/>
                 </Border>
 
 
                 <Label Text="Street" FontSize="16"/>
 
                 <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
-                    <controls:NoUnderlineEntry Placeholder="Street"/>
+                    <controls:NoUnderlineEntry Placeholder="Street" Text="{Binding Street}"/>
                 </Border>
 
 
@@ -81,7 +90,7 @@
                                 StrokeThickness="1"
                                 StrokeShape="RoundRectangle 10"
                                 Padding="5,5">
-                            <controls:NoUnderlineEntry Placeholder="City"/>
+                            <controls:NoUnderlineEntry Placeholder="City" Text="{Binding City}"/>
                         </Border>
 
                         <!-- Last Name -->
@@ -90,7 +99,7 @@
                                 StrokeThickness="1"
                                 StrokeShape="RoundRectangle 10"
                                 Padding="5,5">
-                            <controls:NoUnderlineEntry Placeholder="State"/>
+                            <controls:NoUnderlineEntry Placeholder="State" Text="{Binding State}"/>
                         </Border>
                     </Grid>
 
@@ -100,13 +109,17 @@
                 <Label Text="Zip Code" FontSize="16"/>
 
                 <Border StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="5,5" >
-                    <controls:NoUnderlineEntry Placeholder="Zip Code"/>
+                    <controls:NoUnderlineEntry Placeholder="Zip Code" Text="{Binding ZipCode}"/>
                 </Border>
 
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
 
-                    <Button Grid.Column="0" BackgroundColor="Orange" Text="Save Changes"/>
-                    <Button Grid.Column="1" BackgroundColor="LightGrey" Text="Cancel"/>
+                    <Button Grid.Column="0" 
+                            BackgroundColor="Orange"
+                            Text="Save Changes" 
+                            Command="{Binding SaveCustomerCommand}"/>
+                    
+                    <Button Grid.Column="1" BackgroundColor="LightGrey" Text="Cancel" Command="{Binding GoBackCommand}"/>
                 </Grid>
 
             </VerticalStackLayout>

@@ -18,6 +18,28 @@ namespace BikeHub.Repository
             this._dbConnection = dbConnection;
         }
 
+        public  async Task<IEnumerable<BrandYearlySalesDto>> GetBrandSalesByYearAsync(int year, int orderStatus)
+        {
+            try
+            {
+                var sql = DashboardQuery.BrandYearlySales;
+                var parameters = new { @year = year, 
+                                        @orderStatus = orderStatus 
+                                      };
+                using (var connection = new SqlConnection(_dbConnection.ConnectionString))
+                {
+                    var result = await connection.QueryAsync<BrandYearlySalesDto>(sql, parameters);
+                    
+                    return result;
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         public async Task<DashboardResponseDto> GetCounts(int year, int month)
         {
             try

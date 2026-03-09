@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using BikeHub.Shared.Dto.Response;
+using System.Globalization;
 
 namespace BikeHub.Mobile.Converters
 {
@@ -6,9 +7,9 @@ namespace BikeHub.Mobile.Converters
     {
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is string status && targetType == typeof(Color))
+            if (value is DropdownDto status && targetType == typeof(Color))
             {
-                return status switch
+                return status.Text switch
                 {
                     "Processing" => Colors.Orange,
                     "Shipped" => Colors.YellowGreen,

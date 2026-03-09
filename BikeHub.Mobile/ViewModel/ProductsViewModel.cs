@@ -23,9 +23,6 @@ namespace BikeHub.Mobile.ViewModel
 
     public partial class ProductsViewModel : ObservableObject
     {
-
-
-
         [ObservableProperty]
         private ObservableCollection<ProductsDto> _products = new();
         [ObservableProperty]
@@ -54,6 +51,7 @@ namespace BikeHub.Mobile.ViewModel
 
         [ObservableProperty]
         private bool _isLoadingMore;
+
         [ObservableProperty]
         private bool _isBrandBusy;
 
@@ -129,7 +127,7 @@ namespace BikeHub.Mobile.ViewModel
 
                 Categories.Clear();
 
-                //_ = LoadBrandAsync(token);
+                _ = LoadCategoryAsync(token);
             }
             catch (TaskCanceledException)
             {
@@ -163,29 +161,55 @@ namespace BikeHub.Mobile.ViewModel
         {
             if (brand is null)
                 return;
+            try
+            {
+                bool confirm = await Shell.Current.DisplayAlert
+                               (
+                                "Delete Brand",
+                                $"Are you sure you want to delete {brand.BrandName}?",
+                                "Yes", "No"
+                               );
+                if (confirm && Brands.Contains(brand))
+                {
+                    var result = await _productApi.DeleteBrandByIdAsync(brand.BrandId, CancellationToken.None);
+                    if (result.Status)
+                        Brands.Remove(brand);
+                }
+            }
+            catch (Exception ex)
+            {
+                var toast = Toast.Make("Unexpected Error , While Deleting Brand", ToastDuration.Long);
+                await toast.Show(CancellationToken.None);
+            }
 
-            bool confirm = await Shell.Current.DisplayAlert(
-                "Delete Brand",
-                $"Are you sure you want to delete {brand.BrandName}?",
-                "Yes", "No");
-
-            if (confirm && Brands.Contains(brand))
-                Brands.Remove(brand);
         }
 
         [RelayCommand]
         public async Task DeleteProductAsync(ProductsDto product)
         {
-            if (product is null)
-                return;
+            try
+            {
+                if (product is null)
+                    return;
 
-            bool confirm = await Shell.Current.DisplayAlert(
-                "Delete product",
-                $"Are you sure you want to delete {product.ProductName}?",
-                "Yes", "No");
+                bool confirm = await Shell.Current.DisplayAlert(
+                    "Delete product",
+                    $"Are you sure you want to delete {product.ProductName}?",
+                    "Yes", "No");
 
-            if (confirm && Products.Contains(product))
-                Products.Remove(product);
+                if (confirm && Products.Contains(product))
+                {
+                    var result = await _productApi.DeactivateProductAsync(product.ProductId, CancellationToken.None);
+                    if (result.Status)
+                        Products.Remove(product);
+                }
+            }
+            catch   (Exception ex)
+            {
+
+                await Shell.Current.DisplayAlert("Error", "Unexpected Error , While Deleting Product", "OK");
+            }
+                
         }
 
 
@@ -194,18 +218,25 @@ namespace BikeHub.Mobile.ViewModel
         {
             if (category is null)
                 return;
-
-            bool confirm = await Shell.Current.DisplayAlert(
-                "Delete category",
-                $"Are you sure you want to delete {category.CategoryName}?",
-                "Yes", "No");
-
-            if (confirm && Categories.Contains(category))
+            try
             {
-               var result= await _productApi.DeleteCategoryByIdAsync(category.CategoryId,CancellationToken.None);
-                if(result.Status)
-                Categories.Remove(category);
+                bool confirm = await Shell.Current.DisplayAlert(
+                    "Delete category",
+                    $"Are you sure you want to delete {category.CategoryName}?",
+                    "Yes", "No");
 
+                if (confirm && Categories.Contains(category))
+                {
+                    var result = await _productApi.DeleteCategoryByIdAsync(category.CategoryId, CancellationToken.None);
+                    if (result.Status)
+                        Categories.Remove(category);
+
+                }
+            }
+            catch(Exception ex)
+            {
+                var toast = Toast.Make("Unexpected Error , While Deleting Category", ToastDuration.Long);
+                await toast.Show(CancellationToken.None);
             }
         }
 
@@ -214,7 +245,13 @@ namespace BikeHub.Mobile.ViewModel
         [RelayCommand]
         public async Task GotoAddProductAsync(ProductsDto? dto)
         {
-            await Shell.Current.GoToAsync($"{nameof(AddEditProductPage)}?productId={dto?.ProductId}");
+            //await Shell.Current.GoToAsync($"{nameof(AddEditProductPage)}?productId={dto?.ProductId}");
+
+            await Shell.Current.GoToAsync($"{nameof(AddEditProductPage)}", new Dictionary<string, object>
+            {
+
+                ["Product"] = dto
+            });
         }
 
 
@@ -258,6 +295,9 @@ namespace BikeHub.Mobile.ViewModel
 
                 if (result.Status)
                     result.Data.Data.ForEach(p => Products.Add(p));
+
+                
+
 
                 _currentPage++;
             }
@@ -314,7 +354,7 @@ namespace BikeHub.Mobile.ViewModel
                 IsBrandBusy = true;
 
 
-
+                Brands.Clear();
                 var result = await _productApi.GetAllBrandsAsync(brandName, cancellationToken);
 
                 if (result is null)
@@ -322,7 +362,7 @@ namespace BikeHub.Mobile.ViewModel
                     IsLoadingMore = false;
                     return;
                 }
-                Brands.Clear();
+               
                 if (result.Status)
                     foreach (var brand in result.Data)
                     {

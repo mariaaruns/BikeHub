@@ -22,5 +22,18 @@
                                                     FORMAT(t1.order_date, 'MMM')
                                                     ORDER BY 
                                                     MONTH(t1.order_date);";
+
+        public const string BrandYearlySales = @"
+                   select tab.brand_id,tab.brand_name[Brand],Sum(FinalPrice) [NetAmount]
+                    from(
+                            select   t1.brand_id,t1.brand_name ,t4.list_price - (t4.list_price * t4.discount) AS FinalPrice 
+                            from production.brands t1
+                            inner join production.products t2 on t1.brand_id=t2.brand_id
+                            inner join sales.order_items t4 on t4.product_id =t2.product_id
+                            inner join sales.orders t3 on t3.order_id =t4.order_id
+                            where year(t3.order_date )=@year and t3.order_status=@orderStatus and t3.store_id=1
+                        ) tab
+                   group by tab.brand_id,tab.brand_name  
+                   ORDER BY [NetAmount] DESC";
     }
 }

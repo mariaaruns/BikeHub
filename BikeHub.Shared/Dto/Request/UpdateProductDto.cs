@@ -22,7 +22,7 @@ namespace BikeHub.Shared.Dto.Request
         public int ModelYear { get; set; }
         [Required]
         public decimal ListPrice { get; set; }
-        public IFormFile? ProductImage { get; set; }
+        public byte[]? Imagebyte { get; set; }
         public string? ImageUrl { get; set; }
         public int StockQty { get; set; }
     }

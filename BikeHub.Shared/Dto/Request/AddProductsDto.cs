@@ -24,7 +24,7 @@ namespace BikeHub.Shared.Dto.Request
         
         [Required]
         public decimal ListPrice { get; set; }
-        public IFormFile? ProductImage { get; set; }
+        public byte[]? Imagebyte { get; set; }
         public string? ImageUrl { get; set; }
 
         public int StockQty { get; set; }

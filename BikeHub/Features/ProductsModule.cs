@@ -1,4 +1,5 @@
 ﻿using BikeHub.DapperQuery;
+using BikeHub.Extension;
 using BikeHub.Repository;
 using BikeHub.Repository.IRepository;
 using BikeHub.Shared.Common;
@@ -15,7 +16,6 @@ namespace BikeHub.Features
 {
     public class ProductsModule : ICarterModule
     {
-
         public void AddRoutes(IEndpointRouteBuilder app)
         {
             //Products Start
@@ -31,6 +31,14 @@ namespace BikeHub.Features
 
                     var result = await productRepository.GetAllProductsAsync(req);
 
+                    foreach (var item in result.Data.Where(x=>!string.IsNullOrEmpty(x.ProductImage))) 
+                    {
+                        if (item.ProductImage!.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                            continue;
+
+                        item.ProductImageUrl = $"{commonInfo.BaseUrl}/{commonInfo.PRODUCT_IMG_PATH}/{item.ProductImage}";
+                    }
+
                     return Results.Ok(ApiResponse<PagedResult<ProductsDto>>.Success(result, "Products fetched successfully"));
 
                 }
@@ -44,11 +52,10 @@ namespace BikeHub.Features
             .Produces<ApiResponse<PagedResult<ProductsDto>>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<string>>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
-            .WithName("GetAllProducts");//.RequireAuthorization();
+            .WithName("GetAllProducts")
+            .RequireAuthorization("PRODUCT_VIEW");
 
-
-
-            app.MapPost("/products/add", async (IProductRepository productRepository, [FromForm] AddProductsDto req) =>
+            app.MapPost("/products/add", async (IProductRepository productRepository, [FromBody] AddProductsDto req) =>
             {
 
                 string newfilePath = string.Empty;
@@ -58,36 +65,31 @@ namespace BikeHub.Features
 
                     if (!IsValid.IsValid)
                     {
-                        return Results.BadRequest(ApiResponse<string>.Fail("Invalid Request", IsValid.Errors));
+                        return Results.BadRequest(ApiResponse<int>.Fail("Invalid Request", IsValid.Errors));
                     }
 
-                    if (req.ProductImage != null && req.ProductImage.Length > 0)
+                    var extension = ImageHelper.GetImageExtension(req.Imagebyte);
+
+                    if (string.IsNullOrEmpty(extension))
                     {
-                        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), commonInfo.PRODUCT_IMG_PATH);
-                        if (!Directory.Exists(uploadsFolder))
-                            Directory.CreateDirectory(uploadsFolder);
-
-                        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(req.ProductImage.FileName)}";
-                        newfilePath = Path.Combine(uploadsFolder, fileName);
-
-                        using (var stream = new FileStream(newfilePath, FileMode.Create))
-                        {
-                            await req.ProductImage.CopyToAsync(stream);
-                        }
-
-                        req.ImageUrl = $"{fileName}";
+                        throw new Exception("Invalid image format");
                     }
+
+                    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), commonInfo.PRODUCT_IMG_PATH);
+
+
+                    var fileName = await ImageHelper.SaveImageAsync(req.Imagebyte,
+                                                folderPath,
+                                                req.ProductName,
+                                                extension);
+                    req.ImageUrl = fileName;
+
 
                     var result = await productRepository.CreateProductAsync(req);
 
                     if (result == 0)
                     {
-                        if (File.Exists(newfilePath))
-                        {
-                            File.Delete(newfilePath);
-                        }
-                        return Results.BadRequest(ApiResponse<string>.Fail("Failed", "Product creation failed"));
-
+                        return Results.BadRequest(ApiResponse<int>.Fail("Failed", "Product creation failed"));
                     }
 
                     return Results.Ok(ApiResponse<int>.Success(result, "Product created successfully"));
@@ -95,60 +97,52 @@ namespace BikeHub.Features
                 }
                 catch (Exception ex)
                 {
-                    if (File.Exists(newfilePath))
-                    {
-                        File.Delete(newfilePath);
-                    }
-
-                    return Results.InternalServerError(ApiResponse<string>.Fail("Failed", ex.Message));
+                    return Results.InternalServerError(ApiResponse<int>.Fail("Failed", ex.Message));
                 }
 
             })
             .WithTags("Products")
             .Produces<ApiResponse<int>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<int>>(StatusCodes.Status500InternalServerError)
+            .Produces<ApiResponse<int>>(StatusCodes.Status400BadRequest)
             .DisableAntiforgery()
-            .WithName("Create Product");
-
+            .WithName("Create Product").RequireAuthorization("PRODUCT_ADD"); ;
 
 
             app.MapPut("/products/update", async (IProductRepository productRepository, [FromForm] UpdateProductDto req) =>
             {
-                string newFilePath = string.Empty;
-
                 try
                 {
                     var IsValid = ModelValidator.Validate(req);
                     if (!IsValid.IsValid)
-                        return Results.BadRequest(ApiResponse<string>.Fail("Invalid Request", IsValid.Errors));
+                        return Results.BadRequest(ApiResponse<bool>.Fail("Invalid Request", IsValid.Errors));
 
                     if (req.ProductId <= 0)
-                        return Results.BadRequest(ApiResponse<string>.Fail("Invalid ProductId"));
+                        return Results.BadRequest(ApiResponse<bool>.Fail("Invalid ProductId"));
 
                     //get existing product details
                     var productDetails = await productRepository.GetProductByIdAsync(req.ProductId);
                     if (productDetails == null)
-                        return Results.NotFound(ApiResponse<string>.Fail("Product not found"));
+                        return Results.NotFound(ApiResponse<bool>.Fail("Product not found"));
 
                     //  Save new image if provided
-                    if (req.ProductImage != null && req.ProductImage.Length > 0)
+                   
+                    var extension = ImageHelper.GetImageExtension(req.Imagebyte);
+
+                    if (!string.IsNullOrEmpty(extension))
                     {
-                        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), commonInfo.PRODUCT_IMG_PATH);
-                        if (!Directory.Exists(uploadsFolder))
-                            Directory.CreateDirectory(uploadsFolder);
+                        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), commonInfo.PRODUCT_IMG_PATH);
 
-                        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(req.ProductImage.FileName)}";
-                        newFilePath = Path.Combine(uploadsFolder, fileName);
 
-                        using (var stream = new FileStream(newFilePath, FileMode.Create))
-                        {
-                            await req.ProductImage.CopyToAsync(stream);
-                        }
-
+                        var fileName = await ImageHelper.SaveImageAsync(req.Imagebyte,
+                                                    folderPath,
+                                                    req.ProductName,
+                                                    extension);
                         req.ImageUrl = fileName;
                     }
                     else
                     {
-                        req.ImageUrl = productDetails.ProductImage; // keep old image
+                        req.ImageUrl = productDetails.ProductImage;
                     }
 
                     //Update DB
@@ -156,37 +150,19 @@ namespace BikeHub.Features
 
                     if (!result)
                     {
-                        // delete if file created and db not updated
-                        if (!string.IsNullOrEmpty(newFilePath) && File.Exists(newFilePath))
-                            File.Delete(newFilePath);
-
-                        return Results.BadRequest(ApiResponse<string>.Fail("Failed", "Product update failed"));
+                        return Results.BadRequest(ApiResponse<bool>.Fail("Failed", "Product update failed"));
                     }
-
-                    //  Delete old image only after successful DB update
-                    if (req.ProductImage != null && !string.IsNullOrEmpty(productDetails.ProductImage))
-                    {
-                        var oldFilePath = Path.Combine(commonInfo.PRODUCT_IMG_PATH, productDetails.ProductImage);
-                        if (File.Exists(oldFilePath))
-                            File.Delete(oldFilePath);
-                    }
-
                     return Results.Ok(ApiResponse<bool>.Success(true, "Product updated successfully"));
                 }
                 catch (Exception ex)
                 {
-                    // cleanup new file if something went wrong
-                    if (!string.IsNullOrEmpty(newFilePath) && File.Exists(newFilePath))
-                        File.Delete(newFilePath);
-
-                    return Results.Problem(ApiResponse<string>.Fail("Failed", ex.Message).ToString(), statusCode: 500);
+                    return Results.Problem(ApiResponse<bool>.Fail("Failed", ex.Message).ToString(), statusCode: 500);
                 }
             })
               .WithTags("Products")
               .Produces<ApiResponse<bool>>(StatusCodes.Status200OK)
               .DisableAntiforgery()
-              .WithName("Update Product");
-
+              .WithName("Update Product").RequireAuthorization("PRODUCT_EDIT"); 
 
 
             app.MapGet("/products/{id}", async (IProductRepository productRepository, [FromRoute, Required] int id) =>
@@ -198,10 +174,14 @@ namespace BikeHub.Features
                         return Results.BadRequest(ApiResponse<string>.Fail("Invalid Request", "Id must be greater than zero"));
                     }
                     var result = await productRepository.GetProductByIdAsync(id);
+
                     if (result == null)
                     {
                         return Results.NotFound(ApiResponse<string>.Fail("Not Found", "Product not found"));
                     }
+                    result.ProductImage=!string.IsNullOrEmpty(result.ProductImage) && !result.ProductImage.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                        ? $"{commonInfo.BaseUrl}/{commonInfo.PRODUCT_IMG_PATH}/{result.ProductImage}"
+                        : result.ProductImage;
                     return Results.Ok(ApiResponse<GetProductByIdDto>.Success(result, "Product fetched successfully"));
                 }
                 catch (Exception ex)
@@ -212,24 +192,21 @@ namespace BikeHub.Features
             .WithTags("Products")
             .DisableAntiforgery()
             .Produces<ApiResponse<GetProductByIdDto>>(StatusCodes.Status200OK)
-            .WithName("Get Product");
-
-
+            .WithName("Get Product")
+            .RequireAuthorization("PRODUCT_VIEW");
 
             app.MapPatch("/products/{id}/deactivate", async (IProductRepository repo, int id) =>
             {
                 var result = await repo.DeactivateProductAsync(id);
                 return result
                     ? Results.Ok(ApiResponse<bool>.Success(true, "Product deactivated"))
-                    : Results.NotFound(ApiResponse<string>.Fail("Product not found"));
+                    : Results.NotFound(ApiResponse<bool>.Fail("Product not found"));
             }).WithTags("Products")
             .DisableAntiforgery()
             .Produces<ApiResponse<bool>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<string>>(StatusCodes.Status404NotFound)
-            .WithName("Deactivate Product");
-
-
-
+            .Produces<ApiResponse<bool>>(StatusCodes.Status404NotFound)
+            .WithName("Deactivate Product")
+            .RequireAuthorization("PRODUCT_DELETE"); ;
 
 
             //category start
@@ -250,7 +227,7 @@ namespace BikeHub.Features
             .DisableAntiforgery()
             .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
-            .WithName("CategoryProduct");
+            .WithName("CategoryProduct").RequireAuthorization("PRODUCT_ADD"); ;
 
             app.MapGet("/GetCategory", async (IProductRepository repo,string? CategoryNameFilter) =>
             {
@@ -272,7 +249,8 @@ namespace BikeHub.Features
             .DisableAntiforgery()
             .Produces<ApiResponse<IEnumerable<CategoryDto>>>(StatusCodes.Status404NotFound)
             .Produces<ApiResponse<IEnumerable<CategoryDto>>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<IEnumerable<CategoryDto>>>(StatusCodes.Status500InternalServerError);
+            .Produces<ApiResponse<IEnumerable<CategoryDto>>>(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization("PRODUCT_VIEW"); 
 
             app.MapGet("/GetCategoryById", async (IProductRepository product, int id) =>
             {
@@ -295,7 +273,8 @@ namespace BikeHub.Features
             .DisableAntiforgery()
             .Produces<ApiResponse<CategoryDto>>(StatusCodes.Status404NotFound)
             .Produces<ApiResponse<CategoryDto>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<CategoryDto>>(StatusCodes.Status500InternalServerError);
+            .Produces<ApiResponse<CategoryDto>>(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization("PRODUCT_VIEW"); ;
 
             app.MapPut("/UpdateCategory", async (IProductRepository Ipo, UpdateCategoryDto upt) =>
             {
@@ -312,7 +291,8 @@ namespace BikeHub.Features
             }).WithTags("Category")
             .DisableAntiforgery()
             .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization("PRODUCT_EDIT"); 
 
             app.MapDelete("/DeleteCategory", async (IProductRepository ipo, int id) =>
             {
@@ -328,13 +308,14 @@ namespace BikeHub.Features
             }).WithTags("Category")
             .DisableAntiforgery()
             .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization("PRODUCT_DELETE");
 
 
 
 
             //brand start
-            app.MapPost("/AddBrand", async (IProductRepository Ipo, [FromForm] AddBrandDto dto) =>
+            app.MapPost("/AddBrand", async (IProductRepository _productRepository, [FromForm] AddBrandDto dto) =>
             {
                 var fileNewPath = string.Empty;
                 try
@@ -344,34 +325,89 @@ namespace BikeHub.Features
                     {
                         return Results.BadRequest(ApiResponse<string>.Fail("Invalid request", Isvalid.Errors));
                     }
-                    if (dto.BrandImage != null && dto.BrandImage.Length > 0)
+
+                    var extension = ImageHelper.GetImageExtension(dto.Imagebyte);
+
+                    if (string.IsNullOrEmpty(extension))
                     {
-                        var uploadFilse = Path.Combine(Directory.GetCurrentDirectory(), commonInfo.Brand_IMG_PATH);
-
-                        if (!Directory.Exists(uploadFilse))
-                            Directory.CreateDirectory(uploadFilse);
-
-                        var folderpath = $"{Guid.NewGuid()}{Path.GetExtension(dto.BrandImage.FileName)}";
-                        fileNewPath = Path.Combine(uploadFilse, folderpath);
-
-                        using (var stream = new FileStream(fileNewPath, FileMode.Create))
-                        {
-                            await dto.BrandImage.CopyToAsync(stream);
-                        }
-                        dto.ImageUrl = folderpath;
+                        throw new Exception("Invalid image format");
                     }
-                    await Ipo.CreateBrandAsync(dto);
+
+                    var folderPath = Path.Combine(Directory.GetCurrentDirectory(), commonInfo.Brand_IMG_PATH);
+
+
+                    var fileName = await ImageHelper.SaveImageAsync(dto.Imagebyte,
+                                                folderPath,
+                                                dto.BrandName,
+                                                extension);
+                    dto.ImageUrl = fileName;
+
+                    await _productRepository.CreateBrandAsync(dto);
 
                     return Results.Ok(ApiResponse<string>.Success("Data Was Successfully"));
                 }
-                catch (Exception E)
+                catch (Exception)
                 {
                     return Results.InternalServerError(ApiResponse<string>.Fail("Data Was Not Insert"));
                 }
             }).WithTags("Brand")
             .DisableAntiforgery()
             .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization("PRODUCT_ADD"); ;
+
+             app.MapPut("/updateBrand", async (IProductRepository _productRepository, [FromForm] UpdateBrandDto dto) =>
+            {
+                var fileNewPath = string.Empty;
+                try
+                {
+                    var Isvalid = ModelValidator.Validate(dto);
+                    
+                    if (!Isvalid.IsValid)
+                    {
+                        return Results.BadRequest(ApiResponse<string>.Fail("Invalid request", Isvalid.Errors));
+                    }
+
+                    var existingBrand = await _productRepository.GetBrandByIdAsync(dto.BrandId);
+                    
+                    if (existingBrand == null)
+                    {
+                        return Results.NotFound(ApiResponse<string>.Fail("Brand not found"));
+                    }
+
+
+                    var extension = ImageHelper.GetImageExtension(dto.Imagebyte);
+
+                    if (!string.IsNullOrEmpty(extension))
+                    {
+                        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), commonInfo.Brand_IMG_PATH);
+
+
+                        var fileName = await ImageHelper.SaveImageAsync(dto.Imagebyte,
+                                                    folderPath,
+                                                    dto.BrandName,
+                                                    extension);
+                        dto.ImageUrl = fileName;
+                    }
+                    else {
+                    
+                    dto.ImageUrl = existingBrand.Image;
+
+                    }
+                        //  await _productRepository.Bran(dto);
+                        return Results.Ok(ApiResponse<string>.Success("Brand Updated Successfully"));
+                }
+                catch (Exception)
+                {
+                    return Results.InternalServerError(ApiResponse<string>.Fail("Data Was Not Updated!!!"));
+                }
+            }).WithTags("Brand")
+            .DisableAntiforgery()
+            .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization("PRODUCT_EDIT");
+
+
 
 
             app.MapGet("/GetAllBrand", async (IProductRepository respo,string? BrandNameFilter) =>
@@ -379,7 +415,12 @@ namespace BikeHub.Features
                 try
                 {
                     var rowsaffect = await respo.GetAllBrandsAsync(BrandNameFilter);
-
+                    rowsaffect = rowsaffect.Select(x => new BrandsDto
+                    {
+                        BrandId=x.BrandId,
+                        BrandName=x.BrandName,
+                        Image= @"https://f405rch9-7079.inc1.devtunnels.ms/Content/Images/Brands/" + x.Image
+                    });
                     if (rowsaffect == null)
                     {
                         return Results.NotFound(ApiResponse<IEnumerable<string>>.Fail("Data Not Found"));
@@ -395,7 +436,8 @@ namespace BikeHub.Features
             .DisableAntiforgery()
             .Produces<ApiResponse<BrandsDto>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<string>>(StatusCodes.Status404NotFound)
-            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization("PRODUCT_VIEW");
 
             app.MapGet("/GetBrandById", async (IProductRepository repos, int Id) =>
             {
@@ -418,7 +460,8 @@ namespace BikeHub.Features
             .DisableAntiforgery()
             .Produces<ApiResponse<BrandsDto>>(StatusCodes.Status404NotFound)
             .Produces<ApiResponse<BrandsDto>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<BrandsDto>>(StatusCodes.Status500InternalServerError);
+            .Produces<ApiResponse<BrandsDto>>(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization("PRODUCT_VIEW"); ;
 
             app.MapPut("/DeleteBrandById", async (IProductRepository repos, int Id) =>
             {
@@ -435,9 +478,10 @@ namespace BikeHub.Features
             }).WithTags("Brand")
             .DisableAntiforgery()
             .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
-            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
+            .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
+            .RequireAuthorization("PRODUCT_DELETE"); ;
 
-            
+
         }
 
     }

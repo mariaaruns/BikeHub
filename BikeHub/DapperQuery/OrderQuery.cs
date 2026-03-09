@@ -5,14 +5,17 @@
 
         public const string GetOrderList = @"select t1.order_id OrderId,
                                             t2.first_name + ' ' + t2.last_name CustomerName,
-                                            (select value from t000_lookup where Id=t1.order_status) as OrderStatus,
-                                            t3.cartCount,t3.TotalPrice,T2.Image
+                                            (select value from t000_lookup where Id=t1.order_status) as [Status],
+                                            t3.cartCount,t3.TotalPrice [TotalAmount],
+                                            (case when Image is null or Image=''
+                                            then 'man.png' else T2.Image end) as Image
                                             from sales.orders t1
                                             left join sales.customers t2 on
                                             t1.customer_id= t2.customer_id
                                             inner join (select oi.order_id,count(oi.order_id)[cartCount] ,sum(Convert(Decimal(18,2),oi.list_price)) [TotalPrice] from sales.order_items oi  group By oi.order_id) t3 on
                                             t3.order_id=t1.order_id
-                                            where Cast(order_date as Date)=@OrderDate and 
+                                            WHERE order_date >= CAST(@OrderDate + '-01' AS DATE)
+AND order_date < DATEADD(MONTH,1, CAST(@OrderDate + '-01' AS DATE)) and 
                                             t1.order_status=@OrderStatus and (@OrderId IS NULL OR @OrderId=0 OR t1.order_id=@OrderId)
                                             order by order_date desc , t1.order_id desc
                                             OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;";
@@ -24,7 +27,8 @@
                                                 inner join (select oi.order_id,count(oi.order_id)[cartCount] 
                                                 ,sum(Convert(Decimal(18,2),oi.list_price)) [TotalPrice] from sales.order_items oi  group By oi.order_id) t3 on
                                                 t3.order_id=t1.order_id
-                                                where Cast(order_date as Date)=@OrderDate and 
+                                                 WHERE order_date >= CAST(@OrderDate + '-01' AS DATE)
+                                                 AND order_date < DATEADD(MONTH,1, CAST(@OrderDate + '-01' AS DATE)) and 
                                                 t1.order_status=@OrderStatus and (@OrderId IS NULL OR @OrderId=0 OR t1.order_id=@OrderId)";
 
         public const string GetOrderDetailByOrderId = @"select t1.order_id OrderId,
@@ -70,7 +74,6 @@
                                                 VALUES
                                                 (@OrderId, @ItemId, @ProductId, @Quantity, @ListPrice, @Discount);";
 
-       
     }
 
 }

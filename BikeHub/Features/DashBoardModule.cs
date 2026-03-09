@@ -1,4 +1,5 @@
-﻿using BikeHub.Repository.IRepository;
+﻿using BikeHub.Repository;
+using BikeHub.Repository.IRepository;
 using BikeHub.Shared.Common;
 using BikeHub.Shared.Dto.Response;
 using Carter;
@@ -21,13 +22,14 @@ namespace BikeHub.Features
                 }
                 catch (Exception)
                 {
+                    return Results.InternalServerError(ApiResponse<DashboardResponseDto>.Fail("Internal server error!"));
 
-                    throw;
                 }
 
 
-            }).WithTags("Dashboard");
-          //    .RequireAuthorization("AdminOnly");
+            }).WithTags("Dashboard")
+            .RequireAuthorization("DASHBOARD_VIEW");
+            
 
             app.MapGet("/dashboardSalesAmount", async (int year,IDashboardRepository _dashboardRepository) =>
             {
@@ -35,7 +37,7 @@ namespace BikeHub.Features
                 {
                     if (year <= 0)
                     {
-                        return Results.BadRequest(ApiResponse<string>.Fail("Invalid year parameter."));
+                        return Results.BadRequest(ApiResponse<IEnumerable<SalesAmountByYearDto>>.Fail("Invalid year parameter."));
                     }
 
                     var result =await _dashboardRepository.GetSalesAmountByYearAsync(year);
@@ -44,12 +46,37 @@ namespace BikeHub.Features
                 }
                 catch (Exception)
                 {
+                    return Results.InternalServerError(ApiResponse<IEnumerable<SalesAmountByYearDto>>.Fail("Internal server error!"));
 
-                    throw;
                 }
+            }).WithTags("Dashboard")
+            .RequireAuthorization("DASHBOARD_VIEW");
+
+
+            app.MapGet("/BrandYearlySales", async (int year, int orderStatus, [FromServices] IDashboardRepository _dashboardRepository) =>
+            {
+
+                try
+                {
+                    if (year <= 0)
+                    {
+                        return Results.BadRequest(ApiResponse<IEnumerable<BrandYearlySalesDto>>.Fail("Invalid year parameter."));
+                    }
+
+                    var result = await _dashboardRepository.GetBrandSalesByYearAsync(year, orderStatus);
+
+                    return Results.Ok(ApiResponse<IEnumerable<BrandYearlySalesDto>>.Success(result));
+                }
+                catch (Exception ex)
+                {
+
+                    return Results.InternalServerError(ApiResponse<IEnumerable<BrandYearlySalesDto>>.Fail("Internal server error!"));
+                }
+
             }).WithTags("Dashboard");
-       
-        
+            .RequireAuthorization("DASHBOARD_VIEW");
+
+
         }
     }
 }

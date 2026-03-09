@@ -24,7 +24,9 @@ namespace BikeHub.Mobile.ApiServices
 
         [Get("/orderDetailWithItems")]
         Task<res.ApiResponse<OrderDetailsDto>> GetOrderDetailWithItemsAsync(int orderId, CancellationToken cancellationToken);
-
+        
+        [Get("/Dropdown")]
+        Task<res.ApiResponse<IEnumerable<DropdownDto>>> GetOrderStatusAsync( CancellationToken cancellationToken, string type = "orderstatus");
 
     }
 }

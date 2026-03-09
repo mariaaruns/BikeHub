@@ -1,0 +1,58 @@
+@page "/brands"
+@inject DataService Data
+@inject AuthService Auth
+
+<div class="page-content">
+    <div class="page-toolbar">
+        <input class="tb-search-inp" type="text" placeholder="🔍 Search brands..." @bind="search" @bind:event="oninput" />
+        @if (Auth.HasPermission(p=>p.CanCreateBrands))
+        { <button class="btn-primary" @onclick="()=>OpenForm(null)">+ Add Brand</button> }
+    </div>
+
+    <div class="brand-grid">
+    @foreach (var b in Filtered)
+    {
+        <div class="brand-card">
+            <div class="brand-logo">@b.LogoUrl</div>
+            <div class="brand-name">@b.Name</div>
+            <div class="brand-country">@b.Country</div>
+            <div class="brand-count">@Data.Products.Count(p=>p.BrandId==b.Id) products</div>
+            <div class="brand-actions">
+                @if (Auth.HasPermission(p=>p.CanEditBrands))
+                { <button class="act-btn edit" @onclick="()=>OpenForm(b)">✎ Edit</button> }
+                @if (Auth.HasPermission(p=>p.CanDeleteBrands))
+                { <button class="act-btn del" @onclick="()=>Data.DeleteBrand(b.Id)">✕</button> }
+            </div>
+        </div>
+    }
+    </div>
+</div>
+
+@if (showForm)
+{
+    <div class="modal-overlay" @onclick="Close">
+        <div class="modal sm-modal" @onclick:stopPropagation>
+            <div class="modal-header">
+                <div class="modal-title">@(editing==null?"Add Brand":"Edit Brand")</div>
+                <button class="modal-close" @onclick="Close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group"><label>Brand Name *</label><input class="form-input" @bind="form.Name" /></div>
+                <div class="form-group"><label>Country</label><input class="form-input" @bind="form.Country" placeholder="USA" /></div>
+                <div class="form-group"><label>Logo (emoji)</label><input class="form-input" @bind="form.LogoUrl" placeholder="🏆" /></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost" @onclick="Close">Cancel</button>
+                <button class="btn-primary" @onclick="Save">Save</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    string search=""; bool showForm; Brand? editing; Brand form = new();
+    IEnumerable<Brand> Filtered => Data.Brands.Where(b=>string.IsNullOrEmpty(search)||b.Name.Contains(search,StringComparison.OrdinalIgnoreCase));
+    void OpenForm(Brand? b) { editing=b; form=b==null?new():new Brand{Id=b.Id,Name=b.Name,Country=b.Country,LogoUrl=b.LogoUrl}; showForm=true; }
+    void Save() { if(editing==null) Data.AddBrand(form); else Data.UpdateBrand(form); Close(); }
+    void Close() { showForm=false; editing=null; }
+}

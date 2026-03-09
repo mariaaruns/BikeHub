@@ -1,0 +1,125 @@
+@page "/"
+@inject DataService Data
+@inject AuthService Auth
+@inject IJSRuntime JS
+@inject ThemeService Theme
+@implements IDisposable
+
+@{
+    var stats = Data.GetStats();
+    var role  = Auth.CurrentUser?.Role;
+}
+
+@if (role == UserRole.Mechanic)
+{
+    <MechanicDashboardContent />
+}
+else
+{
+<div class="page-content">
+    <!-- Stat Cards -->
+    <div class="stat-grid">
+        <StatCard Label="Total Revenue"  Value="@($"${stats.TotalRevenue:N0}")"  Icon="💰" Color="orange" Delta="+14.2%" Pos="true" />
+        <StatCard Label="Total Orders"   Value="@stats.TotalOrders.ToString()"   Icon="📋" Color="blue"   Delta="+8.1%"  Pos="true" />
+        <StatCard Label="Customers"      Value="@stats.TotalCustomers.ToString()" Icon="👥" Color="green"  Delta="+5.3%"  Pos="true" />
+        <StatCard Label="Active Tasks"   Value="@stats.ActiveMechanicTasks.ToString()" Icon="🔧" Color="red"    Delta="@($"{stats.PendingOrders} pending")" Pos="false" />
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="chart-row two-one">
+        <div class="card chart-card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Revenue Trend</div>
+                    <div class="card-sub">Last 6 months</div>
+                </div>
+                <div class="pill-group">
+                    <span class="pill active">6M</span>
+                    <span class="pill">1Y</span>
+                </div>
+            </div>
+            <canvas id="revenueChart" height="90"></canvas>
+        </div>
+        <div class="card chart-card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">Order Status</div>
+                    <div class="card-sub">Distribution</div>
+                </div>
+            </div>
+            <canvas id="statusDonut" height="180"></canvas>
+            <div class="donut-legend">
+                <div class="dl-item"><span class="dl-dot" style="background:#FF6B35"></span>Pending<strong>@Data.Orders.Count(o=>o.Status==OrderStatus.Pending)</strong></div>
+                <div class="dl-item"><span class="dl-dot" style="background:#4ECDC4"></span>Completed<strong>@Data.Orders.Count(o=>o.Status==OrderStatus.Completed)</strong></div>
+                <div class="dl-item"><span class="dl-dot" style="background:#6C8EF5"></span>In Service<strong>@Data.Orders.Count(o=>o.Status==OrderStatus.InService)</strong></div>
+                <div class="dl-item"><span class="dl-dot" style="background:#F7B731"></span>Other<strong>@Data.Orders.Count(o=>o.Status!=OrderStatus.Pending&&o.Status!=OrderStatus.Completed&&o.Status!=OrderStatus.InService)</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="chart-row equal">
+        <div class="card chart-card">
+            <div class="card-header">
+                <div><div class="card-title">Top Categories</div><div class="card-sub">By product count</div></div>
+            </div>
+            <canvas id="catBar" height="130"></canvas>
+        </div>
+        <div class="card chart-card">
+            <div class="card-header">
+                <div><div class="card-title">Stock Levels</div><div class="card-sub">Low stock alert</div></div>
+            </div>
+            <canvas id="stockBar" height="130"></canvas>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="card">
+        <div class="card-header">
+            <div><div class="card-title">Recent Orders</div><div class="card-sub">Latest activity</div></div>
+            <a href="/orders" class="link-all">View All →</a>
+        </div>
+        <table class="bh-table">
+            <thead><tr><th>Order #</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody>
+            @foreach (var o in Data.Orders.OrderByDescending(x=>x.CreatedAt).Take(5))
+            {
+                <tr>
+                    <td class="mono accent">@o.OrderNumber</td>
+                    <td>@o.CustomerName</td>
+                    <td class="mono fw7">$@o.Total.ToString("N0")</td>
+                    <td><StatusBadge Status="@o.Status" /></td>
+                    <td class="muted">@o.CreatedAt.ToString("MMM d, yyyy")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+}
+
+@code {
+    protected override void OnInitialized()   => Theme.OnChanged += OnThemeChanged;
+    public void Dispose()                     => Theme.OnChanged -= OnThemeChanged;
+    async void OnThemeChanged()               { await Task.Delay(50); await JS.InvokeVoidAsync("initDashboardCharts", GetChartData()); }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && Auth.CurrentUser?.Role != UserRole.Mechanic)
+            await JS.InvokeVoidAsync("initDashboardCharts", GetChartData());
+    }
+
+    object GetChartData()
+    {
+        var rev = Data.GetMonthlyRevenue();
+        var orders = Data.Orders;
+        var prods  = Data.Products;
+        return new
+        {
+            revenue = new { labels = rev.Select(r=>r.Month).ToArray(), values = rev.Select(r=>(double)r.Revenue).ToArray() },
+            status  = new { values = new[]{ orders.Count(o=>o.Status==OrderStatus.Pending), orders.Count(o=>o.Status==OrderStatus.Completed), orders.Count(o=>o.Status==OrderStatus.InService), orders.Count(o=>o.Status!=OrderStatus.Pending&&o.Status!=OrderStatus.Completed&&o.Status!=OrderStatus.InService) } },
+            cats    = new { labels = Data.Categories.Select(c=>c.Name).ToArray(), values = Data.Categories.Select(c=>prods.Count(p=>p.CategoryId==c.Id)).ToArray() },
+            stock   = new { labels = prods.OrderBy(p=>p.Stock).Take(6).Select(p=>p.Name.Split(' ')[0]+"…").ToArray(), values = prods.OrderBy(p=>p.Stock).Take(6).Select(p=>p.Stock).ToArray() }
+        };
+    }
+}

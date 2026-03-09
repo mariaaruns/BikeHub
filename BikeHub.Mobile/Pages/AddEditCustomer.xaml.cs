@@ -4,9 +4,12 @@ namespace BikeHub.Mobile.Pages;
 
 public partial class AddEditCustomer : ContentPage
 {
-	public AddEditCustomer(CustomerViewModel viewModel)
+	private readonly AddEditCustomerViewmodel _vm;
+	
+	public AddEditCustomer(AddEditCustomerViewmodel viewModel)
 	{
 		InitializeComponent();
-		this.BindingContext = viewModel;
+		this.BindingContext = _vm = viewModel;
     }
+
 }

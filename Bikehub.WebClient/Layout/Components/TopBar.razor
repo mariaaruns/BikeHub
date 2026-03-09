@@ -1,0 +1,65 @@
+@inject AuthService Auth
+@inject ThemeService Theme
+@inject NavigationManager Nav
+@implements IDisposable
+
+<header class="topbar">
+    <div class="tb-left">
+        <div class="tb-title">@PageTitle()</div>
+        <div class="tb-sub">@PageSub()</div>
+    </div>
+    <div class="tb-right">
+        <div class="tb-search">
+            <span>⌕</span>
+            <input type="text" placeholder="Search..." @bind="q" />
+        </div>
+
+        <div class="tb-role-badge" style="background:@RoleBg()">@Auth.CurrentUser?.Role</div>
+
+        <button class="tb-btn theme-btn" @onclick="Theme.Toggle" title="Toggle theme">
+            @Theme.ToggleIcon
+        </button>
+
+        <button class="tb-btn" title="Notifications">
+            🔔<span class="tb-badge">2</span>
+        </button>
+
+        <button class="tb-btn logout-btn" @onclick="Auth.Logout" title="Sign out">⏻</button>
+    </div>
+</header>
+
+@code {
+    string q = "";
+
+    protected override void OnInitialized() => Theme.OnChanged += StateHasChanged;
+    public void Dispose() => Theme.OnChanged -= StateHasChanged;
+
+    string RoleBg() => Auth.CurrentUser?.Role switch
+    {
+        UserRole.Admin    => "rgba(255,107,53,0.15)",
+        UserRole.Staff    => "rgba(78,205,196,0.15)",
+        UserRole.Mechanic => "rgba(108,142,245,0.15)",
+        _ => "rgba(128,128,128,0.15)"
+    };
+
+    string PageTitle() => Nav.Uri switch
+    {
+        var u when u.Contains("products")   => "Products",
+        var u when u.Contains("categories") => "Categories",
+        var u when u.Contains("brands")     => "Brands",
+        var u when u.Contains("customers")  => "Customers",
+        var u when u.Contains("orders")     => "Orders",
+        var u when u.Contains("mechanic")   => "Mechanic Dashboard",
+        var u when u.Contains("tasks")      => "My Tasks",
+        var u when u.Contains("users")      => "User Management",
+        _ => "Dashboard"
+    };
+
+    string PageSub() => Auth.CurrentUser?.Role switch
+    {
+        UserRole.Admin    => "Full access · BikeHub Admin",
+        UserRole.Staff    => "Sales & Operations",
+        UserRole.Mechanic => "Workshop View",
+        _ => ""
+    };
+}

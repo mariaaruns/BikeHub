@@ -1,4 +1,6 @@
-﻿using BikeHub.Mobile.Pages;
+﻿using BikeHub.Mobile.ApiServices;
+using BikeHub.Mobile.Pages;
+using BikeHub.Shared.Dto.Request;
 using BikeHub.Shared.Dto.Response;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,17 +13,30 @@ using System.Threading.Tasks;
 
 namespace BikeHub.Mobile.ViewModel
 {
+
     [QueryProperty(nameof(CustomerId), "customerId")]
     public partial class CustomerViewModel : ObservableObject
     {
+        private readonly ICustomerApi  _customerApi;
+        public CustomerViewModel(ICustomerApi api)
+        {
+            _customerApi=api;
+        }
 
         [ObservableProperty]
         private string customerId;
 
         [ObservableProperty]
-        private CustomerDetailDto customerDetail;
+        private ObservableCollection<CustomersDto> _customers = new();
 
+        [ObservableProperty]
+        private string _customerName;
 
+        [ObservableProperty]
+        private bool _isRefreshing;
+
+        [ObservableProperty]
+        private bool _isLoadingMore;
 
         public string PageTitle => string.IsNullOrEmpty(customerId) ? "Add Customer" : "Edit Customer";
 
@@ -30,51 +45,144 @@ namespace BikeHub.Mobile.ViewModel
             OnPropertyChanged(nameof(PageTitle));
         }
 
-        public ObservableCollection<CustomersDto> Customers { get; set; }
 
-        public CustomerViewModel()
+        private CancellationTokenSource _searchCts;
+
+        async partial void OnCustomerNameChanged(string newValue)
         {
-            Customers = new ObservableCollection<CustomersDto>();
-
-            Customers.Add(new CustomersDto() { CustomerId = 1, CustomerName = "John Doe", Email = "john.doe@gmail.com", Phone = "123-456-7890", Image = "man.png" });
-            Customers.Add(new CustomersDto() { CustomerId = 2, CustomerName = "Jane Smith", Email = "jane.smith@gmail.com", Phone = "987-654-3210", Image = "woman.png" });
-            Customers.Add(new CustomersDto() { CustomerId = 3, CustomerName = "Michael Johnson", Email = "michael.johnson@gmail.com", Phone = "555-123-4567", Image = "man.png" });
-            Customers.Add(new CustomersDto() { CustomerId = 4, CustomerName = "Emily Davis", Email = "emily.davis@gmail.com", Phone = "444-987-6543", Image = "woman.png" });
-            Customers.Add(new CustomersDto() { CustomerId = 5, CustomerName = "William Brown", Email = "william.brown@gmail.com", Phone = "222-333-4444", Image = "man.png" });
-            Customers.Add(new CustomersDto() { CustomerId = 6, CustomerName = "Olivia Wilson", Email = "olivia.wilson@gmail.com", Phone = "777-888-9999", Image = "woman.png" });
-            Customers.Add(new CustomersDto() { CustomerId = 7, CustomerName = "James Taylor", Email = "james.taylor@gmail.com", Phone = "111-222-3333", Image = "man.png" });
-            Customers.Add(new CustomersDto() { CustomerId = 8, CustomerName = "Sophia Martinez", Email = "sophia.martinez@gmail.com", Phone = "666-555-4444", Image = "woman.png" });
-            Customers.Add(new CustomersDto() { CustomerId = 9, CustomerName = "Benjamin Anderson", Email = "ben.anderson@gmail.com", Phone = "888-777-6666", Image = "man.png" });
-            Customers.Add(new CustomersDto() { CustomerId = 10, CustomerName = "Ava Thomas", Email = "ava.thomas@gmail.com", Phone = "999-000-1111", Image = "woman.png" });
-
-            CustomerDetail = new CustomerDetailDto()
+            try
             {
-                CustomerId = 1,
-                CustomerName = "John Doe",
-                Email = "john.doe@gmail.com",
-                Phone = "123-456-7890",
-                Street = "123 Main St",
-                City = "Anytown",
-                State = "CA",
-                ZipCode = "12345",
-                Image = "man.png"
-            };
+                _searchCts?.Cancel();
+                _searchCts = new CancellationTokenSource();
+                var token = _searchCts.Token;
+                await Task.Delay(500, token);
+                Customers.Clear();
+                _currentPage = 1;
+                _ = LoadCustomersAsync(token);
+
+            }
+            catch (TaskCanceledException)
+            {
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
         }
+
+        private int _currentPage = 1;
+        private int _pageSize = 20;
+        
+        [RelayCommand]
+        public async Task  LoadCustomersAsync(CancellationToken token)
+        {
+            try
+            {
+                if (IsLoadingMore) return;
+
+                IsLoadingMore = true;
+                
+                var req = new CustomerRequest
+                {
+                    PageSize = _pageSize,
+                    PageNumber = _currentPage,
+                    CustomerName = CustomerName
+                };
+
+                var result =  await _customerApi.GetCustomersAsync(req,  token);
+
+                if (result is null)
+                {
+                    IsLoadingMore = false;
+                    return;
+                }
+            
+                if (result != null && result.Status && result.Data != null)
+                {
+                    foreach (var customer in result.Data.Data)
+                    {
+                        Customers.Add(customer);
+                    }
+
+                    _currentPage++;
+                }
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally 
+            {
+                IsLoadingMore = false;
+                IsRefreshing=false;
+            }
+
+        }
+
+        [RelayCommand]
+        private async Task RefreshAsync()
+        {
+
+            IsRefreshing = true;
+            try
+            {
+                _currentPage = 1; // Reset to the first page
+                var cts = new CancellationTokenSource();
+                Customers.Clear();
+                await LoadCustomersAsync(cts.Token);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Refresh Failed: {ex.Message}");
+            }
+            finally
+            {
+
+                IsRefreshing = false;
+            }
+        }
+
         [RelayCommand]
         public async Task GotoAddCustomer()
         {
-
             await Shell.Current.GoToAsync($"{nameof(AddEditCustomer)}");
-
         }
 
         [RelayCommand]
         async Task GoToDetails(CustomersDto dto)
         {
-            await Shell.Current.GoToAsync(nameof(CustomerDetailsPage), true, new Dictionary<string, object>
-        {
-            { "customerId", dto.CustomerId }
-        });
+            if (dto is null) return;
+
+            await Shell.Current.GoToAsync(nameof(CustomerDetailsPage)+$"?customerId={dto.CustomerId}");
+        }
+        [RelayCommand]
+        private async Task DeleteCustomerAsync(CustomersDto dto) { 
+        
+            if (dto is null) return;
+
+            try
+            {
+                var confirm = await Application.Current.MainPage.DisplayAlert("Confirm Delete", $"Are you sure you want to delete {dto.CustomerName}?", "Yes", "No");
+
+                if(!confirm) return;
+
+                var result = await _customerApi.DeActivateCustomerAsync(dto.CustomerId,CancellationToken.None);
+
+                if (result != null && result.Status)
+                {
+                    Customers.Remove(dto);
+                }
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlert("Error","Internal Server Error","Ok");
+            }
+
         }
     }
 }

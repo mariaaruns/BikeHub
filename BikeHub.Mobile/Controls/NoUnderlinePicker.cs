@@ -25,6 +25,18 @@ namespace BikeHub.Mobile.Controls
                 BindingMode.TwoWay,
                 propertyChanged: OnSelectedItemChanged);
 
+
+    //    public static readonly BindableProperty ItemDisplayBindingProperty =
+    //BindableProperty.Create(
+    //    nameof(ItemDisplayBinding),
+    //    typeof(BindingBase),
+    //    typeof(NoUnderlinePicker));
+
+    //    public BindingBase ItemDisplayBinding
+    //    {
+    //        get => (BindingBase)GetValue(ItemDisplayBindingProperty);
+    //        set => SetValue(ItemDisplayBindingProperty, value);
+    //    }
         public object SelectedItem
         {
             get => GetValue(SelectedItemProperty);

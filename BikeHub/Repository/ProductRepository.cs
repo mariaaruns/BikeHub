@@ -90,6 +90,7 @@ namespace BikeHub.Repository
                     TotalRecorscount = connection.ExecuteScalar<int>(TotalcountSql, parameters);
                 }
 
+                
                 var PagedResult = new PagedResult<ProductsDto>(TotalRecorscount,
                     dto.PageNumber,
                     dto.PageSize,

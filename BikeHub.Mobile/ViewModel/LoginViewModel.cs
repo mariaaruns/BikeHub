@@ -1,4 +1,5 @@
 ﻿using BikeHub.Mobile.ApiServices;
+using BikeHub.Mobile.Helper;
 using BikeHub.Mobile.Pages;
 using BikeHub.Shared.Dto.Request;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -63,15 +64,19 @@ namespace BikeHub.Mobile.ViewModel
 
                 if (result.Status && result.Data is not null && !string.IsNullOrWhiteSpace(result.Data.Token))
                 {
-                    // Save token securely
                     await SecureStorage.SetAsync("access_token", result.Data.Token);
 
-                    // Optionally save other info
                     await SecureStorage.SetAsync("access_token_expires", result.Data.Expires.ToString("o"));
+
+
+                    //string userId = JwtHelper.GetClaim(token, "sub");
+                    //string email = JwtHelper.GetClaim(token, "email");
+                    //string role = JwtHelper.GetClaim(token, "role");
+
+
                     if (!string.IsNullOrWhiteSpace(result.Data.Email))
                         await SecureStorage.SetAsync("user_email", result.Data.Email);
 
-                    // Navigate to main page (reset navigation stack)
                     await Shell.Current.GoToAsync($"//{nameof(MainPage)}");
                     return;
                 }

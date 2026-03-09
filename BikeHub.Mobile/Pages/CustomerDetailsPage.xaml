@@ -3,33 +3,34 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="BikeHub.Mobile.Pages.CustomerDetailsPage"
              xmlns:controls="clr-namespace:BikeHub.Mobile.Controls"
+              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:BikeHub.Mobile.ViewModel"
              xmlns:model="clr-namespace:BikeHub.Shared.Dto.Response;assembly=BikeHub.Shared"
              xmlns:conv="clr-namespace:BikeHub.Mobile.Converters"
-             x:DataType="vm:CustomerViewModel"
+             x:DataType="vm:CustomerDetailViewModel"
              Title="Customer Info">
 
     <Grid RowDefinitions="Auto,Auto,*" Margin="16">
         <VerticalStackLayout Grid.Row="0" Spacing="10">
-            <Border BackgroundColor="Grey" HeightRequest="150" StrokeShape="RoundRectangle 75" StrokeThickness="0" HorizontalOptions="Center" >
-                <Image Source="man.png" Aspect="Fill"/>
+            <Border BackgroundColor="Grey" HeightRequest="150" StrokeShape="RoundRectangle 75" HorizontalOptions="Center" >
+                <Image Source="{Binding Image}" Aspect="Fill"/>
             </Border>
-            <Label Text="John Doe" HorizontalOptions="Center" FontSize="18" FontAttributes="Bold"/>
-            <Label Text="Joined 2022" HorizontalOptions="Center" FontSize="12" />
+            <Label Text="{Binding CustomerName}" HorizontalOptions="Center" FontSize="18" FontAttributes="Bold"/>
+            <Label Text="joined" HorizontalOptions="Center" FontSize="12" />
         </VerticalStackLayout>
 
-        <Border Grid.Row="1" StrokeThickness="0" StrokeShape="RoundRectangle 5" BackgroundColor="LightGray" Padding="10">
+        <Border Grid.Row="1" StrokeThickness="0" StrokeShape="RoundRectangle 5" BackgroundColor="FloralWhite" Padding="10">
             <VerticalStackLayout  Spacing="5">
 
                 <Label Text="Contact Information"  FontSize="18"  FontAttributes="Bold"/>
                 <BoxView BackgroundColor="Black"  HeightRequest="1"/>
 
-                <Grid RowDefinitions="40,40,40" RowSpacing="10">
+                <Grid RowDefinitions="40,40,*" RowSpacing="10">
 
                     <!-- Row 0 -->
                     <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
                         <Label Text="Phone" Grid.Column="0" FontSize="15"/>
-                        <Label Text="123456897" Grid.Column="1" FontSize="15" HorizontalOptions="End"/>
+                        <Label Text="{Binding Phone}" Grid.Column="1" FontSize="15" HorizontalOptions="End"/>
 
                         <!-- underline -->
                         <BoxView Grid.ColumnSpan="2"
@@ -41,7 +42,7 @@
                     <!-- Row 1 -->
                     <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
                         <Label Text="Email" Grid.Column="0" FontSize="15"/>
-                        <Label Text="yourMail@mail.com" Grid.Column="1" FontSize="15" HorizontalOptions="End"/>
+                        <Label Text="{Binding Email}" Grid.Column="1" FontSize="15" HorizontalOptions="End"/>
 
                         <!-- underline -->
                         <BoxView Grid.ColumnSpan="2"
@@ -51,15 +52,25 @@
                     </Grid>
 
                     <!-- Row 2 -->
-                    <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
+                    <Grid Grid.Row="2" RowDefinitions="Auto,Auto,*" ColumnDefinitions="Auto,*">
+                        
                         <Label Text="Address" Grid.Column="0" FontSize="15"/>
-                        <Label Text="123MainSt,Anytown,USA" Grid.Column="1" FontSize="15" HorizontalOptions="End"/>
 
-                        <!-- underline -->
-                        <BoxView Grid.ColumnSpan="2"
-                 VerticalOptions="End"
-                 HeightRequest="1"
-                 Color="#DDDDDD"/>
+                        <VerticalStackLayout Grid.Row="0" Grid.Column="1" HorizontalOptions="End">
+                        
+                            <Label Text="{Binding Street}" FontSize="15" />
+                            <Label Text="{Binding City}" FontSize="15" />
+                            <Label Text="{Binding State}" FontSize="15" />
+                            <Label Text="{Binding ZipCode}" FontSize="15"/>
+                        
+                        </VerticalStackLayout>
+                   
+                        
+                        <BoxView Grid.Row="1" Grid.ColumnSpan="2"
+                                 VerticalOptions="End"
+                                 HeightRequest="1"
+                                 Color="#DDDDDD"/>
+                        
                     </Grid>
 
                 </Grid>
@@ -71,6 +82,10 @@
         </Border>
         
 
-        <Button HeightRequest="10" VerticalOptions="End" Grid.Row="2" BackgroundColor="Orange"  Text="Edit Customer" />
+        <Button HeightRequest="10" 
+                VerticalOptions="End" 
+                Grid.Row="2" 
+                BackgroundColor="Orange"
+                Text="Edit Customer" Command="{Binding GoToEditPageCommand}"/>
     </Grid>
 </ContentPage>

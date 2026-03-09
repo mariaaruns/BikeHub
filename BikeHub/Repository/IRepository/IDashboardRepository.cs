@@ -7,5 +7,8 @@ namespace BikeHub.Repository.IRepository
 
         Task<DashboardResponseDto> GetCounts(int year,int month);
         Task<IEnumerable<SalesAmountByYearDto>> GetSalesAmountByYearAsync(int year);
+
+        Task<IEnumerable<BrandYearlySalesDto>> GetBrandSalesByYearAsync(int year,int orderStatus);
+
     }
 }

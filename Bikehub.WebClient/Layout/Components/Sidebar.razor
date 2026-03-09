@@ -1,0 +1,78 @@
+@inject AuthService Auth
+@inject NavigationManager Nav
+
+<aside class="sidebar @(collapsed ? "collapsed" : "")">
+    <div class="sb-header">
+        <div class="sb-logo">
+            <span class="sb-logo-icon">🚲</span>
+            @if (!collapsed) { <span class="sb-logo-text">BikeHub</span> }
+        </div>
+        <button class="sb-toggle" @onclick="()=>collapsed=!collapsed">@(collapsed?"›":"‹")</button>
+    </div>
+
+    <nav class="sb-nav">
+        @if (Auth.CurrentUser?.Role == UserRole.Admin || Auth.CurrentUser?.Role == UserRole.Staff)
+        {
+            <NavSection Label="OVERVIEW" Collapsed="collapsed" />
+            <NavItem Href="/"         Icon="◈" Label="Dashboard"  Collapsed="collapsed" />
+
+            <NavSection Label="CATALOGUE" Collapsed="collapsed" />
+            @if (Auth.HasPermission(p => p.CanViewProducts))
+            { <NavItem Href="/products"   Icon="🚲" Label="Products"   Collapsed="collapsed" /> }
+            @if (Auth.HasPermission(p => p.CanViewCategories))
+            { <NavItem Href="/categories" Icon="📁" Label="Categories" Collapsed="collapsed" /> }
+            @if (Auth.HasPermission(p => p.CanViewBrands))
+            { <NavItem Href="/brands"     Icon="🏷" Label="Brands"     Collapsed="collapsed" /> }
+
+            <NavSection Label="CUSTOMERS" Collapsed="collapsed" />
+            @if (Auth.HasPermission(p => p.CanViewCustomers))
+            { <NavItem Href="/customers"  Icon="👥" Label="Customers"  Collapsed="collapsed" /> }
+
+            <NavSection Label="ORDERS" Collapsed="collapsed" />
+            @if (Auth.HasPermission(p => p.CanViewOrders))
+            { <NavItem Href="/orders"     Icon="📋" Label="Orders"     Collapsed="collapsed" /> }
+        }
+
+        @if (Auth.HasPermission(p => p.CanViewMechanicDashboard))
+        {
+            <NavSection Label="WORKSHOP" Collapsed="collapsed" />
+            <NavItem Href="/mechanic"  Icon="🔧" Label="My Dashboard" Collapsed="collapsed" />
+            @if (Auth.HasPermission(p => p.CanViewTasks))
+            { <NavItem Href="/tasks"   Icon="✅" Label="My Tasks"     Collapsed="collapsed" /> }
+        }
+
+        @if (Auth.HasPermission(p => p.CanManageUsers))
+        {
+            <NavSection Label="ADMIN" Collapsed="collapsed" />
+            <NavItem Href="/users"    Icon="👤" Label="Users"         Collapsed="collapsed" />
+        }
+    </nav>
+
+    <div class="sb-footer">
+        @if (!collapsed)
+        {
+            <div class="sb-user">
+                <div class="sb-avatar" style="background:@RoleColor()">@Auth.CurrentUser?.Avatar</div>
+                <div>
+                    <div class="sb-uname">@Auth.CurrentUser?.Name</div>
+                    <div class="sb-urole">@Auth.CurrentUser?.Role</div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="sb-avatar" style="background:@RoleColor()">@Auth.CurrentUser?.Avatar</div>
+        }
+    </div>
+</aside>
+
+@code {
+    bool collapsed = false;
+    string RoleColor() => Auth.CurrentUser?.Role switch
+    {
+        UserRole.Admin    => "linear-gradient(135deg,#FF6B35,#F7B731)",
+        UserRole.Staff    => "linear-gradient(135deg,#4ECDC4,#44CF6C)",
+        UserRole.Mechanic => "linear-gradient(135deg,#6C8EF5,#A29BFE)",
+        _ => "linear-gradient(135deg,#888,#555)"
+    };
+}

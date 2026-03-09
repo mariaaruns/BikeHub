@@ -10,7 +10,7 @@ namespace BikeHub.Features
         public void AddRoutes(IEndpointRouteBuilder app)
         {
 
-            app.MapGet("/Dropdown", async (string type, IProductRepository productRepository,IOrderRepository orderRepository) =>
+            app.MapGet("/Dropdown", async ([FromQuery]string type, [FromQuery]string? search, [FromServices]IProductRepository productRepository, [FromServices] IOrderRepository orderRepository, [FromServices] ICustomerRepository customerRepository) =>
             {
                 try
                 {
@@ -35,6 +35,9 @@ namespace BikeHub.Features
                              result=await orderRepository.GetOrderStatusDropdownAsync();
                             break;
 
+                        case "customer":
+                            result = await customerRepository.GetCustomerDropdownAsync(search);
+                            break;
                         default:
                             return Results.BadRequest(ApiResponse<string>.Fail("Invalid Type"));
                     }

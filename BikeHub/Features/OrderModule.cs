@@ -19,12 +19,17 @@ namespace BikeHub.Features
                 {
                     var result = await orderRepository.GetOrdersAsync(dto);
 
-                    if (result.Data.Any())
+                    if (result.Data.Any()) {
+                        
+                        foreach (var item in result.Data)
+                        {
+                            item.Image = Path.Combine(commonInfo.BaseUrl, commonInfo.CUSTOMER_IMG_PATH, item.Image);
+                        }
                         return Results.Ok(ApiResponse<PagedResult<OrdersDto>>.Success(result));
-
-
+                    }
+                        
                     return Results.Ok(ApiResponse<PagedResult<OrdersDto>>.Fail("No orders found"));
-                
+
                 }
                 catch (Exception ex)
                 {
@@ -34,8 +39,9 @@ namespace BikeHub.Features
                 
 
             })
-            .WithTags("Orders")
-            .WithName("GetOrders");
+               .WithTags("Orders")
+               .WithName("GetOrders")
+               .RequireAuthorization("ORDER_VIEW");
 
 
             app.MapPost("/addOrders", async ([FromBody]AddOrderRequest req ,IOrderRepository orderRepository) =>
@@ -65,7 +71,9 @@ namespace BikeHub.Features
                 }
                
 
-            }).WithTags("Orders");
+            })
+               .WithTags("Orders")
+               .RequireAuthorization("ORDER_ADD");
 
             app.MapPut("/updateOrderStatus", async ([FromBody]UpdateOrderStatusDto req, [FromServices] IOrderRepository orderRepository) =>
             {
@@ -92,7 +100,9 @@ namespace BikeHub.Features
                 
 
 
-            }).WithTags("Orders");
+            })
+               .WithTags("Orders")
+               .RequireAuthorization("ORDER_EDIT");
 
             app.MapGet("/orderDetailWithItems", async (int Id,IOrderRepository orderRepository) =>
             {
@@ -100,26 +110,36 @@ namespace BikeHub.Features
                 {
                     if (Id is 0)
                     {
-                        return Results.BadRequest(ApiResponse<string>.Fail("OrderId is required"));
+                        return Results.BadRequest(ApiResponse<IEnumerable<OrderDetailsDto>>.Fail("OrderId is required"));
                     }
 
                     var result = await orderRepository.GetOrderDetailsAsync(Id);
 
 
-                    if (result.Any())
-                        return Results.Ok(ApiResponse<IEnumerable<OrderDetailsDto>>.Success(result));
+                    if (result !=null)
+                    {
+                        
+                            if (result.Image != null)
+                            {
+                                result.Image = Path.Combine(commonInfo.BaseUrl, commonInfo.CUSTOMER_IMG_PATH, result.Image); 
+                            }
 
-                    return Results.Ok(ApiResponse<IEnumerable<OrderDetailsDto>>.Fail("No order details found"));
+                        
+                        return Results.Ok(ApiResponse<OrderDetailsDto>.Success(result));
+                    }
+                    return Results.Ok(ApiResponse<OrderDetailsDto>.Fail("No order details found"));
 
                 }
                 catch (Exception)
                 {
-
+                    return Results.InternalServerError(ApiResponse<OrderDetailsDto>.Fail("Internal Error!"));
                     throw;
                 }
                 
 
-            }).WithTags("Orders");
+            })
+            .WithTags("Orders")
+            .RequireAuthorization("ORDER_VIEW"); ;
         }
     }
 }
