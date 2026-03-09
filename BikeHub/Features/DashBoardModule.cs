@@ -73,7 +73,7 @@ namespace BikeHub.Features
                     return Results.InternalServerError(ApiResponse<IEnumerable<BrandYearlySalesDto>>.Fail("Internal server error!"));
                 }
 
-            }).WithTags("Dashboard").
+            }).WithTags("Dashboard")
             .RequireAuthorization("DASHBOARD_VIEW");
 
 
