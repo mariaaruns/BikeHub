@@ -13,7 +13,7 @@ namespace BikeHub.Features
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapPost("/GetAllCustomers", async (ICustomerRepository Repo, ILogger<CustomerModule> logger, [FromBody]CustomerRequest req) =>
+            app.MapPost("/api/customers", async (ICustomerRepository Repo, ILogger<CustomerModule> logger, [FromBody] CustomerRequest req) =>
             {
                 logger.LogInformation("/GetAllCustomers endpoint called at {Time}", DateTime.Now);
                 try
@@ -24,7 +24,7 @@ namespace BikeHub.Features
                     {
                         if (item.Image!.StartsWith("http", StringComparison.OrdinalIgnoreCase))
                             continue;
-                        item.Image= $"{commonInfo.BaseUrl}/{commonInfo.CUSTOMER_IMG_PATH}/{item.Image}";
+                        item.Image = $"{commonInfo.BaseUrl}/{commonInfo.CUSTOMER_IMG_PATH}/{item.Image}";
                     }
 
                     if (result == null)
@@ -37,10 +37,10 @@ namespace BikeHub.Features
                 }
                 catch (Exception ex)
                 {
-                    logger.LogInformation("/GetAllCustomers endpoint failed at {Time}", DateTime.Now,"Exception:"+ex.Message);
+                    logger.LogInformation("/GetAllCustomers endpoint failed at {Time}", DateTime.Now, "Exception:" + ex.Message);
                     return Results.InternalServerError(ApiResponse<PagedResult<CustomersDto>>.Fail("Internal Server Error"));
                 }
-                
+
             }).WithTags("Customers")
              .Produces<ApiResponse<CustomersDto>>(StatusCodes.Status404NotFound)
              .Produces<ApiResponse<CustomersDto>>(StatusCodes.Status200OK)
@@ -48,12 +48,12 @@ namespace BikeHub.Features
              .RequireAuthorization("CUSTOMER_VIEW");
 
 
-            app.MapGet("GetCustomerById", async (ICustomerRepository customerRepository,int Id) =>
+            app.MapGet("/api/customers/{id:int}", async([FromRoute]int id, [FromServices]ICustomerRepository customerRepository) =>
             {
                 try
                 {
-                    
-                    var result = await customerRepository.GetCustomerByIdAsync(Id);
+
+                    var result = await customerRepository.GetCustomerByIdAsync(id);
                     if (result == null)
                     {
                         return Results.NotFound(ApiResponse<CustomerDetailDto>.Fail("no customer found"));
@@ -74,10 +74,10 @@ namespace BikeHub.Features
              .Produces<ApiResponse<CustomerDetailDto>>(StatusCodes.Status500InternalServerError)
              .RequireAuthorization("CUSTOMER_VIEW");
 
-            app.MapPost("/AddCustomer", async (ICustomerRepository CusRepo, [FromBody]AddCustomerDto req) =>
+            app.MapPost("/api/customers-new", async (ICustomerRepository CusRepo, [FromBody] AddCustomerDto req) =>
             {
                 try
-                {     
+                {
                     var extension = ImageHelper.GetImageExtension(req.Imagebyte);
 
                     if (string.IsNullOrEmpty(extension))
@@ -95,7 +95,7 @@ namespace BikeHub.Features
                     req.ImageUrl = fileName;
 
                     var insertedId = await CusRepo.AddCustomerAsync(req);
-                    return Results.Ok(ApiResponse<int>.Success(insertedId,"Add The Data successfully"));
+                    return Results.Ok(ApiResponse<int>.Success(insertedId, "Add The Data successfully"));
                 }
                 catch (Exception ex)
                 {
@@ -107,7 +107,7 @@ namespace BikeHub.Features
             .Produces<ApiResponse<int>>(StatusCodes.Status500InternalServerError)
             .RequireAuthorization("CUSTOMER_ADD");
 
-            app.MapPut("/UpdateCustomer", async (ICustomerRepository customerRepository, [FromBody] UpdateCustomerDto req) =>
+            app.MapPut("/api/customers", async (ICustomerRepository customerRepository, [FromBody] UpdateCustomerDto req) =>
             {
                 try
                 {
@@ -138,12 +138,12 @@ namespace BikeHub.Features
                                                     extension);
                         req.ImageUrl = fileName;
                     }
-                    else 
+                    else
                     {
-                        req.ImageUrl = existingCustomer.Image; 
+                        req.ImageUrl = existingCustomer.Image;
                     }
                     bool isSucess = await customerRepository.UpdateCustomerAsync(req);
-                    return Results.Ok(ApiResponse<bool>.Success(isSucess,"Data was successfully Modifed"));
+                    return Results.Ok(ApiResponse<bool>.Success(isSucess, "Data was successfully Modifed"));
                 }
                 catch (Exception ex)
                 {
@@ -155,7 +155,7 @@ namespace BikeHub.Features
             .RequireAuthorization("CUSTOMER_EDIT");
 
 
-            app.MapDelete("DeActivateCustomer/{id:int}", async (ICustomerRepository customerrepository, [FromRoute]int Id) =>
+            app.MapDelete("/api/customers/{id:int}", async (ICustomerRepository customerrepository, [FromRoute] int Id) =>
             {
                 try
                 {

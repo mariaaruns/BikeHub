@@ -17,7 +17,7 @@ namespace BikeHub.Features
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapPost("/user/register", async ([FromBody] CreateUserDto dto, [FromServices] IAuthService authService) =>
+            app.MapPost("/api/user/register", async ([FromBody] CreateUserDto dto, [FromServices] IAuthService authService) =>
             {
                 try
                 {
@@ -66,7 +66,7 @@ namespace BikeHub.Features
                 .WithTags("Users")
                 .DisableAntiforgery();
 
-            app.MapPost("/user/login", async ([FromBody] LoginDto dto, [FromServices] IAuthService authService) =>
+            app.MapPost("/api/user/login", async ([FromBody] LoginDto dto, [FromServices] IAuthService authService) =>
             {
                 try
                 {
@@ -87,7 +87,7 @@ namespace BikeHub.Features
                 .WithTags("Users")
                 .DisableAntiforgery();
 
-            app.MapPost("/user/logout", (HttpContext context, IMemoryCache cache) =>
+            app.MapPost("/api/user/logout", (HttpContext context, IMemoryCache cache) =>
             {
                 var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -101,7 +101,7 @@ namespace BikeHub.Features
                 .WithTags("Users")
                 .DisableAntiforgery();
 
-            app.MapGet("/user/{userId:long}", async (long userId,IAuthService authService) =>
+            app.MapGet("/api/user/{userId:long}", async (long userId,IAuthService authService) =>
             {
                 if (userId <= 0)
                 {
@@ -128,7 +128,7 @@ namespace BikeHub.Features
             })
                 .WithTags("Users").DisableAntiforgery(); 
 
-            app.MapGet("/userPolicy/{userId:long}", async (long userId, [FromServices] IAuthService authService) =>
+            app.MapGet("/api/userPolicy/{userId:long}", async (long userId, [FromServices] IAuthService authService) =>
             {
                 try
                 {
@@ -144,7 +144,7 @@ namespace BikeHub.Features
             })
                 .WithTags("Users").DisableAntiforgery(); 
 
-            app.MapPost("/userPolicy/{userId:long}/ApplyPolicy", async (long userId, [FromBody] ApplyPolicyDto[] dto, [FromServices] IAuthService authService) =>
+            app.MapPost("/api/userPolicy/{userId:long}/ApplyPolicy", async (long userId, [FromBody] ApplyPolicyDto[] dto, [FromServices] IAuthService authService) =>
             {
                 try
                 {
@@ -167,7 +167,7 @@ namespace BikeHub.Features
             })
                 .WithTags("Users").DisableAntiforgery();
 
-            app.MapGet("/roles", async ([FromServices] IAuthService _authService) =>
+            app.MapGet("/api/roles", async ([FromServices] IAuthService _authService) =>
             {
                 try
                 {
@@ -183,7 +183,7 @@ namespace BikeHub.Features
             })
                 .WithTags("Users").DisableAntiforgery();
 
-            app.MapGet("/userPolicyCached",async (HttpContext context, IAuthService authService) =>
+            app.MapGet("/api/userPolicyCached", async (HttpContext context, IAuthService authService) =>
                 {
                     var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -196,7 +196,7 @@ namespace BikeHub.Features
 
                 }).WithTags("Users").DisableAntiforgery();
 
-            app.MapPut("/user/update", async ([FromBody] UpdateUserDto dto, [FromServices] IAuthService authService) =>
+            app.MapPut("/api/user/update", async ([FromBody] UpdateUserDto dto, [FromServices] IAuthService authService) =>
             {
                 try
                 {
@@ -219,7 +219,7 @@ namespace BikeHub.Features
             }).WithTags("Users").DisableAntiforgery();
 
 
-            app.MapPost("/users", async ([FromBody] UsersRequestDto dto, [FromServices] IAuthService authService) =>
+            app.MapPost("/api/users", async ([FromBody] UsersRequestDto dto, [FromServices] IAuthService authService) =>
             {
                 try
                 {

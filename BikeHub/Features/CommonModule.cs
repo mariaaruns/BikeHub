@@ -10,7 +10,11 @@ namespace BikeHub.Features
         public void AddRoutes(IEndpointRouteBuilder app)
         {
 
-            app.MapGet("/Dropdown", async ([FromQuery]string type, [FromQuery]string? search, [FromServices]IProductRepository productRepository, [FromServices] IOrderRepository orderRepository, [FromServices] ICustomerRepository customerRepository) =>
+            app.MapGet("/api/Dropdown", async ([FromQuery]string type, [FromQuery]string? search, 
+                [FromServices]IProductRepository productRepository, 
+                [FromServices] IOrderRepository orderRepository, 
+                [FromServices] ICustomerRepository customerRepository,
+                IServiceRepository serviceRepository) =>
             {
                 try
                 {
@@ -34,7 +38,9 @@ namespace BikeHub.Features
                         case "orderstatus":
                              result=await orderRepository.GetOrderStatusDropdownAsync();
                             break;
-
+                        case "servicestatus":
+                            result = await serviceRepository.GetServiceStatusDropdownAsync();
+                            break;
                         case "customer":
                             result = await customerRepository.GetCustomerDropdownAsync(search);
                             break;
@@ -59,7 +65,7 @@ namespace BikeHub.Features
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
 
 
-            app.MapGet("/ProductAndStockDropDown", async (int brandId, int categoryId, [FromServices] IProductRepository respo) =>
+            app.MapGet("/api/products/stock-summaries", async (int brandId, int categoryId, [FromServices] IProductRepository respo) =>
             {
                 try
                 {
@@ -67,13 +73,13 @@ namespace BikeHub.Features
 
                     if (result == null)
                     {
-                        return Results.NotFound(ApiResponse<string>.Fail("Data was not found"));
+                        return Results.NotFound(ApiResponse<ProductDropdownDto>.Fail("Data was not found"));
                     }
                     return Results.Ok(ApiResponse<IEnumerable<ProductDropdownDto>>.Success(result, "Data was successfully fetched"));
                 }
                 catch (Exception ex)
                 {
-                    return Results.InternalServerError(ApiResponse<string>.Fail("InternalServer error"));
+                    return Results.InternalServerError(ApiResponse<ProductDropdownDto>.Fail("InternalServer error"));
                 }
 
             }).WithTags("DropDownList")

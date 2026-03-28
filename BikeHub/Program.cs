@@ -1,20 +1,15 @@
-using BikeHub.AuthHandlers;
 using BikeHub.AuthHandlers.PolicyHandler;
-using BikeHub.Models;
 using BikeHub.Repository;
 using BikeHub.Repository.IRepository;
 using BikeHub.Service;
 using BikeHub.Service.Interface;
-using BikeHub.Shared.Dto.Request;
+using BikeHub.Shared.Common;
 using Carter;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Npgsql;
 using Serilog;
 using System.Data;
 using System.Security.Claims;
@@ -30,27 +25,17 @@ builder.Services.AddOpenApi();
 builder.Services.AddCarter();
 
 builder.Services.AddTransient<IDbConnection>(sp =>new SqlConnection(builder.Configuration.GetConnectionString("Conn")));
-
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IOrderRepository,OrderRepository >();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IDashboardRepository,DashboardRepository>();
-//builder.Services.AddTransient<IApplicationUserStore<ApplicationUser>, UserStore>();
-//builder.Services.AddTransient<IRoleStore<ApplicationRole>, RoleStore>();
-//builder.Services.AddTransient<IUserStore<ApplicationUser>, UserStore>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthorizationHandler, PolicyHandler>();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailService, EmailService>();
 
-//builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
-//{
-//    options.Password.RequireDigit = true;
-//    options.Password.RequiredLength = 6;
-//    options.Password.RequireNonAlphanumeric = false;
-//    options.Password.RequireUppercase = true;
-//    options.Password.RequireLowercase = true;
-//    //options.User.RequireUniqueEmail = true;
-//}).AddDefaultTokenProviders();
 
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -152,9 +137,14 @@ builder.Services.AddAuthorization(options =>
     
     options.AddPolicy("USER_EDIT",
         p => p.Requirements.Add(new PolicyRequirement("USER_EDIT")));
+   
     options.AddPolicy("USER_ADD",
         p => p.Requirements.Add(new PolicyRequirement("USER_ADD")));
 
+
+    options.AddPolicy("SERVICE_DASHBOARD",
+        p => p.Requirements.Add(new PolicyRequirement("SERVICE_DASHBOARD")));
+    
 
 });
 

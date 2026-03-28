@@ -13,7 +13,7 @@ namespace BikeHub.Features
         public void AddRoutes(IEndpointRouteBuilder app)
         {
       
-            app.MapPost("/orders", async ([FromBody] GetOrderDto dto, IOrderRepository orderRepository) =>
+            app.MapPost("api/orders", async ([FromBody] GetOrderDto dto, IOrderRepository orderRepository) =>
             {
                 try
                 {
@@ -44,7 +44,7 @@ namespace BikeHub.Features
                .RequireAuthorization("ORDER_VIEW");
 
 
-            app.MapPost("/addOrders", async ([FromBody]AddOrderRequest req ,IOrderRepository orderRepository) =>
+            app.MapPost("/api/orders-new", async ([FromBody]AddOrderRequest req ,IOrderRepository orderRepository) =>
             {
                 try
                 {
@@ -75,7 +75,7 @@ namespace BikeHub.Features
                .WithTags("Orders")
                .RequireAuthorization("ORDER_ADD");
 
-            app.MapPut("/updateOrderStatus", async ([FromBody]UpdateOrderStatusDto req, [FromServices] IOrderRepository orderRepository) =>
+            app.MapPut("api/orders/change-status", async ([FromBody]UpdateOrderStatusDto req, [FromServices] IOrderRepository orderRepository) =>
             {
                 try
                 {
@@ -104,16 +104,16 @@ namespace BikeHub.Features
                .WithTags("Orders")
                .RequireAuthorization("ORDER_EDIT");
 
-            app.MapGet("/orderDetailWithItems", async (int Id,IOrderRepository orderRepository) =>
+            app.MapGet("/api/orders/{id:int}/full-details", async (int id,IOrderRepository orderRepository) =>
             {
                 try
                 {
-                    if (Id is 0)
+                    if (id is 0)
                     {
                         return Results.BadRequest(ApiResponse<IEnumerable<OrderDetailsDto>>.Fail("OrderId is required"));
                     }
 
-                    var result = await orderRepository.GetOrderDetailsAsync(Id);
+                    var result = await orderRepository.GetOrderDetailsAsync(id);
 
 
                     if (result !=null)

@@ -20,7 +20,7 @@ namespace BikeHub.Features
         {
             //Products Start
 
-            app.MapPost("/products", async (IProductRepository productRepository, GetProductsDto req) =>
+            app.MapPost("/api/products", async (IProductRepository productRepository, GetProductsDto req) =>
             {
                 try
                 {
@@ -55,7 +55,7 @@ namespace BikeHub.Features
             .WithName("GetAllProducts")
             .RequireAuthorization("PRODUCT_VIEW");
 
-            app.MapPost("/products/add", async (IProductRepository productRepository, [FromBody] AddProductsDto req) =>
+            app.MapPost("/api/products-new", async (IProductRepository productRepository, [FromBody] AddProductsDto req) =>
             {
 
                 string newfilePath = string.Empty;
@@ -109,7 +109,7 @@ namespace BikeHub.Features
             .WithName("Create Product").RequireAuthorization("PRODUCT_ADD"); ;
 
 
-            app.MapPut("/products/update", async (IProductRepository productRepository, [FromForm] UpdateProductDto req) =>
+            app.MapPut("/api/products", async (IProductRepository productRepository, [FromForm] UpdateProductDto req) =>
             {
                 try
                 {
@@ -165,7 +165,7 @@ namespace BikeHub.Features
               .WithName("Update Product").RequireAuthorization("PRODUCT_EDIT"); 
 
 
-            app.MapGet("/products/{id}", async (IProductRepository productRepository, [FromRoute, Required] int id) =>
+            app.MapGet("/api/products/{id:int}", async (IProductRepository productRepository, [FromRoute, Required] int id) =>
             {
                 try
                 {
@@ -195,7 +195,7 @@ namespace BikeHub.Features
             .WithName("Get Product")
             .RequireAuthorization("PRODUCT_VIEW");
 
-            app.MapPatch("/products/{id}/deactivate", async (IProductRepository repo, int id) =>
+            app.MapPatch("/api/products/{id:int}/deactivate", async (IProductRepository repo, int id) =>
             {
                 var result = await repo.DeactivateProductAsync(id);
                 return result
@@ -210,7 +210,7 @@ namespace BikeHub.Features
 
 
             //category start
-            app.MapPost("/categoryAdd", async (IProductRepository repos, AddCategoryDto dto) =>
+            app.MapPost("/api/category-add", async (IProductRepository repos, AddCategoryDto dto) =>
             {
                 try
                 {
@@ -229,7 +229,7 @@ namespace BikeHub.Features
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
             .WithName("CategoryProduct").RequireAuthorization("PRODUCT_ADD"); ;
 
-            app.MapGet("/GetCategory", async (IProductRepository repo,string? CategoryNameFilter) =>
+            app.MapGet("/api/category", async (IProductRepository repo,string? CategoryNameFilter) =>
             {
                 try
                 {
@@ -252,7 +252,7 @@ namespace BikeHub.Features
             .Produces<ApiResponse<IEnumerable<CategoryDto>>>(StatusCodes.Status500InternalServerError)
             .RequireAuthorization("PRODUCT_VIEW"); 
 
-            app.MapGet("/GetCategoryById", async (IProductRepository product, int id) =>
+            app.MapGet("/api/category/{id:int}", async (IProductRepository product, int id) =>
             {
                 try
                 {
@@ -276,7 +276,7 @@ namespace BikeHub.Features
             .Produces<ApiResponse<CategoryDto>>(StatusCodes.Status500InternalServerError)
             .RequireAuthorization("PRODUCT_VIEW"); ;
 
-            app.MapPut("/UpdateCategory", async (IProductRepository Ipo, UpdateCategoryDto upt) =>
+            app.MapPut("/api/category", async (IProductRepository Ipo, UpdateCategoryDto upt) =>
             {
                 try
                 {
@@ -294,7 +294,7 @@ namespace BikeHub.Features
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
             .RequireAuthorization("PRODUCT_EDIT"); 
 
-            app.MapDelete("/DeleteCategory", async (IProductRepository ipo, int id) =>
+            app.MapDelete("/api/category/{id:int}", async (IProductRepository ipo, int id) =>
             {
                 try
                 {
@@ -315,7 +315,7 @@ namespace BikeHub.Features
 
 
             //brand start
-            app.MapPost("/AddBrand", async (IProductRepository _productRepository, [FromForm] AddBrandDto dto) =>
+            app.MapPost("/api/brands", async (IProductRepository _productRepository, [FromForm] AddBrandDto dto) =>
             {
                 var fileNewPath = string.Empty;
                 try
@@ -356,7 +356,7 @@ namespace BikeHub.Features
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
             .RequireAuthorization("PRODUCT_ADD"); ;
 
-             app.MapPut("/updateBrand", async (IProductRepository _productRepository, [FromForm] UpdateBrandDto dto) =>
+             app.MapPut("/api/brands", async (IProductRepository _productRepository, [FromForm] UpdateBrandDto dto) =>
             {
                 var fileNewPath = string.Empty;
                 try
@@ -408,9 +408,7 @@ namespace BikeHub.Features
             .RequireAuthorization("PRODUCT_EDIT");
 
 
-
-
-            app.MapGet("/GetAllBrand", async (IProductRepository respo,string? BrandNameFilter) =>
+            app.MapGet("/api/brands", async (IProductRepository respo,string? BrandNameFilter) =>
             {
                 try
                 {
@@ -439,11 +437,11 @@ namespace BikeHub.Features
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError)
             .RequireAuthorization("PRODUCT_VIEW");
 
-            app.MapGet("/GetBrandById", async (IProductRepository repos, int Id) =>
+            app.MapGet("/api/brand/{id:int}", async (IProductRepository repos, int id) =>
             {
                 try
                 {
-                    var result = await repos.GetBrandByIdAsync(Id);
+                    var result = await repos.GetBrandByIdAsync(id);
 
                     if (result == null)
                     {
@@ -463,11 +461,11 @@ namespace BikeHub.Features
             .Produces<ApiResponse<BrandsDto>>(StatusCodes.Status500InternalServerError)
             .RequireAuthorization("PRODUCT_VIEW"); ;
 
-            app.MapPut("/DeleteBrandById", async (IProductRepository repos, int Id) =>
+            app.MapDelete("/api/brand-deactivate/{id:int}", async (IProductRepository repos, int id) =>
             {
                 try
                 {
-                    await repos.DeleteBrandByIdAsync(Id);
+                    await repos.DeleteBrandByIdAsync(id);
 
                     return Results.Ok(ApiResponse<string>.Success("Data Was Deactive Successfully"));
                 }

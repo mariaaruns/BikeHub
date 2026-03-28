@@ -11,7 +11,7 @@ namespace BikeHub.Features
     {
         public void AddRoutes(IEndpointRouteBuilder app)
         {
-            app.MapGet("/getcount", async (DateTime date, [FromServices] IDashboardRepository _dashboardRepository) =>
+            app.MapGet("api/dashboards/summary", async (DateTime date, [FromServices] IDashboardRepository _dashboardRepository) =>
             {
 
                 try
@@ -30,8 +30,9 @@ namespace BikeHub.Features
             }).WithTags("Dashboard")
             .RequireAuthorization("DASHBOARD_VIEW");
             
+            
 
-            app.MapGet("/dashboardSalesAmount", async (int year,IDashboardRepository _dashboardRepository) =>
+            app.MapGet("/api/dashboards/sales-revenue", async (int year,IDashboardRepository _dashboardRepository) =>
             {
                 try
                 {
@@ -53,7 +54,7 @@ namespace BikeHub.Features
             .RequireAuthorization("DASHBOARD_VIEW");
 
 
-            app.MapGet("/BrandYearlySales", async (int year, int orderStatus, [FromServices] IDashboardRepository _dashboardRepository) =>
+            app.MapGet("/api/dashboards/brand-performance", async (int year, int orderStatus, [FromServices] IDashboardRepository _dashboardRepository) =>
             {
 
                 try
@@ -75,7 +76,6 @@ namespace BikeHub.Features
 
             }).WithTags("Dashboard")
             .RequireAuthorization("DASHBOARD_VIEW");
-
 
         }
     }
