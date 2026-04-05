@@ -1,0 +1,223 @@
+﻿.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+.sidebar {
+    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+}
+
+.top-row {
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #d6d5d5;
+    justify-content: space-between;
+    align-items: center;
+    height: auto;
+    min-height: 3.5rem;
+    display: flex;
+    padding: 0.5rem 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.top-row ::deep a, .top-row ::deep .btn-link {
+    white-space: nowrap;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
+    text-decoration: underline;
+}
+
+.top-row ::deep a:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── User Section ─────────────────────────── */
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
+}
+
+.role-pill {
+    background: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ffcc80;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.user-btn-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.user-btn {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.2s ease;
+}
+
+.user-btn:hover {
+    background: #f0f0f0;
+    border-color: #999;
+}
+
+.user-popup {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    min-width: 200px;
+    z-index: 1000;
+    margin-top: 0.5rem;
+}
+
+.popup-username {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.popup-divider {
+    margin: 0;
+    border: none;
+    border-top: 1px solid #eee;
+}
+
+.popup-logout {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.popup-logout:hover {
+    background: #f5f5f5;
+}
+
+.popup-backdrop {
+/*    position: fixed;*/
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index:999;
+}
+
+/* ── Mobile Styles (≤ 640px) ─────────────────────────── */
+@media (max-width: 640.98px) {
+    .top-row {
+        min-height: auto;
+        padding: 0.75rem;
+    }
+
+    .role-pill {
+        display: inline-block; /* Hide role on mobile to save space */
+    }
+
+    .user-section {
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+
+    .user-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
+    .user-popup {
+        min-width: 160px;
+    }
+
+    .popup-username {
+        padding: 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .popup-logout {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* ── Tablet & Desktop Styles (> 640px) ─────────────────────────── */
+@media (min-width: 641px) {
+    .page {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 250px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+
+    .top-row {
+        background: #ffffff;
+        border-bottom: 1px solid #e0e0e0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        padding: 0.5rem 1.5rem;
+    }
+
+    .top-row, article {
+        padding-left: 2rem !important;
+        padding-right: 1.5rem !important;   
+    }
+
+    .user-section {
+        gap: 1rem;
+    }
+
+    .role-pill {
+        display: inline-block; /* Show role on desktop */
+        padding: 0.4rem 0.9rem;
+        font-size: 0.85rem;
+    }
+
+    .user-btn {
+        width: 42px;
+        height: 42px;
+        font-size: 1.3rem;
+    }
+
+    .user-popup {
+        min-width: 220px;
+    }
+}

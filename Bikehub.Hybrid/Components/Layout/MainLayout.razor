@@ -1,0 +1,80 @@
+﻿@inherits LayoutComponentBase
+@using BikeHub.Shared.Common
+@inject UserSession Session
+@inject NavigationManager Navigation
+@inject CustomAuthStateProvider AuthProvider
+
+<div class="page">
+    @* <div class="sidebar">
+        <NavMenu />
+    </div> *@
+
+    <main>
+        @* <div class="top-row ps-2 text-black" style="font-weight:bold">
+           Mechanic Dashboard
+        </div> *@
+
+        <div class="top-row ps-2 text-black" style="font-weight:bold">
+             Dashboard
+
+            @* ✅ Right side user section *@
+            <div class="user-section">
+
+                
+                <span class="role-pill">@Session.Roles?.FirstOrDefault()</span>
+                
+
+                @* ✅ User Button *@
+                <div class="user-btn-wrapper">
+                    <button class="user-btn" @onclick="TogglePopup" @onclick:stopPropagation="true">
+                        <span class="user-avatar">👤</span>
+                    </button>
+
+                    @* ✅ Popup Menu *@
+                    @if (_showPopup)
+                    {
+                        <div class="user-popup">
+                            <div class="popup-username">
+                                <span>👤</span>
+                                <span>@Session.Username</span>
+                            </div>
+                            <hr class="popup-divider" />
+                            <button class="popup-logout" @onclick="HandleLogout">
+                                🚪 Logout
+                            </button>
+                        </div>
+                    }
+                </div>
+
+            </div>
+            
+         </div>
+        <article class="content px-2">
+            @Body
+        </article>
+
+    </main>
+</div>
+
+
+
+
+@if (_showPopup)
+{
+    <div class="popup-backdrop" @onclick="ClosePopup"></div>
+}
+
+@code {
+    private bool _showPopup = false;
+
+    private void TogglePopup() => _showPopup = !_showPopup;
+    private void ClosePopup() => _showPopup = false;
+
+    private async Task HandleLogout()
+    {
+        _showPopup = false;
+        SecureStorage.Remove("auth_token");
+        AuthProvider.NotifyLogout();
+        Navigation.NavigateTo("login");
+    }
+}
