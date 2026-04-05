@@ -32,8 +32,8 @@ It helps manage bikes, customers, inventory, service orders, and staff operation
 
 Backend: .NET 9 Web API(minimal api using carter)
 
-Frontend:  .Net Maui Blazor Hybrid (Tested on Android and Windows), Angular
-
+Frontend:  a).Net Maui Blazor Hybrid -For Mechanic only (Tested on Android and Windows),
+           b) Angular (Full Application)
 Database: SQL Server
 
 MICRO ORM: DAPPER
