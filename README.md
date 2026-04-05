@@ -24,7 +24,7 @@ It helps manage bikes, customers, inventory, service orders, and staff operation
 
 📊 Internal reporting and dashboards
 
-
+📊 Bike Service dashboards  (Different UI Based On Roles (Mechanic & Admin))
 
 ---
 
@@ -32,13 +32,13 @@ It helps manage bikes, customers, inventory, service orders, and staff operation
 
 Backend: .NET 9 Web API(minimal api using carter)
 
-Frontend: .NET MAUI (TESTED ON ANDROID)
+Frontend:  .Net Maui Blazor Hybrid (Tested on Android and Windows), Angular
 
 Database: SQL Server
 
 MICRO ORM: DAPPER
 
-Authentication: ASP.NET Identity / Custom Auth
+Authentication: Custom Auth (Roles & Policy based authorization)
 
 Tools & Libraries:
 
@@ -75,6 +75,10 @@ Orders
 
 OrderItems
 
+Repair Service 
+
+Users
+
 
 Designed for internal operations, not a public e-commerce platform.
 
@@ -92,7 +96,7 @@ Visual Studio 2022+
 
 🔮 Future Enhancements
 
-📱 Mobile & web app (will planning to develop Flutter and angular or blazor)
+📱 Mobile & web app 
 
 🔔 Service status notifications
 
