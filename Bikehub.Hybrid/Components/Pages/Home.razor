@@ -1,5 +1,7 @@
 ﻿@page "/"
 
+@layout MainLayout
+@implements IDisposable
 @attribute [Authorize(Roles = "MECHANIC", Policy = "SERVICE_DASHBOARD")]
 <style>
     .summary-section {
@@ -77,12 +79,11 @@
 
     .tabs {
         display: flex;
-        width:100%;
+        width: 100%;
         gap: 10px;
         padding: 6px;
         background: #f4f6f8;
         border-radius: 12px;
-        
         box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
     }
 
@@ -115,14 +116,13 @@
         display: flex;
         flex-direction: column;
         flex: 1;
-        
         min-height: 0;
         height: calc(100vh - 400px)
     }
 
     .tab-content {
-        display:flex;
-        flex-direction:column;
+        display: flex;
+        flex-direction: column;
         margin-top: 20px;
         padding: 20px;
         border-radius: 14px;
@@ -132,7 +132,7 @@
         overflow-y: auto;
         flex: 1;
         min-height: 0;
-        gap:15px;
+        gap: 15px;
     }
 
     /* Smooth fade animation */
@@ -304,190 +304,267 @@
     }
 
     /* .page-wrapper {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
+                            height: 100%;
+                            display: flex;
+                            flex-direction: column;
+                            overflow: hidden;
+                        }
 
-    .page-inner {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        min-height: 0;
-        overflow: hidden;
-    } */
+                        .page-inner {
+                            display: flex;
+                            flex-direction: column;
+                            flex: 1;
+                            min-height: 0;
+                            overflow: hidden;
+                        } */
 
 </style>
 
 <AuthorizeView Roles="MECHANIC" Policy="SERVICE_DASHBOARD">
     <Authorized>
-         
-<div class="page-wrapper">
-    <div class="mb-2 page-inner">
-        <!-- your entire page content -->
 
-        <div class="p-2">
-            <div class="header-section ">
+        <div class="page-wrapper">
+            <div class="mb-2 page-inner">
+                <!-- your entire page content -->
 
-                <h5><b> <span style="padding:10px;background-color:burlywood;border-radius:50px;width:100px">🔧</span> Services - Mechanic Dashboard </b></h5>
-                <p>Manage your daily service workflow</p>
-            </div>
+                <div class="p-2">
+                    <div class="header-section ">
 
-            <div class="summary-section">
-                <div class="summary-card">
-                    <div class="summary-header">
-                        <p><strong>PENDING</strong></p>
-                        <span>⏳</span>
+                        <h5><b> <span style="padding:10px;background-color:burlywood;border-radius:50px;width:100px">🔧</span> Services - Mechanic Dashboard </b></h5>
+                        <p>Manage your daily service workflow</p>
                     </div>
-                    <h2>12</h2>
 
-                </div>
-                <div class="summary-card ">
-                    <div class="summary-header">
-                        <p><strong>IN PROGRESS</strong></p>
-                        <span>🚧</span>
-                    </div>
-                    <h2>12</h2>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-header">
-                        <p><strong>DONE TODAY</strong></p>
-                        <span>✅</span>
-                    </div>
-                    <h2>12</h2>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-header">
-                        <p><strong>MONTHLY TOTAL</strong></p>
-                        <span>✅</span>
-                    </div>
-                    <h2>12</h2>
-                </div>
-            </div>
-
-            <div class="job-section mt-3">
-                <div class="tabs">
-                    <button class="tab-btn @(activeTab == TabType.Pending ? "active" : "")"
-                            @onclick="() => SetTab(TabType.Pending)">
-                       ⏳ Pending 
-                    </button>
-
-                    <button class="tab-btn @(activeTab == TabType.Progress ? "active" : "")"
-                            @onclick="() => SetTab(TabType.Progress)">
-                        🚧 InProgress
-                    </button>
-
-                    <button class="tab-btn @(activeTab == TabType.Completed ? "active" : "")"
-                            @onclick="() => SetTab(TabType.Completed)">
-                        ✅ Completed
-                    </button>
-                </div>
-
-              @*   <div id="selected-tab-name" style="border-left:5px solid @GetTabColor()">
-                    <span>@GetTabIcon()  </span>
-                    <h6>@GetTabTitle()</h6>
-                </div> *@
-
-                <div class="tab-content ">
-                    @if (activeTab == TabType.Pending)
-                    {
-                        <div class="job-card">
-                            <div class="job-header">
-                                <span class="job-id">JOB-2026-000003</span>
-                                <span class="status">Inprogress</span>
+                    <div class="summary-section">
+                        <div class="summary-card">
+                            <div class="summary-header">
+                                <p><strong>PENDING</strong></p>
+                                <span>⏳</span>
                             </div>
+                            <h2>@_summary.Pending</h2>
 
-                            <h4 class="title">Tire Flat</h4>
-
-                            <div class="assigned">
-                                <span class="icon">👤</span>
-                                Hero Splendor
-                            </div>
-
-                            <div class="customer">
-                                <span class="badge">T</span>
-                                <span class="name">Tameka Fisher</span>
-                                <span class="role">Customer</span>
-                            </div>
-
-                            <div class="dates">
-                                <div class="date">
-                                    📅 14 Mar 2026 22:06
-                                </div>
-                                <div class="date blue">
-                                    🕒 28 Mar 2026 21:12
-                                </div>
-                            </div>
-
-                            <div class="time-row">
-                                <span class="chip yellow">⏳ 120 mins</span>
-                                <span class="chip red">⏱  @elapsedDisplay</span>
-                            </div>
-
-                            <div class="actions">
-                                <button class="complete">✔ Mark Completed</button>
-                                <button class="details">📄 Details</button>
-                            </div>
                         </div>
-                        <div class="job-card">
-                            <div class="job-header">
-                                <span class="job-id">JOB-2026-000003</span>
-                                <span class="status">Inprogress</span>
+                        <div class="summary-card ">
+                            <div class="summary-header">
+                                <p><strong>IN PROGRESS</strong></p>
+                                <span>🚧</span>
                             </div>
-
-                            <h4 class="title">Tire Flat</h4>
-
-                            <div class="assigned">
-                                <span class="icon">👤</span>
-                                Hero Splendor
-                            </div>
-
-                            <div class="customer">
-                                <span class="badge">T</span>
-                                <span class="name">Tameka Fisher</span>
-                                <span class="role">Customer</span>
-                            </div>
-
-                            <div class="dates">
-                                <div class="date">
-                                    📅 14 Mar 2026 22:06
-                                </div>
-                                <div class="date blue">
-                                    🕒 28 Mar 2026 21:12
-                                </div>
-                            </div>
-
-                            <div class="time-row">
-                                <span class="chip yellow">⏳ 120 mins</span>
-                                <span class="chip red">⏱  @elapsedDisplay</span>
-                            </div>
-
-                            <div class="actions">
-                                <button class="complete">✔ Mark Completed</button>
-                                <button class="details">📄 Details</button>
-                            </div>
+                            <h2>@_summary.Pending</h2>
                         </div>
-                    }
-                    else if (activeTab == TabType.Progress)
-                    {
-                        <p>In Progress Content</p>
-                    }
-                    else if (activeTab == TabType.Completed)
-                    {
-                        <p>Completed Content</p>
-                    }
+                        <div class="summary-card">
+                            <div class="summary-header">
+                                <p><strong>DONE TODAY</strong></p>
+                                <span>✅</span>
+                            </div>
+                            <h2>@_summary.DoneToday</h2>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-header">
+                                <p><strong>MONTHLY TOTAL</strong></p>
+                                <span>✅</span>
+                            </div>
+                            <h2>@_summary.ThisMonth</h2>
+                        </div>
+                    </div>
+
+                    <div class="job-section mt-3">
+                        <div class="tabs">
+                            <button class="tab-btn @(activeTab == TabType.Pending ? "active" : "")"
+                                    @onclick="() => SetTab(TabType.Pending)">
+                                ⏳ Pending
+                            </button>
+
+                            <button class="tab-btn @(activeTab == TabType.Progress ? "active" : "")"
+                                    @onclick="() => SetTab(TabType.Progress)">
+                                🚧 InProgress
+                            </button>
+
+                            <button class="tab-btn @(activeTab == TabType.Completed ? "active" : "")"
+                                    @onclick="() => SetTab(TabType.Completed)">
+                                ✅ Completed
+                            </button>
+                        </div>
+                        <div class="tab-content ">
+                            @if (activeTab == TabType.Pending)
+                            {
+                                if (_assignedJobVM._pendingJobs == null || _assignedJobVM._pendingJobs.Count() == 0)
+                                {
+                                    <div style="text-align:center; padding:40px;">
+                                        <h3 style="margin-bottom:10px;">No pending jobs</h3>
+                                        <p style="color:#666;">All caught up! No pending services at the moment.</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    foreach (var job in _assignedJobVM._pendingJobs)
+                                    {
+                                        <div class="job-card">
+                                            <div class="job-header">
+                                                <span class="job-id"> @job.JobCardNumber </span>
+                                                <span class="status"> @job.ServiceStatus </span>
+                                            </div>
+
+                                            <h4 class="title">@job.ProblemDescription</h4>
+
+                                            <div class="assigned">
+                                                <span class="icon">👤</span>
+                                                @job.BikeModel
+                                            </div>
+
+                                            <div class="customer">
+                                                <span class="badge">T</span>
+                                                <span class="name">@job.CustomerName</span>
+                                                <span class="role">Customer</span>
+                                            </div>
+
+                                            <div class="dates">
+                                                <div class="date">
+                                                    📅 @job.CreatedDate.ToString("dd MMM yyyy HH:mm")
+                                                </div>
+
+                                                @* <div class="date blue">
+                                                🕒 @job.StartTime.Value.ToString("dd MMM yyyy HH:mm")
+                                            </div> *@
+                                            </div>
+
+                                            <div class="time-row">
+                                                <span class="chip yellow">⏳ @job.ActualDuration mins</span>
+                                                <span class="chip red">⏱  -:- </span>
+                                            </div>
+
+                                            <div class="actions">
+                                                <button class="complete">✔ Start Job</button>
+                                                <button class="details">📄 Details</button>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            }
+                            else if (activeTab == TabType.Progress)
+                            {
+                                if (_assignedJobVM._InProgresssJobs == null || _assignedJobVM._InProgresssJobs.Count() == 0)
+                                {
+                                    <div style="text-align:center; padding:40px;">
+                                        <h3 style="margin-bottom:10px;">No InProgress jobs</h3>
+                                        <p style="color:#666;">All caught up! No Inprogress services at the moment.</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    foreach (var job in _assignedJobVM._InProgresssJobs)
+                                    {
+                                        <div class="job-card">
+                                            <div class="job-header">
+                                                <span class="job-id"> @job.JobCardNumber </span>
+                                                <span class="status"> @job.ServiceStatus </span>
+                                            </div>
+
+                                            <h4 class="title">@job.ProblemDescription</h4>
+
+                                            <div class="assigned">
+                                                <span class="icon">👤</span>
+                                                @job.BikeModel
+                                            </div>
+
+                                            <div class="customer">
+                                                <span class="badge">T</span>
+                                                <span class="name">@job.CustomerName</span>
+                                                <span class="role">Customer</span>
+                                            </div>
+
+                                            <div class="dates">
+                                                <div class="date">
+                                                    📅 @job.CreatedDate.ToString("dd MMM yyyy HH:mm")
+                                                </div>
+
+                                                <div class="date blue">
+                                                    🕒 @job.StartTime.Value.ToString("dd MMM yyyy HH:mm")
+                                                </div>
+                                            </div>
+
+                                            <div class="time-row">
+                                                <span class="chip yellow">⏳ @job.EstimatedDuration mins</span>
+                                                <span class="chip red">⏱  @GetElapsed(job.StartTime.Value)</span>
+                                            </div>
+
+                                            <div class="actions">
+                                                <button class="complete">✔ Marked As Completed</button>
+                                                <button class="details">📄 Details</button>
+                                            </div>
+                                        </div>
+
+                                    }
+                                }
+                            }
+                            else if (activeTab == TabType.Completed)
+                            {
+
+                                if (_assignedJobVM._CompletedJobs == null || _assignedJobVM._CompletedJobs.Count() == 0)
+                                {
+                                    <div style="text-align:center; padding:40px;">
+                                        <h3 style="margin-bottom:10px;">No InProgress jobs</h3>
+                                        <p style="color:#666;">All caught up! No Inprogress services at the moment.</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    foreach (var job in _assignedJobVM._CompletedJobs)
+                                    {
+                                        <div class="job-card">
+                                            <div class="job-header">
+                                                <span class="job-id"> @job.JobCardNumber </span>
+                                                <span class="status"> @job.ServiceStatus </span>
+                                            </div>
+
+                                            <h4 class="title">@job.ProblemDescription</h4>
+
+                                            <div class="assigned">
+                                                <span class="icon">👤</span>
+                                                @job.BikeModel
+                                            </div>
+
+                                            <div class="customer">
+                                                <span class="badge">@job.CustomerName?.Take(1)</span>
+                                                <span class="name">@job.CustomerName</span>
+                                                <span class="role">Customer</span>
+                                            </div>
+
+                                            <div class="dates">
+                                                <div class="date">
+                                                    📅 @job.CreatedDate.ToString("dd MMM yyyy HH:mm")
+                                                </div>
+
+                                                <div class="date blue">
+                                                    🕒 @job.StartTime.Value.ToString("dd MMM yyyy HH:mm")
+                                                </div>
+                                            </div>
+
+                                            <div class="time-row">
+                                                <span class="chip yellow">⏳ @job.EstimatedDuration mins</span>
+                                                <span class="chip red">⏱ @job.ActualDuration </span>
+                                            </div>
+
+
+                                            <div class="actions">
+                                                @* <button class="complete">✔ Mark Completed</button> *@
+                                                <button class="details">📄 Details</button>
+                                            </div>
+
+                                        </div>
+                                    }
+
+                                }
+                            }
+                        </div>
+                    </div>
+
                 </div>
             </div>
-
         </div>
-    </div>
-</div>
-</Authorized>
-<NotAuthorized>
+    </Authorized>
+    <NotAuthorized>
         <h3 class="text-center mt-5">🚫 Access Denied</h3>
         <p class="text-center">You do not have permission to view this page.</p>
-</NotAuthorized>
+    </NotAuthorized>
     <Authorizing>
         <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
             <div style="text-align: center;">
@@ -500,77 +577,5 @@
 
 @code {
 
-    private DateTime startTime = DateTime.Now.AddMinutes(-5); // example (started 5 mins ago)
-    private string elapsedDisplay = "00:00:00";
 
-    private System.Timers.Timer? timer;
-
-    enum TabType { Pending, Progress, Completed }
-
-    TabType activeTab = TabType.Pending;
-
-    void SetTab(TabType tab)
-    {
-        activeTab = tab;
-    }
-    string GetTabIcon()
-    {
-        return activeTab switch
-        {
-            TabType.Pending => "⏳",
-            TabType.Progress => "🚧",
-            TabType.Completed => "✅",
-            _ => ""
-        };
-
-
-    }
-
-    string GetTabColor()
-    {
-        return activeTab switch
-        {
-            TabType.Pending => "#f39c12",
-            TabType.Progress => "#3498db",
-            TabType.Completed => "#2ecc71",
-            _ => "#ccc"
-        };
-    }
-
-    string GetTabTitle()
-    {
-        return activeTab switch
-        {
-            TabType.Pending => "Pending Tasks",
-            TabType.Progress => "In Progress",
-            TabType.Completed => "Completed Tasks",
-            _ => ""
-        };
-    }
-
-    protected override Task OnInitializedAsync()
-    {
-
-
-        timer = new System.Timers.Timer(1000); // 1 sec
-        timer.Elapsed += (_, __) => UpdateElapsed();
-        timer.Start();
-
-        return base.OnInitializedAsync();
-    }
- 
-   private void UpdateElapsed()
-    {
-        var elapsed = DateTime.Now - startTime;
-
-        elapsedDisplay = $"{(int)elapsed.TotalHours:00}:{elapsed.Minutes:00}:{elapsed.Seconds:00}";
-
-        InvokeAsync(StateHasChanged);
-    }
-
-
-    public void Dispose()
-    {
-        timer?.Dispose();
-    }
 }

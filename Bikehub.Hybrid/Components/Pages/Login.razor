@@ -7,10 +7,6 @@
 @using Bikehub.Hybrid.Components.Layout
 
 
-@inject IHttpClientFactory HttpClientFactory
-@inject CustomAuthStateProvider AuthProvider
-@inject NavigationManager Navigation
-
 
 <style>
     /* Add to your Login.razor.css or site.css */
@@ -253,82 +249,69 @@
 
 @code {
     
-    private LoginDto _loginModel = new();
-    private string _errorMessage = string.Empty;
-    private bool _isLoading = false;
-    private bool _showPassword = false;
+    
 
     // ✅ Redirect if already logged in
-    [CascadingParameter]
-    private Task<AuthenticationState> AuthState { get; set; } = default!;
+   
+    // private async Task HandleLogin()
+    // {
+    //     _isLoading = true;
+    //     _errorMessage = string.Empty;
 
-    protected override async Task OnInitializedAsync()
-    {
-        var auth = await AuthState;
-        if (auth.User.Identity?.IsAuthenticated == true)
-            Navigation.NavigateTo("/", replace: true);
-    }
+    //     try
+    //     {
+    //         var Http = HttpClientFactory.CreateClient("BikeHub");
+    //         var response = await Http.PostAsJsonAsync("/api/user/login", new
+    //         {
+    //             email = _loginModel.Email,
+    //             password = _loginModel.Password
+    //         });
 
-    private async Task HandleLogin()
-    {
-        _isLoading = true;
-        _errorMessage = string.Empty;
+    //         if (response.IsSuccessStatusCode)
+    //         {
+    //             var result = await response.Content.ReadFromJsonAsync<ApiResponse<JwtResponse>>();
 
-        try
-        {
-            var Http = HttpClientFactory.CreateClient("BikeHub");
-            var response = await Http.PostAsJsonAsync("/api/user/login", new
-            {
-                email = _loginModel.Email,
-                password = _loginModel.Password
-            });
+    //             if (result is not null && !string.IsNullOrEmpty(result.Data.Token))
+    //             {
 
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<ApiResponse<JwtResponse>>();
+    //                 ✅ Store token securely
+    //                 await SecureStorage.SetAsync("auth_token", result.Data.Token);
 
-                if (result is not null && !string.IsNullOrEmpty(result.Data.Token))
-                {
+    //                 ✅ Notify Blazor auth state has changed
+    //                 AuthProvider.NotifyAuthStateChanged();
 
-                    // ✅ Store token securely
-                    await SecureStorage.SetAsync("auth_token", result.Data.Token);
+    //                 ✅ Navigate to home
+    //                 Navigation.NavigateTo("/", replace: true);
+    //             }
+    //             else
+    //             {
+    //                 _errorMessage = "Invalid response from server.";
+    //             }
+    //         }
+    //         else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+    //         {
+    //             _errorMessage = "Invalid email or password.";
+    //         }
+    //         else
+    //         {
+    //             _errorMessage = "Something went wrong. Please try again.";
+    //         }
+    //     }
+    //     catch (HttpRequestException)
+    //     {
+    //         _errorMessage = "Unable to reach the server. Check your connection.";
+    //     }
+    //     catch (Exception)
+    //     {
+    //         _errorMessage = "An unexpected error occurred.";
+    //     }
+    //     finally
+    //     {
+    //         _isLoading = false;
+    //     }
+    // }
 
-                    // ✅ Notify Blazor auth state has changed
-                    AuthProvider.NotifyAuthStateChanged();
-
-                    // ✅ Navigate to home
-                    Navigation.NavigateTo("/", replace: true);
-                }
-                else
-                {
-                    _errorMessage = "Invalid response from server.";
-                }
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
-                _errorMessage = "Invalid email or password.";
-            }
-            else
-            {
-                _errorMessage = "Something went wrong. Please try again.";
-            }
-        }
-        catch (HttpRequestException)
-        {
-            _errorMessage = "Unable to reach the server. Check your connection.";
-        }
-        catch (Exception)
-        {
-            _errorMessage = "An unexpected error occurred.";
-        }
-        finally
-        {
-            _isLoading = false;
-        }
-    }
-
-    private void TogglePassword() => _showPassword = !_showPassword;
-
+  
     // ─── Models ───────────────────────────────────────────────────────────────
 
     

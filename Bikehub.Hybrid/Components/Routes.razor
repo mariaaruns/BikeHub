@@ -3,7 +3,7 @@
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(MauiProgram).Assembly">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+            <AuthorizeRouteView RouteData="@routeData">
                 <NotAuthorized>
                     <AuthorizeView >
                         <Authorized Context="authContext">
@@ -18,12 +18,10 @@
                         <NotAuthorized Context="unauthContext">
                                 <LayoutView Layout="@typeof(Layout.EmptyLayout)">
                                     <Bikehub.Hybrid.Components.Pages.Login />
-                            </LayoutView>
-                            </NotAuthorized>
+                                </LayoutView>
+                        </NotAuthorized>
                     </AuthorizeView>
-                    @* <LayoutView Layout="@typeof(Layout.EmptyLayout)">
-                        <Bikehub.Hybrid.Components.Pages.Login />
-                    </LayoutView> *@
+                 
                 </NotAuthorized>
                 
                 <Authorizing>

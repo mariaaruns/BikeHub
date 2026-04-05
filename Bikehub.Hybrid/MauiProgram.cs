@@ -1,4 +1,6 @@
 ﻿using Bikehub.Hybrid.Authhandler;
+using Bikehub.Hybrid.Services.Http.Auth;
+using Bikehub.Hybrid.Services.Http.ServiceDashboard;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
@@ -36,21 +38,21 @@ namespace Bikehub.Hybrid
             .AddHttpMessageHandler<AuthTokenHandler>()      // Adds token to requests
             .AddHttpMessageHandler<AuthorizedHandler>();   // Handles 401 responses
 
-            //builder.Services.AddScoped<HttpClient>(sp =>
-            //{
-            //    var authHandler = sp.GetRequiredService<AuthTokenHandler>();
-            //    authHandler.InnerHandler = new HttpClientHandler(); 
 
-            //    return new HttpClient(authHandler)
-            //    {
-            //        BaseAddress = new Uri("https://hms704v0-7079.inc1.devtunnels.ms")
-            //    };
-            //});
 
-         //   builder.Services.AddAuthorizationCore();
+
+
+            //Api service registrations
+
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IServiceDashboard, ServiceDashboard>();
+
+
+
+
+
             builder.Services.AddAuthorizationCore(options =>
             {
-                // Register the client-side policy that maps to your server policy name
                 options.AddPolicy("SERVICE_DASHBOARD", p =>
                     p.RequireClaim("Permission", "SERVICE_DASHBOARD"));
             });
