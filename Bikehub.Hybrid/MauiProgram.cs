@@ -1,11 +1,13 @@
 ﻿using Bikehub.Hybrid.Authhandler;
+using Bikehub.Hybrid.DeviceServices.Location;
+using Bikehub.Hybrid.DeviceServices.Toast;
 using Bikehub.Hybrid.Services.Http.Auth;
 using Bikehub.Hybrid.Services.Http.ServiceDashboard;
+using CommunityToolkit.Maui;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
-
 
 namespace Bikehub.Hybrid
 {
@@ -14,8 +16,8 @@ namespace Bikehub.Hybrid
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
-            builder
-                .UseMauiApp<App>()
+            builder.UseMauiApp<App>()
+                .UseMauiCommunityToolkit(options => options.SetShouldEnableSnackbarOnWindows(true))
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -31,6 +33,8 @@ namespace Bikehub.Hybrid
             
             builder.Services.AddTransient<AuthTokenHandler>();
             builder.Services.AddTransient<AuthorizedHandler>();
+            builder.Services.AddSingleton<ILocationService, LocationService>();
+            builder.Services.AddSingleton<IToastService, ToastService>();
 
             builder.Services.AddHttpClient("BikeHub")
             .ConfigureHttpClient(client =>

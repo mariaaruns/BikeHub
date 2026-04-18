@@ -158,12 +158,11 @@ namespace BikeHub.Features
             })
                 .WithName("daily-job-list").WithTags("Services");
 
+            
             app.MapGet("/api/services/job/{jobId:int}", async (int jobId, IServiceRepository _serviceRepository) =>
             {
-
                 try
                 {
-
                     var result = await _serviceRepository.GetJobByIdAsync(jobId);
                     return Results.Ok(ApiResponse<ServiceJobDetailDto>.Success(result));
                 }
@@ -171,9 +170,8 @@ namespace BikeHub.Features
                 {
                     return Results.InternalServerError(ApiResponse<ServiceJobDetailDto>.Fail("Internal server error..!"));
                 }
-            })
-                .WithName("job-details")
-                .WithTags("Services");
+            }).WithName("job-details")
+              .WithTags("Services");
 
             app.MapGet("/api/services/items/{jobId:int}", async (int jobId, IServiceRepository _serviceRepository) =>
             {

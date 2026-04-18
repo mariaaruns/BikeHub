@@ -1,324 +1,10 @@
 ﻿@page "/"
+@using Bikehub.Hybrid.Components.UIComponents
+@using static Bikehub.Hybrid.Components.UIComponents.Loader
 
 @layout MainLayout
 @implements IDisposable
 @attribute [Authorize(Roles = "MECHANIC", Policy = "SERVICE_DASHBOARD")]
-<style>
-    .summary-section {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr); /* Desktop */
-        gap: 20px;
-    }
-    /* Tablet */
-    @@media (max-width: 992px) {
-        .summary-section {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    /* Mobile */
-    @@media (max-width: 576px) {
-        .summary-section {
-            grid-template-columns: repeat(2, 1fr); /* 2 cards per row */
-        }
-    }
-
-    .summary-card h2 {
-        margin-top: 10px;
-        font-size: 28px;
-        color: #222;
-    }
-
-
-
-    .summary-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-    }
-
-    .summary-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .summary-card p {
-        margin: 0;
-        font-weight: 600;
-        font-size: 12PX;
-        color: #555;
-    }
-
-    .summary-card {
-        width: 100%;
-        padding: 10px;
-        border-radius: 12px;
-        background: #ffffff;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        border-left: 6px solid transparent; /* base */
-    }
-        /* 1st card - Pending (Orange) */
-        .summary-card:nth-child(1) {
-            border-left-color: #f39c12;
-        }
-
-        /* 2nd - In Progress (Blue) */
-        .summary-card:nth-child(2) {
-            border-left-color: #3498db;
-        }
-
-        /* 3rd - Completed (Green) */
-        .summary-card:nth-child(3) {
-            border-left-color: #2ecc71;
-        }
-
-        /* 4th - Monthly (Purple) */
-        .summary-card:nth-child(4) {
-            border-left-color: #9b59b6;
-        }
-
-    .tabs {
-        display: flex;
-        width: 100%;
-        gap: 10px;
-        padding: 6px;
-        background: #f4f6f8;
-        border-radius: 12px;
-        box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .tab-btn {
-        padding: 5px 18px;
-        border: none;
-        background: transparent;
-        cursor: pointer;
-        border-radius: 10px;
-        font-weight: 600;
-        color: #555;
-        transition: all 0.25s ease;
-    }
-
-        /* Active tab */
-        .tab-btn.active {
-            background: #ffffff;
-            color: #111;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            border-bottom: solid 2px burlywood;
-        }
-
-        /* Hover effect */
-        .tab-btn:hover {
-            color: #000;
-        }
-
-    /* Content */
-    .job-section {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        min-height: 0;
-        height: calc(100vh - 400px)
-    }
-
-    .tab-content {
-        display: flex;
-        flex-direction: column;
-        margin-top: 20px;
-        padding: 20px;
-        border-radius: 14px;
-        background: #ffffff;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-        animation: fadeIn 0.3s ease;
-        overflow-y: auto;
-        flex: 1;
-        min-height: 0;
-        gap: 15px;
-    }
-
-    /* Smooth fade animation */
-    @@keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(5px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    #selected-tab-name {
-        margin: 15px 0;
-        padding: 12px 16px;
-        border-radius: 10px;
-        background: #ffffff;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.06);
-        border-left: 5px solid #3498db;
-    }
-
-        #selected-tab-name h6 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-        }
-
-    .job-card {
-        width: 100%;
-        padding: 16px;
-        border-radius: 14px;
-        background: #f4f6f8;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        font-family: 'Segoe UI', sans-serif;
-    }
-
-
-    /* Header */
-    .job-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 12px;
-        margin-bottom: 10px;
-    }
-
-    .job-id {
-        color: #6c7a89;
-    }
-
-    .status {
-        background: #e3f0ff;
-        color: #2f80ed;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-    }
-
-    /* Title */
-    .title {
-        margin: 5px 0 10px;
-        font-size: 18px;
-    }
-
-    /* Assigned */
-    .assigned {
-        font-size: 13px;
-        color: #6c7a89;
-        margin-bottom: 10px;
-    }
-
-    /* Customer */
-    .customer {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 12px;
-    }
-
-    .badge {
-        background: #ff4d4f;
-        color: white;
-        font-weight: bold;
-        border-radius: 6px;
-        padding: 4px 8px;
-    }
-
-    .name {
-        font-weight: 600;
-    }
-
-    .role {
-        margin-left: auto;
-        font-size: 11px;
-        color: #999;
-    }
-
-    /* Dates */
-    .dates {
-        display: flex;
-        justify-content: space-between;
-        font-size: 11px;
-        margin-bottom: 10px;
-    }
-
-    .date {
-        background: #eef1f5;
-        padding: 5px 8px;
-        border-radius: 6px;
-    }
-
-        .date.blue {
-            background: #e3f0ff;
-            color: #2f80ed;
-        }
-
-    /* Time chips */
-    .time-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 12px;
-    }
-
-    .chip {
-        padding: 5px 8px;
-        border-radius: 6px;
-        font-size: 11px;
-    }
-
-        .chip.yellow {
-            background: #fff4e5;
-            color: #f39c12;
-        }
-
-        .chip.red {
-            background: #ffecec;
-            color: #e74c3c;
-        }
-
-    /* Buttons */
-    .actions {
-        display: flex;
-        gap: 10px;
-    }
-
-        .actions button {
-            flex: 1;
-            padding: 8px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-    .complete {
-        background: #e6f4ea;
-        color: #27ae60;
-    }
-
-    .details {
-        background: #eef1f5;
-    }
-
-    /* .page-wrapper {
-                            height: 100%;
-                            display: flex;
-                            flex-direction: column;
-                            overflow: hidden;
-                        }
-
-                        .page-inner {
-                            display: flex;
-                            flex-direction: column;
-                            flex: 1;
-                            min-height: 0;
-                            overflow: hidden;
-                        } */
-
-</style>
 
 <AuthorizeView Roles="MECHANIC" Policy="SERVICE_DASHBOARD">
     <Authorized>
@@ -340,7 +26,14 @@
                                 <p><strong>PENDING</strong></p>
                                 <span>⏳</span>
                             </div>
-                            <h2>@_summary.Pending</h2>
+                            @if (_isMechSummaryLoading)
+                            {
+                                <Loader Size="sm" />
+                            }
+                            else
+                            {
+                                <h2>@_summary.Pending</h2>
+                            }
 
                         </div>
                         <div class="summary-card ">
@@ -348,21 +41,42 @@
                                 <p><strong>IN PROGRESS</strong></p>
                                 <span>🚧</span>
                             </div>
-                            <h2>@_summary.Pending</h2>
+                            @if (_isMechSummaryLoading)
+                            {
+                                <Loader Size="sm" />
+                            }
+                            else
+                            {
+                                <h2>@_summary.InProgress</h2>
+                            }
                         </div>
                         <div class="summary-card">
                             <div class="summary-header">
                                 <p><strong>DONE TODAY</strong></p>
                                 <span>✅</span>
                             </div>
-                            <h2>@_summary.DoneToday</h2>
+                            @if (_isMechSummaryLoading)
+                            {
+                                <Loader Size="sm" />
+                            }
+                            else
+                            {
+                                <h2>@_summary.DoneToday</h2>
+                            }
                         </div>
                         <div class="summary-card">
                             <div class="summary-header">
                                 <p><strong>MONTHLY TOTAL</strong></p>
                                 <span>✅</span>
                             </div>
-                            <h2>@_summary.ThisMonth</h2>
+                            @if (_isMechSummaryLoading)
+                            {
+                                <Loader Size="sm" />
+                            }
+                            else
+                            {
+                                <h2>@_summary.ThisMonth</h2>
+                            }
                         </div>
                     </div>
 
@@ -371,22 +85,30 @@
                             <button class="tab-btn @(activeTab == TabType.Pending ? "active" : "")"
                                     @onclick="() => SetTab(TabType.Pending)">
                                 ⏳ Pending
+                               <span class="badge">@_assignedJobVM._pendingCount</span>
                             </button>
 
                             <button class="tab-btn @(activeTab == TabType.Progress ? "active" : "")"
                                     @onclick="() => SetTab(TabType.Progress)">
                                 🚧 InProgress
+                                <span class="badge">@_assignedJobVM._inProgressCount</span>
                             </button>
 
                             <button class="tab-btn @(activeTab == TabType.Completed ? "active" : "")"
                                     @onclick="() => SetTab(TabType.Completed)">
                                 ✅ Completed
+                                <span class="badge">@_assignedJobVM._completedCount</span>
                             </button>
                         </div>
                         <div class="tab-content ">
                             @if (activeTab == TabType.Pending)
                             {
-                                if (_assignedJobVM._pendingJobs == null || _assignedJobVM._pendingJobs.Count() == 0)
+
+                                if (_isJobsLoading)
+                                {
+                                    <Loader position="Position.Center" />
+                                }
+                                else if (!_isJobsLoading && (_assignedJobVM._pendingJobs == null || _assignedJobVM._pendingJobs.Count() == 0))
                                 {
                                     <div style="text-align:center; padding:40px;">
                                         <h3 style="margin-bottom:10px;">No pending jobs</h3>
@@ -397,6 +119,7 @@
                                 {
                                     foreach (var job in _assignedJobVM._pendingJobs)
                                     {
+
                                         <div class="job-card">
                                             <div class="job-header">
                                                 <span class="job-id"> @job.JobCardNumber </span>
@@ -432,16 +155,21 @@
                                             </div>
 
                                             <div class="actions">
-                                                <button class="complete">✔ Start Job</button>
-                                                <button class="details">📄 Details</button>
+                                                <button class="complete" @onclick="()=>StartJobApi(job.serviceJobId)">✔ Start Job</button>
+                                                <button class="details" @onclick="() => OpenModal(job.serviceJobId)">📄 Details</button>
                                             </div>
                                         </div>
+
                                     }
                                 }
                             }
                             else if (activeTab == TabType.Progress)
                             {
-                                if (_assignedJobVM._InProgresssJobs == null || _assignedJobVM._InProgresssJobs.Count() == 0)
+                                if (_isJobsLoading)
+                                {
+                                    <Loader position="Position.Center" />
+                                }
+                                else if (!_isJobsLoading && (_assignedJobVM._InProgresssJobs == null || _assignedJobVM._InProgresssJobs.Count() == 0))
                                 {
                                     <div style="text-align:center; padding:40px;">
                                         <h3 style="margin-bottom:10px;">No InProgress jobs</h3>
@@ -487,8 +215,8 @@
                                             </div>
 
                                             <div class="actions">
-                                                <button class="complete">✔ Marked As Completed</button>
-                                                <button class="details">📄 Details</button>
+                                                <button class="complete" @onclick="() => CompleteJobApi(job.serviceJobId)">✔ Marked As Completed</button>
+                                                <button class="details" @onclick="()=>OpenModal(job.serviceJobId)" >📄 Details</button>
                                             </div>
                                         </div>
 
@@ -498,11 +226,15 @@
                             else if (activeTab == TabType.Completed)
                             {
 
-                                if (_assignedJobVM._CompletedJobs == null || _assignedJobVM._CompletedJobs.Count() == 0)
+                                if (_isJobsLoading)
+                                {
+                                    <Loader position="Position.Center" />
+                                }
+                                else if (!_isJobsLoading && (_assignedJobVM._CompletedJobs == null || _assignedJobVM._CompletedJobs.Count() == 0))
                                 {
                                     <div style="text-align:center; padding:40px;">
-                                        <h3 style="margin-bottom:10px;">No InProgress jobs</h3>
-                                        <p style="color:#666;">All caught up! No Inprogress services at the moment.</p>
+                                        <h3 style="margin-bottom:10px;">No completed jobs</h3>
+                                        <p style="color:#666;">All caught up! No Completed services at the moment.</p>
                                     </div>
                                 }
                                 else
@@ -543,10 +275,8 @@
                                                 <span class="chip red">⏱ @job.ActualDuration </span>
                                             </div>
 
-
                                             <div class="actions">
-                                                @* <button class="complete">✔ Mark Completed</button> *@
-                                                <button class="details">📄 Details</button>
+                                                <button class="details" @onclick="() => OpenModal(job.serviceJobId)">📄 Details</button>
                                             </div>
 
                                         </div>
@@ -575,7 +305,66 @@
     </Authorizing>
 </AuthorizeView>
 
-@code {
+<MyModal Show="showModal" OnClose="CloseModal" IsFooter="false">
+    <Title>
+        <p style="font-size:10px;color:#7493f6">JOB DETAILS</p>
+        <p style="font-size:13px;font-weight:bolder">@_serviceJobDetail.JobId</p>
+    </Title>
+    <Body>
+        @if(_isJobDetailLoading){
+        <Loader position="Position.Center" />
+        }
+        else if(_serviceJobDetail != null)
+        {
+            <div>
+            <div style="display:flex;justify-content:space-between">
+                <div style="line-height:0.1rem">
+                    <p style="font-size:16px;font-weight:bolder">@_serviceJobDetail.Service</p>
+                    <p style="font-size:10px;font-weight:lighter;color:gray">@_serviceJobDetail.BikeModel (@_serviceJobDetail.BikeNumber)</p>
+                </div>
+                <div>
+                    <span style="font-size: 10px;border: solid 0px;background-color: green;border-radius:12px;padding: 6px;color: white;">@_serviceJobDetail.Status</span>
+                </div>
+            </div>
 
+            <div class="row p-2 mx-1 " style="background-color:white;border:solid 1px transparent;border-radius:10px">
+                <p style="font-size:10px;font-weight:bold;color:gray">CUSTOMER DETAILS</p>
+                <div class="col-12 col-sm-6">
+                    <span style="font-size:12px"><strong>Name:</strong> @_serviceJobDetail.CustomerName</span>
 
-}
+                </div>
+                <div class="col-12 col-sm-6">
+                    <span style="font-size:12px"><strong>Email:</strong> @( IfEmptyShowNA(_serviceJobDetail.Email)) </span>
+                </div>
+                <div class="col-12">
+                    <span style="font-size:12px"><strong>Address:</strong> @(IfEmptyShowNA(_serviceJobDetail.Address))</span>
+                </div>
+            </div>
+
+            <div class="info-grid pt-2">
+                <span><strong>Mechanic:</strong> @_serviceJobDetail.Mechanic</span>
+                <span><strong>CreatedBy:</strong> @(IfEmptyShowNA(_serviceJobDetail.CreatedBy))</span>
+
+                <span><strong>Assigned:</strong> @(IfEmptyShowNA(_serviceJobDetail.CreatedAt))</span>
+                <span><strong>Start Time:</strong> @(IfEmptyShowNA(_serviceJobDetail.StartTime))</span>
+
+                <span><strong>Created:</strong>@(IfEmptyShowNA(_serviceJobDetail.CreatedAt))</span>
+                <span><strong>Completed:</strong>@(IfEmptyShowNA(_serviceJobDetail.CompletedDate))</span>
+                <span><strong>Est.Cost:</strong>@(IfEmptyShowNA(_serviceJobDetail.EstimatedCost))</span>
+                <span><strong>Final Cost:</strong>@(IfEmptyShowNA(_serviceJobDetail.FinalCost))</span>
+                <span><strong>Est.Duration:</strong> @(IfEmptyShowNA(_serviceJobDetail.EstimatedDuration))</span>
+            </div>
+
+        </div>
+        }
+        else
+        {
+            
+        <div style="text-align:center; padding:40px;">
+            <h3 style="margin-bottom:10px;">No details found</h3>
+            <p style="color:#666;">Unable to fetch job details at the moment.</p>
+            </div>
+        }
+    </Body>
+
+</MyModal>
