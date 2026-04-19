@@ -39,7 +39,6 @@ namespace BikeHub.DapperQuery
                                             HAVING COUNT(*) > 5
                                         ) tab;";
 
-
         public const string GetMechanicCurrentStatus = @"Select tab.UserId  [MechanicId],
                                                                 tab.Mechanic,
                                                                 tab.Pending,
@@ -91,7 +90,6 @@ namespace BikeHub.DapperQuery
                                                                 AND j.ServiceStatus = 1006
                                                             ) cj";
 
-
         public const string GetTodayJobFeed = @"
                                                 select 
                                                  t1.ServiceJobId,
@@ -139,7 +137,6 @@ namespace BikeHub.DapperQuery
                                             inner join t000_lookUp t000 on t000.Id =t1.ServiceStatus
                                             where t1.ServiceJobId=@serviceJobId";
 
-
         public const string GetServiceItemsByServiceJobId = @"select Description,Cost,Quantity,Total from Service.service_items
                                                              where ServiceJobId=@serviceJobId";
 
@@ -157,10 +154,10 @@ namespace BikeHub.DapperQuery
                                                             set ServiceStatus = 1007, CompletedDate=getDate()
                                                             where ServiceJobId = @serviceJobId
                                                             
-                                                            SELECT ActualDuration = DATEDIFF(MINUTE, StartTime, GETDATE())
-                                                            FROM Service.service_job_assignments
+                                                            UPDATE t SET  ActualDuration = DATEDIFF(MINUTE, StartTime, GETDATE())
+                                                            FROM Service.service_job_assignments t
                                                             WHERE ServiceJobId = @serviceJobId;";
-        
+
         public const string UpdateServiceStatus = @"update Service.service_jobs
                                                     set ServiceStatus = @serviceStatus
                                                     where ServiceJobId = @serviceJobId";
