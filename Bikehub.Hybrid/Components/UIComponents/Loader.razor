@@ -1,0 +1,27 @@
+<div class="@PositionClass">
+    <div class="spinner-border text-warning spinner-border-@(Size)" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+@code{
+    [Parameter]
+    public string Size { get; set; } = "md";
+
+    [Parameter]
+    public  Position position { get; set; } = Position.Start;
+
+
+    public enum Position
+    {
+            Start,
+            Center,
+            End
+    }
+
+     private string PositionClass => position switch
+    {
+        Position.Center => "text-center",
+        Position.End => "text-end",
+        _ => "text-start"
+    };
+}

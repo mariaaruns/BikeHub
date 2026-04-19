@@ -1,0 +1,39 @@
+@if (Show)
+{
+    <div class="modal fade show d-block">
+        <div class="modal-dialog">
+            <div class="modal-content" style="border-radius:1.0rem !important">
+
+                <div class="modal-header" style="line-height: 0.5;">
+                    <div class="modal-title">@Title</div>
+                    <button class="btn-close" @onclick="OnClose"></button>
+                </div>
+
+                <div class="modal-body" style="background-color: lightgray;">
+                    @Body
+                </div>
+
+                <div class="modal-footer" style="display:@(IsFooter?"block":"none")">
+                    @Footer
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop fade show"></div>
+}
+ 
+@code {
+    [Parameter] public bool Show { get; set; }
+    //[Parameter] public string Title { get; set; }
+    [Parameter] public bool IsFooter { get; set; } = false;
+
+    [Parameter] public RenderFragment Title { get; set; }
+    [Parameter] public RenderFragment Body { get; set; }
+    [Parameter] public RenderFragment Footer { get; set; }
+
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    
+}
