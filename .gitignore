@@ -365,3 +365,4 @@ FodyWeavers.xsd
 /BikeHub/Content/Images/Products
 /Bikehub.Hybrid
 /Bikehub.Hybrid/Bikehub.Hybrid.csproj
+/Bikehub.Hybrid/wwwroot/toast.js
