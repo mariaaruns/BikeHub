@@ -71,6 +71,9 @@ namespace BikeHub.Repository
             {
                 var AddOrderSql = OrderQuery.AddOrder;
                 var OrderItemsSql = OrderQuery.AddOrderItems;
+                var customer = CustomerQuery.GetCustomerById;
+                var EmailTemplateSql = EmailTemplateQuery.EmailTemplate;
+                var outboxSql = EmailTemplateQuery.InsertOutBoxMsg;
 
                 using (var connection = new SqlConnection(_dbConnection.ConnectionString))
                 {
@@ -104,6 +107,34 @@ namespace BikeHub.Repository
                                 
                                 
                             }, commandType: CommandType.Text, transaction: transaction);
+                        }
+
+                        var customerDetail = await connection.QuerySingleAsync<CustomersDto>
+                            (customer, new { @Id = req.CustomerId }, transaction: transaction);
+
+                        if (!string.IsNullOrEmpty(customerDetail.Email))
+                        {
+                            var emailTemplate = await connection.QueryFirstOrDefaultAsync<(string Subject, string HtmlBody)>
+                                                    (EmailTemplateSql, new { @slugName = "Order-Ready-Delivery" }, transaction);
+
+
+                            var htmlBody = emailTemplate.HtmlBody.Replace("{OrderNumber}", lastInsertedOrderId.ToString())
+                                                                            .Replace("{Carrier}", "N/A")
+                                                                            .Replace("{ItemCount}", "N/A");
+
+                            //Insert into outbox for email notification
+
+                            await connection.ExecuteAsync(outboxSql, new
+                            {
+                                @eventType = "Order-Ready-Delivery",
+                                @payLoad = System.Text.Json.JsonSerializer.Serialize(new OutBoxMessagePayload
+                                {
+                                        Email = customerDetail.Email,
+                                        CustomerName = customerDetail.CustomerName,
+                                        Subject = emailTemplate.Subject,
+                                        TemplateContent = htmlBody
+                                })
+                            }, transaction);
                         }
 
                         isSuccess = true;

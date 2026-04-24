@@ -80,14 +80,16 @@ namespace BikeHub.Service
             }
         }
 
-        public async Task<JwtResponse> GenerateJwtTokenAndPolicyAsync(LoginDto dto)
+        public async Task<(IdentityErrorResult,JwtResponse)> GenerateJwtTokenAndPolicyAsync(LoginDto dto)
         {
             try
             {
-
+                var identityErrorResult = new IdentityErrorResult { IsSuccess = false, message = string.Empty };
                 if (string.IsNullOrEmpty(dto.Email) || string.IsNullOrEmpty(dto.Password))
                 {
-                    throw new Exception("Username and password cannot be empty");
+                    
+                    identityErrorResult.message="Username and password cannot be empty";
+                    //throw new Exception("Username and password cannot be empty");
                 }
 
 
@@ -96,7 +98,8 @@ namespace BikeHub.Service
 
                 if (user == null)
                 {
-                    throw new Exception("Invalid username or password");
+                    
+                    identityErrorResult.message = "Invalid username or password";
                 }
 
                 var _passwordHasher = new PasswordHasher<LoginDto>();
@@ -106,7 +109,8 @@ namespace BikeHub.Service
 
                 if (passwordHashed == PasswordVerificationResult.Failed)
                 {
-                    throw new Exception("Invalid username or password");
+                    
+                    identityErrorResult.message = "Invalid username or password";
                 }
 
                 //List<UserPolicyResponse> getUserPolicy = await GetAllPoliciesByUserId(user.UserId);
@@ -116,6 +120,11 @@ namespace BikeHub.Service
 
                 //var policyCodes = await GetPoliciesAsync(user.UserId);
 
+                if (!string.IsNullOrEmpty(identityErrorResult.message))
+                {
+                    return new(identityErrorResult, new JwtResponse());
+                }
+                identityErrorResult.IsSuccess = true;
                 var claims = new List<Claim>
                 {
                     new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
@@ -157,7 +166,7 @@ namespace BikeHub.Service
                 };
 
 
-                return payload;
+                return new( identityErrorResult,payload);
             }
             catch (Exception)
             {

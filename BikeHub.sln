@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BikeHub.Mobile", "BikeHub.M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bikehub.Hybrid", "Bikehub.Hybrid\Bikehub.Hybrid.csproj", "{C0358F38-5F47-45BB-9496-7B4C7C0CACE0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "server", "server", "{D496B3FD-1623-452B-978A-FC87CE5513CA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{CC78108A-F17A-44C4-9F05-722A5237286A} = {D496B3FD-1623-452B-978A-FC87CE5513CA}
+		{0991DBBA-BD9B-4A58-92D5-BFCF49889599} = {D496B3FD-1623-452B-978A-FC87CE5513CA}
 		{0C1B05CA-AFF1-4BF8-AE38-DB89D1050C20} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{C0358F38-5F47-45BB-9496-7B4C7C0CACE0} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection

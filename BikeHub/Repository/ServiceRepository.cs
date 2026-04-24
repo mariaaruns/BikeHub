@@ -1,5 +1,6 @@
 ﻿using BikeHub.DapperQuery;
 using BikeHub.Repository.IRepository;
+using BikeHub.Shared.Common;
 using BikeHub.Shared.Dto.Response;
 using BikeHub.Shared.Dto.Response.ServiceRes;
 using Dapper;
@@ -9,6 +10,7 @@ using System.Data;
 using System.Data.Common;
 using System.Net.NetworkInformation;
 
+
 namespace BikeHub.Repository
 {
     public class ServiceRepository : IServiceRepository
@@ -17,7 +19,7 @@ namespace BikeHub.Repository
         public ServiceRepository(IDbConnection dbConnection)
         {
             this._dbConnection = dbConnection;
-        }       
+        }
         public async Task AssignNewJobAsync(CreateJobAssignmentDto dto)
         {
             try
@@ -25,22 +27,22 @@ namespace BikeHub.Repository
                 var sql = ServiceQuery.CreateAndAssignJob;
                 var parameters = new
                 {
-                    @CustomerId =dto.CustomerId,
-                    @StoreId=dto.StoreId,
-                    @BikeModel=dto.BikeModel,
-                    @BikeNumber=dto.BikeNumber,
-                    @ProblemDescription=dto.ProblemDescription,
-                    @ServiceStatus=dto.ServiceStatus,
-                    @EstimatedCost=dto.EstimatedCost,
-                    @FinalCost=dto.FinalCost,
-                    @CreatedBy=dto.CreatedBy,
-                    @CreatedDate= dto.CreatedDate,
-                    @MechanicId=dto.MechanicId,
-                    @AssignedDate=dto.AssignedDate,
-                    @EstimatedDuration=dto.EstimatedDuration,
-                    @AssignmentStatus=dto.AssignmentStatus,
-                    @AssignedBy=dto.CreatedBy,
-                    @StartTime=dto.StartTime
+                    @CustomerId = dto.CustomerId,
+                    @StoreId = dto.StoreId,
+                    @BikeModel = dto.BikeModel,
+                    @BikeNumber = dto.BikeNumber,
+                    @ProblemDescription = dto.ProblemDescription,
+                    @ServiceStatus = dto.ServiceStatus,
+                    @EstimatedCost = dto.EstimatedCost,
+                    @FinalCost = dto.FinalCost,
+                    @CreatedBy = dto.CreatedBy,
+                    @CreatedDate = dto.CreatedDate,
+                    @MechanicId = dto.MechanicId,
+                    @AssignedDate = dto.AssignedDate,
+                    @EstimatedDuration = dto.EstimatedDuration,
+                    @AssignmentStatus = dto.AssignmentStatus,
+                    @AssignedBy = dto.CreatedBy,
+                    @StartTime = dto.StartTime
                 };
                 using (var connection = new SqlConnection(_dbConnection.ConnectionString))
                 {
@@ -56,16 +58,56 @@ namespace BikeHub.Repository
 
         public async Task CompleteJobAsync(int jobId)
         {
+            var customer = (string.Empty, string.Empty, string.Empty, string.Empty, string.Empty);
             try
             {
                 var sql = ServiceQuery.UpdateInprogressToCompletedStatus;
+                var EmailTemplateSql = EmailTemplateQuery.EmailTemplate;
+                var outboxSql = EmailTemplateQuery.InsertOutBoxMsg;
+
                 var parameters = new
                 {
                     @serviceJobId = jobId
                 };
                 using (var connection = new SqlConnection(_dbConnection.ConnectionString))
                 {
-                    await connection.ExecuteAsync(sql, parameters);
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            customer = await connection.ExecuteScalarAsync<(string, string, string, string, string)>(sql, parameters, transaction: transaction);
+
+                            if (!string.IsNullOrEmpty(customer.Item2))
+                            {
+                                var emailTemplate = await connection.QueryFirstOrDefaultAsync<(string Subject, string HtmlBody)>(EmailTemplateSql, new { @slugName = "Bike-Repair-Delivery" }, transaction);
+
+
+                                var htmlBody = emailTemplate.HtmlBody.Replace("{BikeModel}", customer.Item4)
+                                                                                  .Replace("{JobCardNumber}", customer.Item3);
+
+                                //Insert into outbox for email notification
+
+                                await connection.ExecuteAsync(outboxSql, new
+                                {
+                                    @eventType = "ServiceJobCompleted",
+                                    @payLoad = System.Text.Json.JsonSerializer.Serialize(new OutBoxMessagePayload
+                                                {
+
+                                                    Email = customer.Item2,
+                                                    CustomerName = customer.Item1,
+                                                    Subject = emailTemplate.Subject,
+                                                    TemplateContent = htmlBody
+
+                                                })
+                                }, transaction);
+                            }
+                            await transaction.CommitAsync();
+                        }
+                        catch
+                        {
+                            await transaction.RollbackAsync();
+                        }
+                    }
                 }
             }
             catch (Exception)
@@ -80,7 +122,7 @@ namespace BikeHub.Repository
             try
             {
                 var sql = ServiceQuery.GetTodayJobFeed;
-                
+
                 var parameters = new
                 {
                     @serviceStatus = serviceStatus
@@ -164,7 +206,7 @@ namespace BikeHub.Repository
             try
             {
                 var sql = ServiceQuery.GetMechanicCurrentStatus;
-               
+
                 using (var connection = new SqlConnection(_dbConnection.ConnectionString))
                 {
                     return await connection.QueryAsync<MechanicCurrentStatus>(sql);
@@ -177,7 +219,7 @@ namespace BikeHub.Repository
             }
         }
 
-        public async  Task<MechanicTaskSummayDto> GetMechanicWorkSummaryAsync(int mechanicId)
+        public async Task<MechanicTaskSummayDto> GetMechanicWorkSummaryAsync(int mechanicId)
         {
             try
             {
@@ -205,7 +247,7 @@ namespace BikeHub.Repository
             {
                 var sql = ServiceQuery.GetServiceItemsByServiceJobId;
                 var parameters = new
-                {            
+                {
                     @jobId = jobId
                 };
                 using (var connection = new SqlConnection(_dbConnection.ConnectionString))
@@ -237,7 +279,7 @@ namespace BikeHub.Repository
             }
         }
 
-        public  async Task StartJobAsync(int jobId)
+        public async Task StartJobAsync(int jobId)
         {
             try
             {
@@ -255,7 +297,7 @@ namespace BikeHub.Repository
             {
 
                 throw;
-            }   
+            }
         }
 
         public async Task UpdateJobStatusAsync(int status, int jobId)
@@ -263,7 +305,7 @@ namespace BikeHub.Repository
             try
             {
                 var sql = ServiceQuery.UpdateServiceStatus;
-                
+
                 var parameters = new
                 {
                     @serviceStatus = status,
@@ -272,7 +314,7 @@ namespace BikeHub.Repository
 
                 using (var connection = new SqlConnection(_dbConnection.ConnectionString))
                 {
-                     await connection.ExecuteAsync(sql,parameters);
+                    await connection.ExecuteAsync(sql, parameters);
                 }
             }
             catch (Exception)

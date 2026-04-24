@@ -1,4 +1,5 @@
-﻿using BikeHub.Shared.Common;
+﻿
+using BikeHub.Shared.Common;
 using BikeHub.Shared.Dto.Request;
 using BikeHub.Shared.Dto.Response;
 using System;
@@ -30,9 +31,19 @@ namespace Bikehub.Hybrid.Services.Http.Auth
             try
             {
                 var response = await _httpClient.PostAsJsonAsync("/api/user/login", dto);
+                var apiResponse= await response.Content.ReadFromJsonAsync<ApiResponse<JwtResponse>>();
                 if (response.IsSuccessStatusCode)
                 {
-                    return await response.Content.ReadFromJsonAsync<ApiResponse<JwtResponse>>();
+                    return apiResponse!;
+                }
+
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return apiResponse ?? new ApiResponse<JwtResponse>
+                    {
+                        Status = false,
+                        Message = "Invalid Credentials!!!"
+                    };
                 }
 
                 return new ApiResponse<JwtResponse>

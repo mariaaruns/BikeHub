@@ -12,7 +12,7 @@ namespace BikeHub.Service.Interface
         Task<HashSet<string>> GetPoliciesAsync(long userId);
 
         //generate JWT token and cache the policies for 2 hours
-        Task<JwtResponse> GenerateJwtTokenAndPolicyAsync(LoginDto dto);
+        Task<(IdentityErrorResult,JwtResponse)> GenerateJwtTokenAndPolicyAsync(LoginDto dto);
 
 
        Task<List<UserPolicyResponse>> GetAllPoliciesByUserId(long userId);

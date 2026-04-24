@@ -60,7 +60,7 @@ namespace BikeHub.Features
                 {
                     return Results.InternalServerError(ApiResponse<string>.Fail("InternalServerError"));
                 }
-            }).WithTags("DropDownList")
+            }).WithTags("Lookup")
             .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<string>>(StatusCodes.Status500InternalServerError);
 
@@ -82,7 +82,7 @@ namespace BikeHub.Features
                     return Results.InternalServerError(ApiResponse<ProductDropdownDto>.Fail("InternalServer error"));
                 }
 
-            }).WithTags("DropDownList")
+            }).WithTags("Lookup")
               .Produces<ApiResponse<string>>(StatusCodes.Status400BadRequest)
               .Produces<ApiResponse<string>>(StatusCodes.Status404NotFound)
               .Produces<ApiResponse<IEnumerable<ProductDropdownDto>>>(StatusCodes.Status404NotFound);

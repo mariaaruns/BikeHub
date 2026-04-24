@@ -1,7 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @using BikeHub.Shared.Common
 @inject UserSession Session
-@inject NavigationManager Navigation
 @inject CustomAuthStateProvider AuthProvider
 
 <div class="page">
@@ -64,17 +63,3 @@
     <div class="popup-backdrop" @onclick="ClosePopup"></div>
 }
 
-@code {
-    private bool _showPopup = false;
-
-    private void TogglePopup() => _showPopup = !_showPopup;
-    private void ClosePopup() => _showPopup = false;
-
-    private async Task HandleLogout()
-    {
-        _showPopup = false;
-        SecureStorage.Remove("auth_token");
-        AuthProvider.NotifyLogout();
-        Navigation.NavigateTo("login");
-    }
-}

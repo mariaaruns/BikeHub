@@ -156,12 +156,21 @@ namespace BikeHub.DapperQuery
                                                             
                                                             UPDATE t SET  ActualDuration = DATEDIFF(MINUTE, StartTime, GETDATE())
                                                             FROM Service.service_job_assignments t
-                                                            WHERE ServiceJobId = @serviceJobId;";
+                                                            WHERE ServiceJobId = @serviceJobId;
+                                                            
+                                                            select t2.first_name +' '+ t2.last_name [customerName],t2.email,
+                                                            t1.JobCardNumber,t1.BikeModel+' '+t1.BikeNumber [BikeModel]
+                                                            from service.service_jobs t1
+                                                            inner join sales.customers t2 
+                                                            on t1.CustomerId=t2.customer_id
+                                                            where ServiceJobId= @ServiceJobId";
+
+
 
         public const string UpdateServiceStatus = @"update Service.service_jobs
                                                     set ServiceStatus = @serviceStatus
                                                     where ServiceJobId = @serviceJobId";
-        
+
         public const string GetMechanicTaskSummary = @"SELECT 
                                                          SUM(CASE WHEN t2.ServiceStatus = 1005 THEN 1 ELSE 0 END) AS Pending,
                                                          SUM(CASE WHEN t2.ServiceStatus = 1006 THEN 1 ELSE 0 END) AS InProgress,
@@ -172,7 +181,7 @@ namespace BikeHub.DapperQuery
                                                          FROM Service.service_job_assignments t1
                                                          INNER JOIN Service.service_jobs t2 ON t1.ServiceJobId = t2.ServiceJobId
                                                          WHERE t1.MechanicId = @MechanicId;";
-        
+
         public const string GetMechanicAssignedJobsQuery = @"select 
                                                             t1.ServiceJobId,
                                                             t1.JobCardNumber
@@ -198,7 +207,7 @@ namespace BikeHub.DapperQuery
                                                                 -- Condition 2: Jobs completed specifically today
                                                                 CAST(t1.CompletedDate AS DATE) = CAST(GETDATE() AS DATE))
                                                         ";
-                                                         
+
         public const string CreateAndAssignJob = @"
                                                     BEGIN TRANSACTION;
                                                     BEGIN TRY
@@ -226,6 +235,6 @@ namespace BikeHub.DapperQuery
                                                         THROW;
                                                     END CATCH";
 
-        public const string  ServiceStatusDropdown = @"SELECT Id [Value], Value [Text] FROM t000_lookUp WHERE LookupName = 'ServiceStatus'";
+        public const string ServiceStatusDropdown = @"SELECT Id [Value], Value [Text] FROM t000_lookUp WHERE LookupName = 'ServiceStatus'";
     }
 }

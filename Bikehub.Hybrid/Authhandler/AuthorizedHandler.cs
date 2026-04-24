@@ -24,7 +24,7 @@ namespace Bikehub.Hybrid.Authhandler
             {
                 SecureStorage.Remove("auth_token");
                 _authProvider.NotifyLogout();
-                _navigation.NavigateTo("login", forceLoad: true);
+                
             }
 
             return response;

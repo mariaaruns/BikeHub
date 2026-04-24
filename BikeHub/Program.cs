@@ -1,4 +1,5 @@
 using BikeHub.AuthHandlers.PolicyHandler;
+using BikeHub.BackgroudProcessor;
 using BikeHub.Repository;
 using BikeHub.Repository.IRepository;
 using BikeHub.Service;
@@ -35,6 +36,11 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthorizationHandler, PolicyHandler>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();
+
+
+
+//Register Background Service here
+builder.Services.AddHostedService<OutboxProcessor>();
 
 
 
@@ -87,7 +93,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("ADMIN"));
     options.AddPolicy("AdminOrStaff", policy => policy.RequireRole("ADMIN", "STAFF"));
     options.AddPolicy("AdminOrStaffOrMechanic", policy => policy.RequireRole("ADMIN", "STAFF","MECHANIC"));
-
+    /*
     options.AddPolicy("PRODUCT_ADD",
         p => p.Requirements.Add(new PolicyRequirement("PRODUCT_ADD")));
 
@@ -144,7 +150,20 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy("SERVICE_DASHBOARD",
         p => p.Requirements.Add(new PolicyRequirement("SERVICE_DASHBOARD")));
-    
+    */
+
+    var permissionFields = typeof(Permissions).GetFields();
+
+    foreach (var field in permissionFields)
+    {
+        var permission = field.GetValue(null)?.ToString();
+
+        if (!string.IsNullOrEmpty(permission))
+        {
+            options.AddPolicy(permission, policy =>
+                policy.Requirements.Add(new PolicyRequirement(permission)));
+        }
+    }
 
 });
 

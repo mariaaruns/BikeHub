@@ -63,7 +63,7 @@ namespace BikeHub.Features
                     return Results.InternalServerError(ApiResponse<string>.Fail(ex.Message));
                 }
             })
-                .WithTags("Users")
+                .WithTags("Auth & User Permission")
                 .DisableAntiforgery();
 
             app.MapPost("/api/user/login", async ([FromBody] LoginDto dto, [FromServices] IAuthService authService) =>
@@ -71,12 +71,22 @@ namespace BikeHub.Features
                 try
                 {
                     var result = await authService.GenerateJwtTokenAndPolicyAsync(dto);
-                    if (result is { Token: null }) {
 
-                        return Results.Json(ApiResponse<JwtResponse>.Fail("Invalid username or password"),
-                                            statusCode: StatusCodes.Status401Unauthorized);
+                    var identityErrorResult = result.Item1;
+
+                    if (!identityErrorResult.IsSuccess)
+                    {
+                        //return Results.BadRequest(ApiResponse<JwtResponse>.Fail());
+
+                        return Results.Json(ApiResponse<JwtResponse>.Fail(identityErrorResult.message),
+                                          statusCode: StatusCodes.Status401Unauthorized);
                     }
-                    return Results.Ok(ApiResponse<JwtResponse>.Success(result));
+
+                    if (result is { Item2.Token: null }) {
+
+                        return Results.BadRequest(ApiResponse<JwtResponse>.Fail("Error occured while authenticating.."));
+                    }
+                    return Results.Ok(ApiResponse<JwtResponse>.Success(result.Item2));
                 }
                 catch (Exception ex)
                 {
@@ -84,7 +94,7 @@ namespace BikeHub.Features
                 }
 
             })
-                .WithTags("Users")
+                .WithTags("Auth & User Permission")
                 .DisableAntiforgery();
 
             app.MapPost("/api/user/logout", (HttpContext context, IMemoryCache cache) =>
@@ -98,7 +108,7 @@ namespace BikeHub.Features
 
                 return Results.Ok("Logged out successfully");
             })
-                .WithTags("Users")
+                .WithTags("Auth & User Permission")
                 .DisableAntiforgery();
 
             app.MapGet("/api/user/{userId:long}", async (long userId,IAuthService authService) =>
@@ -126,7 +136,7 @@ namespace BikeHub.Features
                 }
 
             })
-                .WithTags("Users").DisableAntiforgery(); 
+                .WithTags("Auth & User Permission").DisableAntiforgery(); 
 
             app.MapGet("/api/userPolicy/{userId:long}", async (long userId, [FromServices] IAuthService authService) =>
             {
@@ -142,7 +152,7 @@ namespace BikeHub.Features
                     return Results.InternalServerError(ApiResponse<List<UserPolicyResponse>>.Fail("Internal server error!"));
                 }
             })
-                .WithTags("Users").DisableAntiforgery(); 
+                .WithTags("Auth & User Permission").DisableAntiforgery(); 
 
             app.MapPost("/api/userPolicy/{userId:long}/ApplyPolicy", async (long userId, [FromBody] ApplyPolicyDto[] dto, [FromServices] IAuthService authService) =>
             {
@@ -165,7 +175,7 @@ namespace BikeHub.Features
 
                 }
             })
-                .WithTags("Users").DisableAntiforgery();
+                .WithTags("Auth & User Permission").DisableAntiforgery();
 
             app.MapGet("/api/roles", async ([FromServices] IAuthService _authService) =>
             {
@@ -181,7 +191,7 @@ namespace BikeHub.Features
                 }
 
             })
-                .WithTags("Users").DisableAntiforgery();
+                .WithTags("Auth & User Permission").DisableAntiforgery();
 
             app.MapGet("/api/userPolicyCached", async (HttpContext context, IAuthService authService) =>
                 {
@@ -194,7 +204,7 @@ namespace BikeHub.Features
 
                     return Results.Ok(ApiResponse<HashSet<string>>.Success(policies));
 
-                }).WithTags("Users").DisableAntiforgery();
+                }).WithTags("Auth & User Permission").DisableAntiforgery();
 
             app.MapPut("/api/user/update", async ([FromBody] UpdateUserDto dto, [FromServices] IAuthService authService) =>
             {
@@ -216,7 +226,7 @@ namespace BikeHub.Features
                 {
                     return Results.InternalServerError(ApiResponse<string>.Fail("Internal server error, " + ex.Message));
                 }
-            }).WithTags("Users").DisableAntiforgery();
+            }).WithTags("Auth & User Permission").DisableAntiforgery();
 
 
             app.MapPost("/api/users", async ([FromBody] UsersRequestDto dto, [FromServices] IAuthService authService) =>
@@ -242,7 +252,7 @@ namespace BikeHub.Features
                 {
                     return Results.InternalServerError(ApiResponse<PagedResult<UsersDto>>.Fail("Internal server error, " + ex.Message));
                 }
-            }).WithTags("Users").DisableAntiforgery();
+            }).WithTags("Auth & User Permission").DisableAntiforgery();
         }
     }
 }

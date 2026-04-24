@@ -1,5 +1,6 @@
 ﻿using BikeHub.Repository;
 using BikeHub.Repository.IRepository;
+using BikeHub.Service.Interface;
 using BikeHub.Shared.Common;
 using BikeHub.Shared.Dto.Request.ServiceReq;
 using BikeHub.Shared.Dto.Response;
@@ -11,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BikeHub.Features
 {
-    public class ServiceModule : ICarterModule
+    public class BikeServiceModule : ICarterModule
     {
         public void AddRoutes(IEndpointRouteBuilder app)
 {
@@ -29,7 +30,7 @@ namespace BikeHub.Features
                 }
             })
                 .WithName("mechanic-live-stats")
-               .WithTags("Services").RequireAuthorization("SERVICE_DASHBOARD");
+               .WithTags("Bike-Services").RequireAuthorization("SERVICE_DASHBOARD");
 
             app.MapGet("/api/services/mechanic/status", async (IServiceRepository _serviceRepository) =>
             {
@@ -48,7 +49,7 @@ namespace BikeHub.Features
                 }
             })
                 .WithName("mechanic-status")
-               .WithTags("Services");
+               .WithTags("Bike-Services");
 
             app.MapPatch("/api/services/start-job/{jobId:int}", async (int jobId, IServiceRepository _serviceRepository) =>
             {
@@ -66,9 +67,10 @@ namespace BikeHub.Features
                 }
             })
                 .WithName("move-start-job")
-              .WithTags("Services");
+              .WithTags("Bike-Services");
 
-            app.MapPatch("/api/services/complete-job/{jobId:int}", async (int jobId, IServiceRepository _serviceRepository) =>
+            app.MapPatch("/api/services/complete-job/{jobId:int}", async (int jobId, 
+                IServiceRepository _serviceRepository,IEmailRepository _emailRepository,IEmailService _emailService) =>
             {
                 try
                 {
@@ -84,7 +86,7 @@ namespace BikeHub.Features
                 }
             })
                 .WithName("move-complete-job")
-              .WithTags("Services");
+              .WithTags("Bike-Services");
 
 
             app.MapPatch("/api/services/update-job-status/{jobId:int}", async (int jobId, [FromBody] int statusId, [FromServices] IServiceRepository _serviceRepository) =>
@@ -103,7 +105,7 @@ namespace BikeHub.Features
                 }
             })
                 .WithName("update-service-status")
-              .WithTags("Services");
+              .WithTags("Bike-Services");
 
 
             app.MapGet("/api/services/mechanic/summary/{mechanicId:int}", async (int mechanicId, IServiceRepository _serviceRepository) =>
@@ -122,7 +124,7 @@ namespace BikeHub.Features
                 }
             })
                 .WithName("mechanic-summary")
-              .WithTags("Services").RequireAuthorization("");
+              .WithTags("Bike-Services").RequireAuthorization("");
 
             app.MapGet("/api/services/mechanic/assigned-jobs/{mechanicId:int}", async (int mechanicId, IServiceRepository _serviceRepository) =>
             {
@@ -140,7 +142,7 @@ namespace BikeHub.Features
                 }
             })
                 .WithName("Mechanic-Assigned-Jobs")
-              .WithTags("Services");
+              .WithTags("Bike-Services");
 
             app.MapGet("/api/services/daily-jobs", async (int? serviceStatus, IServiceRepository _serviceRepository) =>
             {
@@ -156,7 +158,7 @@ namespace BikeHub.Features
                     return Results.InternalServerError(ApiResponse<IEnumerable<TodayJobFeed>>.Fail("Internal server error..!"));
                 }
             })
-                .WithName("daily-job-list").WithTags("Services");
+                .WithName("daily-job-list").WithTags("Bike-Services");
 
             
             app.MapGet("/api/services/job/{jobId:int}", async (int jobId, IServiceRepository _serviceRepository) =>
@@ -171,7 +173,7 @@ namespace BikeHub.Features
                     return Results.InternalServerError(ApiResponse<ServiceJobDetailDto>.Fail("Internal server error..!"));
                 }
             }).WithName("job-details")
-              .WithTags("Services");
+              .WithTags("Bike-Services");
 
             app.MapGet("/api/services/items/{jobId:int}", async (int jobId, IServiceRepository _serviceRepository) =>
             {
@@ -188,7 +190,7 @@ namespace BikeHub.Features
                 }
             })
                 .WithName("service-items-list")
-                .WithTags("Services");
+                .WithTags("Bike-Services");
 
             app.MapPost("/api/services/new-job", async (CreateJobAssignmentDto dto, IServiceRepository _serviceRepository) =>
             {
@@ -206,23 +208,10 @@ namespace BikeHub.Features
                 }
 
             })
-                .WithName("new-job").WithTags("Services");
+                .WithName("new-job").WithTags("Bike-Services");
 
             
-            app.MapGet("/api/services/status-value", async (IServiceRepository _serviceRepository) =>
-            {
-                try
-                {
-                    var result = await _serviceRepository.GetServiceStatusDropdownAsync();
-
-                    return Results.Ok(ApiResponse<IEnumerable<DropdownDto>>.Success(result));
-                }
-                catch (Exception)
-                {
-
-                    return Results.InternalServerError(ApiResponse<IEnumerable<DropdownDto>>.Fail("Internal server error!!!"));
-                }
-            });
+            
         }
     }
 }

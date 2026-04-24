@@ -25,10 +25,12 @@ namespace Bikehub.Hybrid
 
             builder.Services.AddMauiBlazorWebView();
 
-            //builder.Services.AddScoped<NavigationManager>();
-            builder.Services.AddScoped<CustomAuthStateProvider>();
-            builder.Services.AddScoped<AuthenticationStateProvider>(
+            
+            builder.Services.AddSingleton<CustomAuthStateProvider>();
+
+            builder.Services.AddSingleton<AuthenticationStateProvider>(
                 sp => sp.GetRequiredService<CustomAuthStateProvider>());
+
             builder.Services.AddSingleton<UserSession>();
             
             builder.Services.AddTransient<AuthTokenHandler>();
