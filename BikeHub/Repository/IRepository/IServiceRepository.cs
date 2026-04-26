@@ -1,4 +1,5 @@
-﻿using BikeHub.Shared.Dto.Response;
+﻿using BikeHub.Shared.Dto.Request;
+using BikeHub.Shared.Dto.Response;
 using BikeHub.Shared.Dto.Response.ServiceRes;
 
 namespace BikeHub.Repository.IRepository
@@ -15,8 +16,12 @@ namespace BikeHub.Repository.IRepository
         Task CompleteJobAsync(int jobId);
         Task UpdateJobStatusAsync(int status,int jobId);
         Task<ServiceJobDetailDto> GetJobByIdAsync(int jobId);
-        Task<ServiceItemDto> GetServiceItemsAsync(int jobId);
+        Task<IEnumerable<ServiceItemDto>> GetServiceItemsAsync(int jobId);
         Task AssignNewJobAsync(CreateJobAssignmentDto dto);
         Task<IEnumerable<DropdownDto>> GetServiceStatusDropdownAsync();
+        Task<IEnumerable<DropdownDto>> GetServicePartsDropdownAsync();
+        Task<IEnumerable<DropdownDto>> GetServicePartsCategoryDropdownAsync();
+        Task<bool> AddServiceItemsAsync(AddServiceItemsDto dto);
+        Task<IEnumerable<PartsDto>> GetServiceParts();
     }
 }

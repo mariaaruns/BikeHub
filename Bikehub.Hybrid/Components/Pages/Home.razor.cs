@@ -4,14 +4,19 @@ using Bikehub.Hybrid.Authhandler;
 using Bikehub.Hybrid.DeviceServices.Location;
 using Bikehub.Hybrid.DeviceServices.Toast;
 using Bikehub.Hybrid.Services.Http.ServiceDashboard;
+using BikeHub.Shared.Dto.Request;
+using BikeHub.Shared.Dto.Response;
 using BikeHub.Shared.Dto.Response.ServiceRes;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
+
+
 
 namespace Bikehub.Hybrid.Components.Pages
 {
@@ -32,7 +37,16 @@ namespace Bikehub.Hybrid.Components.Pages
         private  IJSRuntime JSRuntime { get; set; } = default!;
 
         private MechanicTaskSummayDto _summary = new();
+        
         private ServiceJobDetailDto _serviceJobDetail = new();
+        
+        private AddServiceItemsDto _addServiceItems = new();
+
+        private List<ServiceItemDto> _serviceItems = new();
+
+        private IEnumerable<DropdownDto> _categoryDropdown = Enumerable.Empty<DropdownDto>();
+        private IEnumerable<PartsDto> _partsDropdown = Enumerable.Empty<PartsDto>();
+        List<PartsDto> FilteredParts = new();
         private AssignedJobVM _assignedJobVM = new AssignedJobVM();
 
         private bool _isMechSummaryLoading;
@@ -46,6 +60,9 @@ namespace Bikehub.Hybrid.Components.Pages
         private bool _isCompleteJobLoading;
 
         bool showModal = false;
+        bool showServiceItemsModal = false;
+
+        private decimal? _partCost = 0m;
 
         private System.Timers.Timer? timer;
 
@@ -64,6 +81,14 @@ namespace Bikehub.Hybrid.Components.Pages
 
         protected override Task OnAfterRenderAsync(bool firstRender)
         {
+            if (firstRender) { 
+            
+                _ = Task.Run(async () =>
+                    {
+                        _categoryDropdown = await DropdownLookup("servicepartscategory");
+                         await PartsListApi();
+                    });
+            }
             return base.OnAfterRenderAsync(firstRender);
         }
 
@@ -234,6 +259,99 @@ namespace Bikehub.Hybrid.Components.Pages
                 StateHasChanged();
             }
         }
+
+
+        private async Task ServiceItemsApi(long jobId)
+        {
+            try
+            {
+                var response = await _serviceDashboard.ServiceItems(jobId);
+                if (response.Status)
+                {
+                    _serviceItems = response.Data != null ? response.Data: new();
+                }
+                else
+                {
+                    await ShowToast("error", "Failed to fetch service items", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowToast("error", "Something went wrong on our end", true);
+                Console.WriteLine($"Error fetching service items: {ex.Message}");
+            }
+        }
+
+        private async Task PartsListApi()
+        {
+            try
+            {
+                var response = await _serviceDashboard.PartsList();
+                if (response.Status)
+                {
+                    _partsDropdown = response.Data != null ? response.Data : Enumerable.Empty<PartsDto>();
+                }
+                else
+                {
+                    await ShowToast("error", "Failed to fetch parts list", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowToast("error", "Something went wrong on our end", true);
+                Console.WriteLine($"Error fetching parts list: {ex.Message}");
+            }
+        }
+
+        private async Task<IEnumerable<DropdownDto>> DropdownLookup (string value)
+        {
+            var dropdowns  = Enumerable.Empty<DropdownDto>();
+             
+            try
+            {
+                var response = await _serviceDashboard.DropdownLookup(value);
+                if (response.Status)
+                {
+                    dropdowns = response.Data;
+                }
+                else
+                {
+                    await ShowToast("error", "Failed to fetch dropdown data", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowToast("error", "Something went wrong on our end", true);
+                Console.WriteLine($"Error fetching dropdown data: {ex.Message}");
+            }
+            return dropdowns;
+        }
+
+        private async Task AddServiceItemsApi()
+        {
+            try
+            {
+                var response = await _serviceDashboard.AddServiceItems(_addServiceItems);
+                if (response.Status)
+                {
+                    await ShowToast("success", "Service items added successfully", true);
+
+                }
+                else
+                {
+                    throw new Exception();
+                }
+            }
+            catch (Exception ex)
+            {
+                //await ShowToast("error", "Something went wrong on our end", true);
+                Console.WriteLine($"Error adding service items: {ex.Message}");
+                throw;
+            }
+            finally {
+                
+            }
+        }
         public void Dispose()
         {
             timer?.Stop();
@@ -285,9 +403,89 @@ namespace Bikehub.Hybrid.Components.Pages
             return value.ToString();
         }
 
+
+        private async Task OpenServiceItemsModal(long jobId)
+        {
+            _addServiceItems.ServiceJobId = 0;
+            showServiceItemsModal = true;
+            _addServiceItems.ServiceJobId = jobId;
+            await ServiceItemsApi(jobId);
+        }
+      
+        private async Task CloseServiceItemsModal() {
+
+            _addServiceItems = new AddServiceItemsDto();
+          showServiceItemsModal = false;
+        }
+
+        private async Task HandleSubmit()
+        {
+            try
+            {
+                var selectedPart = _partsDropdown
+                    .FirstOrDefault(p => p.PartId == _addServiceItems.PartId);
+
+                if (selectedPart == null)
+                    return;
+
+                await AddServiceItemsApi();
+                // Reset form if serivice added;
+                _addServiceItems.Total = 0m;
+                _addServiceItems.Qty = 0;
+                _addServiceItems.PartId = 0;
+                _addServiceItems.CreatedAt = default;
+                _partCost = 0;
+
+                await ServiceItemsApi(_addServiceItems.ServiceJobId);
+                
+            }
+            catch (Exception ) 
+            {
+                await ShowToast("error", "Failed to add service items", true);
+            }
+        }
+        private void OnCategoryChanged(ChangeEventArgs e)
+        {
+            int categoryId = Convert.ToInt32(e.Value);
+            _addServiceItems.PartId = 0;
+            _addServiceItems.Qty = 0;
+            _addServiceItems.Total = 0;
+           FilteredParts = _partsDropdown
+                            .Where(p => p.CategoryId == categoryId)
+                            .ToList();
+        }
+
+        private void OnPartChanged()
+        {
+            var selectedPart = _partsDropdown
+                        .FirstOrDefault(p => p.PartId == _addServiceItems.PartId);
+
+            if (selectedPart != null)
+            {
+                _partCost = selectedPart.Price;
+                _addServiceItems.Qty = 1;
+            }
+            else {
+                _partCost = 0;
+            }
+                Recalculate();
+        }
+        private void OnQtyChanged()
+        {
+            Recalculate();
+        }
+
+
+        private void Recalculate()
+        {
+            if (_partCost.HasValue)
+                _addServiceItems.Total = _addServiceItems.Qty * _partCost.Value;
+        }
         private async Task ShowToast(string type, string message, bool showBar)
         {
             await JSRuntime.InvokeVoidAsync("showToastrAdvanced", type, message, showBar);
         }
+        
+        
     }
 }

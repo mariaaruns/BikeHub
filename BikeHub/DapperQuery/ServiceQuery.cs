@@ -137,8 +137,21 @@ namespace BikeHub.DapperQuery
                                             inner join t000_lookUp t000 on t000.Id =t1.ServiceStatus
                                             where t1.ServiceJobId=@serviceJobId";
 
-        public const string GetServiceItemsByServiceJobId = @"select Description,Cost,Quantity,Total from Service.service_items
-                                                             where ServiceJobId=@serviceJobId";
+        public const string GetServiceItemsByServiceJobId = @"select 
+                                                              t1.ServiceItemId,
+                                                              t2.PartId,
+                                                              t2.PartName,
+                                                              t1.Qty,
+                                                              t1.Total[TotalCost],
+                                                              t1.CreatedAt
+                                                              from Service.service_items t1 
+                                                              inner join  Service.parts t2 on t1.PartId=t2.PartId
+                                                              where ServiceJobId=@serviceJobId";
+
+
+        public const string AddServiceItems= @"INSERT INTO Service.service_items
+                                        (ServiceJobId, PartId, Qty, Total, CreatedAt)
+                                        VALUES (@serviceJobId, @partId, @qty, @total, @createdAt)";
 
         public const string UpdatePendingToInProgressStatus = @" 
                                                     update Service.service_jobs
@@ -164,8 +177,6 @@ namespace BikeHub.DapperQuery
                                                             inner join sales.customers t2 
                                                             on t1.CustomerId=t2.customer_id
                                                             where ServiceJobId= @ServiceJobId";
-
-
 
         public const string UpdateServiceStatus = @"update Service.service_jobs
                                                     set ServiceStatus = @serviceStatus
@@ -236,5 +247,15 @@ namespace BikeHub.DapperQuery
                                                     END CATCH";
 
         public const string ServiceStatusDropdown = @"SELECT Id [Value], Value [Text] FROM t000_lookUp WHERE LookupName = 'ServiceStatus'";
+
+        public const string ServicePartsDropdown = @"select t1.PartId [Value],t1.PartName [Text] 
+                                                     from Service.parts t1 where isactive=1";
+                                                     
+        public const string ServicePartsCategoryDropdown = @"
+                            select t1.CategoryId [Value],t1.CategoryName [Text] 
+                            from  Service.parts_category t1 where IsActive=1";
+
+
+        public const string ServiceParts = "select PartId,PartName,CategoryId,Price from service.parts";
     }
 }

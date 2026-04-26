@@ -60,19 +60,26 @@ AND order_date < DATEADD(MONTH,1, CAST(@OrderDate + '-01' AS DATE)) and
         public const string UpdateOrderStatus = @"update sales.orders
                                             set order_status=@OrderStatus
                                             where order_id=@OrderId";
-        
+
+        public const string UpdateOrderPaymentStatus = @"update sales.orders
+                                            set payment_status=@paymnetStatus
+                                            where order_id=@orderId and RazorpayOrderId =@razorPayOrderId";
+
         public const string GetOrderStatusLookup = @"
                             select Id [Value],Value [Text] from t000_lookup where LookupName='OrderStatus'";
 
         public const string AddOrder = @"INSERT INTO sales.orders
-                                         (customer_id,order_status,order_date,required_date,shipped_date,store_id,staff_id)
-                                         VALUES (@CustomerId,@OrderStatus,@OrderDate,@RequiredDate,@ShippedDate,1,@StaffId);
+                                         (customer_id,order_status,order_date,required_date,shipped_date,store_id,staff_id,razorpayOrderId)
+                                         VALUES (@CustomerId,@OrderStatus,@OrderDate,@RequiredDate,@ShippedDate,1,@StaffId,@RazorpayOrderId);
                                          SELECT CAST(SCOPE_IDENTITY() as int);";
 
         public const string AddOrderItems = @"INSERT INTO sales.order_items
                                                 (order_id, item_id, product_id, quantity, list_price, discount)
                                                 VALUES
                                                 (@OrderId, @ItemId, @ProductId, @Quantity, @ListPrice, @Discount);";
+
+
+        public const string GetCustomerIdByOrderId = @"select customer_id from sales.orders where order_id=@OrderId";
 
     }
 

@@ -1,9 +1,11 @@
 ﻿using BikeHub.DapperQuery;
 using BikeHub.Repository.IRepository;
 using BikeHub.Shared.Common;
+using BikeHub.Shared.Dto.Request;
 using BikeHub.Shared.Dto.Response;
 using BikeHub.Shared.Dto.Response.ServiceRes;
 using Dapper;
+using DocumentFormat.OpenXml.Vml;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Data.SqlClient;
 using System.Data;
@@ -20,6 +22,33 @@ namespace BikeHub.Repository
         {
             this._dbConnection = dbConnection;
         }
+
+        public async Task<bool> AddServiceItemsAsync(AddServiceItemsDto dto)
+        {
+            try
+            {
+                var sql = ServiceQuery.AddServiceItems;
+                var parameters = new
+                {
+                    @serviceJobId = dto.ServiceJobId,
+                    @partId= dto.PartId,
+                    @qty = dto.Qty,
+                    @total = dto.Total,
+                    @createdAt = DateTime.Now
+                };
+                using (var connection = new SqlConnection(_dbConnection.ConnectionString))
+                {
+                  int isRowsAffected=  await connection.ExecuteAsync(sql, parameters);
+                  return isRowsAffected > 0;
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         public async Task AssignNewJobAsync(CreateJobAssignmentDto dto)
         {
             try
@@ -241,18 +270,69 @@ namespace BikeHub.Repository
             }
         }
 
-        public async Task<ServiceItemDto> GetServiceItemsAsync(int jobId)
+        public async Task<IEnumerable<ServiceItemDto>> GetServiceItemsAsync(int jobId)
         {
             try
             {
                 var sql = ServiceQuery.GetServiceItemsByServiceJobId;
                 var parameters = new
                 {
-                    @jobId = jobId
+                    @serviceJobId = jobId
                 };
                 using (var connection = new SqlConnection(_dbConnection.ConnectionString))
                 {
-                    return (await connection.QueryFirstOrDefaultAsync<ServiceItemDto>(sql, parameters));
+                    return (await connection.QueryAsync<ServiceItemDto>(sql, parameters));
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<PartsDto>> GetServiceParts()
+        {
+            try
+            {
+                var sql = ServiceQuery.ServiceParts;
+                using (var connection = new SqlConnection(_dbConnection.ConnectionString))
+                {
+                    return (await connection.QueryAsync<PartsDto>(sql));
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<DropdownDto>> GetServicePartsCategoryDropdownAsync()
+        {
+            try
+            {
+                var sql = ServiceQuery.ServicePartsCategoryDropdown;
+                using (var connection = new SqlConnection(_dbConnection.ConnectionString))
+                {
+                    return (await connection.QueryAsync<DropdownDto>(sql));
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<DropdownDto>> GetServicePartsDropdownAsync()
+        {
+            try
+            {
+                var sql = ServiceQuery.ServicePartsDropdown;
+                using (var connection = new SqlConnection(_dbConnection.ConnectionString))
+                {
+                    return (await connection.QueryAsync<DropdownDto>(sql));
                 }
             }
             catch (Exception)

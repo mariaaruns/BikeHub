@@ -12,20 +12,23 @@ namespace BikeHub.Shared.Dto.Request
         [Required]
         public int CustomerId { get; set; }
 
-        [Required]
+        
         public int OrderStatus { get; set; }
 
-        [Required]
+        
         public DateTime OrderDate { get; set; }
 
         [Required]
         public DateTime RequiredDate { get; set; }
 
-        [Required]
+        
         public DateTime ShippedDate { get; set; }
 
         [Required]
         public int StaffId { get; set; }
+
+
+        public string RazorpayOrderId { get; set; }
 
         //[Required]
         //public int StoreId { get; set; }

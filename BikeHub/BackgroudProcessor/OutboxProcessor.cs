@@ -63,8 +63,8 @@ namespace BikeHub.BackgroudProcessor
                             new { msg.Id });
                     }
                 }
-
-                await Task.Delay(5000, stoppingToken);
+                //Run 10 mins once
+                await Task.Delay(600000, stoppingToken);
             }
         }
     }

@@ -39,8 +39,7 @@ namespace Bikehub.Hybrid
             builder.Services.AddSingleton<IToastService, ToastService>();
 
             builder.Services.AddHttpClient("BikeHub")
-            .ConfigureHttpClient(client =>
-                client.BaseAddress = new Uri("https://hms704v0-7079.inc1.devtunnels.ms"))
+            .ConfigureHttpClient(client =>client.BaseAddress = new Uri("https://bjbjww22-7079.inc1.devtunnels.ms"))
             .AddHttpMessageHandler<AuthTokenHandler>()      // Adds token to requests
             .AddHttpMessageHandler<AuthorizedHandler>();   // Handles 401 responses
 

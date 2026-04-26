@@ -44,6 +44,15 @@ namespace BikeHub.Features
                         case "customer":
                             result = await customerRepository.GetCustomerDropdownAsync(search);
                             break;
+
+                        case "serviceparts":
+                            result = await serviceRepository.GetServicePartsDropdownAsync();
+                            break;
+
+                        case "servicepartscategory":
+                            result = await serviceRepository.GetServicePartsCategoryDropdownAsync();
+                            break;
+
                         default:
                             return Results.BadRequest(ApiResponse<string>.Fail("Invalid Type"));
                     }
@@ -87,6 +96,8 @@ namespace BikeHub.Features
               .Produces<ApiResponse<string>>(StatusCodes.Status404NotFound)
               .Produces<ApiResponse<IEnumerable<ProductDropdownDto>>>(StatusCodes.Status404NotFound);
 
+
+            
         }
     }
 }

@@ -36,7 +36,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthorizationHandler, PolicyHandler>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();
-
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IReportsRepository, ReportsRepository>();
 
 
 //Register Background Service here

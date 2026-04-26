@@ -1,4 +1,6 @@
 ﻿using BikeHub.Shared.Common;
+using BikeHub.Shared.Dto.Request;
+using BikeHub.Shared.Dto.Response;
 using BikeHub.Shared.Dto.Response.ServiceRes;
 using System.Net.Http.Json;
 
@@ -10,6 +12,38 @@ namespace Bikehub.Hybrid.Services.Http.ServiceDashboard
         public ServiceDashboard(IHttpClientFactory httpClientFactory)
         {
             _httpClient = httpClientFactory.CreateClient("BikeHub");
+        }
+
+        public async Task<ApiResponse<bool>> AddServiceItems(AddServiceItemsDto req)
+        {
+            try
+            {
+                var request= new HttpRequestMessage(HttpMethod.Post, "/api/services/items-add")
+                {
+                    Content = JsonContent.Create(req)
+                };
+
+                var response = await _httpClient.SendAsync(request);
+         
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+                }
+              
+                return new ApiResponse<bool>
+                {
+                    Status = false,
+                    Message = $"Server returned {response.StatusCode}"
+                };
+            }
+            catch (Exception)
+            {
+                return new ApiResponse<bool>
+                {
+                    Status = false,
+                    Message = "Could not reach API or received invalid response."
+                };
+            }
         }
 
         public async Task<ApiResponse<IEnumerable<AssignedJobDto>>> AssignedJobsAsync(int mechanicId)
@@ -55,6 +89,31 @@ namespace Bikehub.Hybrid.Services.Http.ServiceDashboard
             catch (Exception)
             {
                 return new ApiResponse<string>
+                {
+                    Status = false,
+                    Message = "Could not reach API or received invalid response."
+                };
+            }
+        }
+
+        public async Task<ApiResponse<DropdownDto[]>> DropdownLookup(string value)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"/api/Dropdown?type={value}");
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<DropdownDto[]>>();
+                }
+                return new ApiResponse<DropdownDto[]>()
+                {
+                    Status = false,
+                    Message = $"Server returned {response.StatusCode}"
+                };
+            }
+            catch (Exception)
+            {
+                return new ApiResponse<DropdownDto[]>()
                 {
                     Status = false,
                     Message = "Could not reach API or received invalid response."
@@ -118,6 +177,59 @@ namespace Bikehub.Hybrid.Services.Http.ServiceDashboard
             }
         }
 
+        public async Task<ApiResponse<IEnumerable<PartsDto>>> PartsList()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"/api/services/parts");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<IEnumerable<PartsDto>>>();
+                }
+
+                return new ApiResponse<IEnumerable<PartsDto>>
+                {
+                    Status = false,
+                    Message = $"Server returned {response.StatusCode}"
+                };
+            }
+            catch (Exception)
+            {
+                return new ApiResponse<IEnumerable<PartsDto>>
+                {
+                    Status = false,
+                    Message = "Could not reach API or received invalid response."
+                };
+            }
+        }
+
+        public async Task<ApiResponse<List<ServiceItemDto>>> ServiceItems(long jobId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"/api/services/items/{jobId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<List<ServiceItemDto>>>();
+                }
+
+                return new ApiResponse<List<ServiceItemDto>>
+                {
+                    Status = false,
+                    Message = $"Server returned {response.StatusCode}"
+                };
+            }
+            catch (Exception)
+            {
+                return new ApiResponse<List<ServiceItemDto>>
+                {
+                    Status = false,
+                    Message = "Could not reach API or received invalid response."
+                };
+            }
+        }
         public async Task<ApiResponse<string>> StartJobAsync(long jobId)
         {
             try
@@ -132,11 +244,11 @@ namespace Bikehub.Hybrid.Services.Http.ServiceDashboard
             }
             catch (Exception)
             {
-                         return new ApiResponse<string>
-                            {
-                                Status = false,
-                                Message = "Could not reach API or received invalid response."
-                            };
+                return new ApiResponse<string>
+                {
+                    Status = false,
+                    Message = "Could not reach API or received invalid response."
+                };
             }
 
 

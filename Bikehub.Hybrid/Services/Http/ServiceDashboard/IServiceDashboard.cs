@@ -1,4 +1,6 @@
 ﻿using BikeHub.Shared.Common;
+using BikeHub.Shared.Dto.Request;
+using BikeHub.Shared.Dto.Response;
 using BikeHub.Shared.Dto.Response.ServiceRes;
 
 using System;
@@ -21,6 +23,14 @@ namespace Bikehub.Hybrid.Services.Http.ServiceDashboard
         Task<ApiResponse<string>> StartJobAsync(long jobId);
 
         Task<ApiResponse<string>> CompleteJobAsync(long jobId);
+
+        Task<ApiResponse<List<ServiceItemDto>>> ServiceItems(long jobId);
+        Task<ApiResponse<bool>> AddServiceItems(AddServiceItemsDto req);
+
+        Task<ApiResponse<DropdownDto[]>> DropdownLookup(string value);
+
+
+        Task<ApiResponse<IEnumerable<PartsDto>>> PartsList();
     }
 
 }

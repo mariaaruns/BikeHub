@@ -7,8 +7,10 @@ using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Npgsql;
+using Org.BouncyCastle.Ocsp;
 using System.Data;
 using System.Transactions;
+using static BikeHub.Shared.Enum.Enums;
 
 namespace BikeHub.Repository
 {
@@ -64,9 +66,9 @@ namespace BikeHub.Repository
 
         }
 
-        public async Task<bool> AddOrderAsync(AddOrderRequest req)
+        public async Task<long> AddOrderAsync(AddOrderRequest req)
         {
-            bool isSuccess = false;
+            var lastInsertedOrderId = 0L;
             try
             {
                 var AddOrderSql = OrderQuery.AddOrder;
@@ -81,14 +83,18 @@ namespace BikeHub.Repository
                     var transaction = await connection.BeginTransactionAsync();
                     try
                     {
-                        var lastInsertedOrderId = await connection.QuerySingleAsync<int>(AddOrderSql, new
+                        req.OrderDate = DateTime.Now;
+                        req.ShippedDate= req.OrderDate.AddDays(5);
+                        req.OrderStatus = 1;//processing
+                        lastInsertedOrderId = await connection.QuerySingleAsync<long>(AddOrderSql, new
                         {
                             req.CustomerId,
                             req.OrderStatus,
                             req.OrderDate,
                             req.RequiredDate,
                             req.ShippedDate,
-                            req.StaffId
+                            req.StaffId,
+                            RazorpayOrderId =req.RazorpayOrderId
                             
                         }, commandType: CommandType.Text, transaction: transaction);
 
@@ -109,40 +115,40 @@ namespace BikeHub.Repository
                             }, commandType: CommandType.Text, transaction: transaction);
                         }
 
-                        var customerDetail = await connection.QuerySingleAsync<CustomersDto>
-                            (customer, new { @Id = req.CustomerId }, transaction: transaction);
+                        //var customerDetail = await connection.QuerySingleAsync<CustomersDto>
+                        //    (customer, new { @Id = req.CustomerId }, transaction: transaction);
 
-                        if (!string.IsNullOrEmpty(customerDetail.Email))
-                        {
-                            var emailTemplate = await connection.QueryFirstOrDefaultAsync<(string Subject, string HtmlBody)>
-                                                    (EmailTemplateSql, new { @slugName = "Order-Ready-Delivery" }, transaction);
+                        //if (!string.IsNullOrEmpty(customerDetail.Email))
+                        //{
+                        //    var emailTemplate = await connection.QueryFirstOrDefaultAsync<(string Subject, string HtmlBody)>
+                        //                            (EmailTemplateSql, new { @slugName = "Order-Ready-Delivery" }, transaction);
 
 
-                            var htmlBody = emailTemplate.HtmlBody.Replace("{OrderNumber}", lastInsertedOrderId.ToString())
-                                                                            .Replace("{Carrier}", "N/A")
-                                                                            .Replace("{ItemCount}", "N/A");
+                        //    var htmlBody = emailTemplate.HtmlBody.Replace("{OrderNumber}", lastInsertedOrderId.ToString())
+                        //                                                    .Replace("{Carrier}", "N/A")
+                        //                                                    .Replace("{ItemCount}", "N/A");
 
-                            //Insert into outbox for email notification
+                        //    //Insert into outbox for email notification
 
-                            await connection.ExecuteAsync(outboxSql, new
-                            {
-                                @eventType = "Order-Ready-Delivery",
-                                @payLoad = System.Text.Json.JsonSerializer.Serialize(new OutBoxMessagePayload
-                                {
-                                        Email = customerDetail.Email,
-                                        CustomerName = customerDetail.CustomerName,
-                                        Subject = emailTemplate.Subject,
-                                        TemplateContent = htmlBody
-                                })
-                            }, transaction);
-                        }
+                        //    await connection.ExecuteAsync(outboxSql, new
+                        //    {
+                        //        @eventType = "Order-Ready-Delivery",
+                        //        @payLoad = System.Text.Json.JsonSerializer.Serialize(new OutBoxMessagePayload
+                        //        {
+                        //                Email = customerDetail.Email,
+                        //                CustomerName = customerDetail.CustomerName,
+                        //                Subject = emailTemplate.Subject,
+                        //                TemplateContent = htmlBody
+                        //        })
+                        //    }, transaction);
+                        //}
 
-                        isSuccess = true;
+                    
                         await transaction.CommitAsync();
                     }
                     catch (Exception ex)
                     {
-                        isSuccess = false;
+                        lastInsertedOrderId = 0;
                         await transaction.RollbackAsync();
 
                     }
@@ -151,10 +157,10 @@ namespace BikeHub.Repository
             }
             catch (Exception)
             {
-                isSuccess = false;
+                lastInsertedOrderId = 0;
             }
 
-            return isSuccess;
+            return lastInsertedOrderId;
 
         }
 
@@ -253,6 +259,104 @@ namespace BikeHub.Repository
             {
                 throw;
             }
+        }
+
+        public async Task<bool> UpdateOrderPaymentStatusAsync(long orderId, string RazorpayOrderId,PaymentStatus paymentStatus)
+        {
+            var sql = OrderQuery.UpdateOrderPaymentStatus;
+            int isRowAffected = 0;
+            int PaymentStatusId = (int)paymentStatus;
+
+            try
+            {
+                using (var connection = new SqlConnection(_dbConnection.ConnectionString))
+                {
+                    isRowAffected = await connection.ExecuteAsync(sql, new { @paymnetStatus =PaymentStatusId,@orderId = orderId, @razorpayOrderId = RazorpayOrderId}, commandType: CommandType.Text);
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+            return isRowAffected > 0;
+
+        }
+
+        public async Task<bool> ConfirmPaymentAndQueueEmailAsync(int orderId, string paymentId)
+        {
+            var lastInsertedOrderId = 0L;
+            try
+            {
+
+                var getCustomerIdByOrderSql = OrderQuery.GetCustomerIdByOrderId;
+                var customerSql = CustomerQuery.GetCustomerById;
+                var EmailTemplateSql = EmailTemplateQuery.EmailTemplate;
+                var outboxSql = EmailTemplateQuery.InsertOutBoxMsg;
+
+                using (var connection = new SqlConnection(_dbConnection.ConnectionString))
+                {
+                    await connection.OpenAsync();
+                    var transaction = await connection.BeginTransactionAsync();
+                    try
+                    {
+                        
+
+                        await connection.ExecuteAsync(OrderQuery.UpdateOrderPaymentStatus, 
+                            new { @paymnetStatus = (int)PaymentStatus.PaymentSuccess
+                                , @orderId = orderId, @razorpayOrderId = paymentId }
+                            , commandType: CommandType.Text, transaction: transaction);
+
+                        var customerId= await connection.ExecuteScalarAsync<int>(getCustomerIdByOrderSql, new { @OrderId = orderId }, transaction: transaction);
+
+                        var customerDetail = await connection.QuerySingleAsync<CustomersDto>
+                            (customerSql, new { @Id = customerId }, transaction: transaction);
+
+                        if (!string.IsNullOrEmpty(customerDetail.Email))
+                        {
+                            var emailTemplate = await connection.QueryFirstOrDefaultAsync<(string Subject, string HtmlBody)>
+                                                    (EmailTemplateSql, new { @slugName = "Order-Placed" }, transaction);
+
+
+                            var htmlBody = emailTemplate.HtmlBody.Replace("{OrderNumber}", lastInsertedOrderId.ToString())
+                                                                            .Replace("{Carrier}", "N/A")
+                                                                            .Replace("{ItemCount}", "N/A");
+
+                            //Insert into outbox for email notification
+
+                            await connection.ExecuteAsync(outboxSql, new
+                            {
+                                @eventType = "Order-Placed",
+                                @payLoad = System.Text.Json.JsonSerializer.Serialize(new OutBoxMessagePayload
+                                {
+                                    Email = customerDetail.Email,
+                                    CustomerName = customerDetail.CustomerName,
+                                    Subject = emailTemplate.Subject,
+                                    TemplateContent = htmlBody
+                                })
+                            }, transaction);
+                        }
+
+
+                        await transaction.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        lastInsertedOrderId = 0;
+                        await transaction.RollbackAsync();
+
+                    }
+
+                }
+            }
+            catch (Exception)
+            {
+                lastInsertedOrderId = 0;
+            }
+
+            return true;
+
         }
     }
 }

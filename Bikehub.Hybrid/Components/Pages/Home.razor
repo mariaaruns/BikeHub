@@ -134,7 +134,7 @@
                                             </div>
 
                                             <div class="customer">
-                                                <span class="badge">T</span>
+                                                @* <span class="badge">T</span> *@
                                                 <span class="name">@job.CustomerName</span>
                                                 <span class="role">Customer</span>
                                             </div>
@@ -194,7 +194,7 @@
                                             </div>
 
                                             <div class="customer">
-                                                <span class="badge">T</span>
+                                                @* <span class="badge">T</span> *@
                                                 <span class="name">@job.CustomerName</span>
                                                 <span class="role">Customer</span>
                                             </div>
@@ -217,6 +217,7 @@
                                             <div class="actions">
                                                 <button class="complete" @onclick="() => CompleteJobApi(job.serviceJobId)">✔ Marked As Completed</button>
                                                 <button class="details" @onclick="()=>OpenModal(job.serviceJobId)" >📄 Details</button>
+                                                <button class="details" @onclick="() => OpenServiceItemsModal(job.serviceJobId)">➕ Parts</button>
                                             </div>
                                         </div>
 
@@ -255,7 +256,7 @@
                                             </div>
 
                                             <div class="customer">
-                                                <span class="badge">@job.CustomerName?.Take(1)</span>
+                                                @* <span class="badge">@job.CustomerName?.Take(1)</span> *@
                                                 <span class="name">@job.CustomerName</span>
                                                 <span class="role">Customer</span>
                                             </div>
@@ -294,6 +295,7 @@
     <NotAuthorized>
         <h3 class="text-center mt-5">🚫 Access Denied</h3>
         <p class="text-center">You do not have permission to view this page.</p>
+
     </NotAuthorized>
     <Authorizing>
         <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
@@ -368,3 +370,95 @@
     </Body>
 
 </MyModal>
+
+@if (showServiceItemsModal)
+{
+    <div class="modal fade show d-block">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="border-radius:1rem !important">
+
+                <!-- HEADER -->
+                <div class="modal-header">
+                    <h5 class="modal-title">Service Items</h5>
+                    <button class="btn-close" @onclick="CloseServiceItemsModal"></button>
+                </div>
+
+                <!-- BODY (QuickGrid) -->
+                <div class="modal-body" style="max-height:400px; overflow:auto;">
+
+                    <QuickGrid Items="@_serviceItems.AsQueryable()" Class="table table-bordered table-striped"> 
+                        <PropertyColumn Property="@(x => x.PartName)" Title="Part" />
+                        <PropertyColumn Property="@(x => x.Qty)" Title="Qty" />
+                        <PropertyColumn Property="@(x => x.TotalCost)" Title="Cost" />
+                        <PropertyColumn Property="@(x => x.CreatedAt)" Title="Date" />
+                    </QuickGrid>
+
+                </div>
+
+                <!-- FOOTER (EditForm) -->
+                <div class="modal-footer">
+
+                    <EditForm Model="_addServiceItems" OnValidSubmit="HandleSubmit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="row w-100">
+
+                            <!-- Category -->
+                            <div class="col-md-3">
+                                <select class="form-select"
+                                        @onchange="OnCategoryChanged">
+                                    <option value="">Select Category</option>
+                                    @foreach (var cat in _categoryDropdown)
+                                    {
+                                        <option value="@cat.Value">@cat.Text</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Parts -->
+                            <div class="col-md-3">
+                               <select class="form-select"
+            @bind="_addServiceItems.PartId"
+            @bind:after="OnPartChanged">
+
+        <option value="0">Select Part</option>
+
+        @foreach (var part in FilteredParts)
+        {
+            <option value="@part.PartId">@part.PartName</option>
+        }
+    </select>
+   
+                                <span class="text-danger">Unitprice:(@_partCost)</span>
+                            </div>
+
+                            <!-- Qty -->
+                                 <div class="col-md-2">
+            <InputNumber class="form-control"
+                         @bind-Value="_addServiceItems.Qty"
+                         @bind-Value:after="OnQtyChanged" />
+        </div>
+                            <div class="col-md-2">
+                                <InputNumber  class="form-control"  @bind-Value="_addServiceItems.Total" disabled />
+                            </div>
+
+                            <!-- Submit -->
+                            <div class="col-md-2">
+                                <button class="btn btn-primary w-100" type="submit">
+                                    Add
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </EditForm>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop fade show"></div>
+}
