@@ -13,6 +13,6 @@ namespace BikeHub.Repository.IRepository
         Task<bool> UpdateOrderStatusAsync(UpdateOrderStatusDto dto);
         Task<IEnumerable<DropdownDto>> GetOrderStatusDropdownAsync();
         Task<bool> UpdateOrderPaymentStatusAsync(long orderId, string RazorpayOrderId,PaymentStatus paymentStatus);
-        Task<bool> ConfirmPaymentAndQueueEmailAsync(int orderId, string paymentId);
+        Task<bool> ConfirmPaymentAndQueueEmailAsync(int orderId, string RazorpayOrderId,string RazorPaymentId,string RazorpaySignature);
     }
 }

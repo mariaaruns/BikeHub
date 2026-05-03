@@ -9,25 +9,37 @@ namespace BikeHub.Shared.Enum
 {
     public class Enums
     {
-        public enum PaymentStatus{
-            VerificationFailed = 1009,
-            PaymentFailed = 1010,
-            PaymentSuccess = 1011
+        public enum PaymentStatus
+        {
+            Unpaid = 1016,
+            Initiated = 1017,
+            Paid = 1018,
+            Failed = 1019,
+            Refunded = 1020
         }
 
-        public enum OrderStatus{
-            Processing=1,
-            Shipped=2,
-            Cancelled=3,
-            Delivered=4,
+        public enum PaymentMethod
+        {
+            Online = 15,
+            Cash = 14
+        }
+
+        public enum OrderStatus
+        {
+            Processing = 1,
+            Shipped = 2,
+            Cancelled = 3,
+            Delivered = 4,
         }
 
         public enum ServiceStatus
         {
-            Pending=1005,
-            InProgress=1006,
-            Completed=1007,
-            Cancelled=1008
+            Pending = 1005,
+            InProgress = 1006,
+            Completed = 1007,
+            ReadyForPickup = 1008,
+            Delivered = 1012,
+            Cancelled = 1013
         }
 
 

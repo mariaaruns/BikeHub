@@ -8,7 +8,7 @@ using BikeHub.Shared.Dto.Response;
 using BikeHub.Shared.Dto.Response.ServiceRes;
 using Carter;
 using Microsoft.AspNetCore.Mvc;
-using Org.BouncyCastle.Ocsp;
+
 
 
 
@@ -30,10 +30,10 @@ namespace BikeHub.Features
                 {
                     return Results.InternalServerError(ApiResponse<MechanicLiveStatsDto>.Fail("Internal server error..!"));
                 }
-            })
-               .WithName("mechanic-live-stats")
-               .WithTags("Bike-Services")
-               .RequireAuthorization("SERVICE_DASHBOARD");
+            }).WithName("mechanic-live-stats")
+              .WithTags("Bike-Services")
+              .RequireAuthorization("SERVICE_DASHBOARD");
+
 
             app.MapGet("/api/services/mechanic/status", async (IServiceRepository _serviceRepository) =>
             {
@@ -211,7 +211,7 @@ namespace BikeHub.Features
                 {
                     return Results.InternalServerError(ApiResponse<bool>.Fail("Internal server error..!"));
                 }
-            });
+            }).WithTags("Bike-Services");
 
 
 
@@ -233,7 +233,6 @@ namespace BikeHub.Features
           
             app.MapGet("/api/services/parts", async ([FromServices] IServiceRepository _serviceRepository ) =>
             {
-
                 try
                 {
                     var result = await _serviceRepository.GetServiceParts();
@@ -245,7 +244,7 @@ namespace BikeHub.Features
                 }
             }).WithTags("Bike-Services"); ;
             
-            
+
         }
     }
 }

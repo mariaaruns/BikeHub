@@ -30,6 +30,8 @@ namespace BikeHub.Shared.Dto.Request
 
         public string RazorpayOrderId { get; set; }
 
+
+        public int PaymentMethod {get;set;}
         //[Required]
         //public int StoreId { get; set; }
 

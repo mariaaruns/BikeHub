@@ -53,6 +53,10 @@ namespace BikeHub.Features
                             result = await serviceRepository.GetServicePartsCategoryDropdownAsync();
                             break;
 
+                        case "paymentstatus":
+                            result = await serviceRepository.GetPaymentStatusDropdownAsync();
+                            break;
+
                         default:
                             return Results.BadRequest(ApiResponse<string>.Fail("Invalid Type"));
                     }

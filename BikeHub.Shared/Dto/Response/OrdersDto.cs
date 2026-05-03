@@ -9,11 +9,12 @@ namespace BikeHub.Shared.Dto.Response
     public class OrdersDto
     {
         public int OrderId { get; set; }
-        //public DateTime OrderDate { get; set; }
+        public DateTime OrderDate { get; set; }
         public string Status { get; set; }
         public decimal TotalAmount { get; set; }
-        //public int CustomerId { get; set; }
         public string CustomerName { get; set; }
+        public string RazorPayOrderId { get; set; }
+        public string PaymentStatus { get; set; }
         public string Image { get; set; }
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Razorpay.Api;
 using Razorpay.Api.Errors;
+using System.Net;
 using static BikeHub.Shared.Enum.Enums;
 
 
@@ -45,8 +46,11 @@ namespace BikeHub.Features
 
             }).WithTags("Orders")
               .WithName("GetOrders")
-              .RequireAuthorization("ORDER_VIEW");
-
+              .WithDescription("To Get Orders data")
+              .WithSummary("To Get Orders data")
+              .RequireAuthorization("ORDER_VIEW")
+              .Produces<ApiResponse<PagedResult<OrdersDto>>>((int)HttpStatusCode.OK)
+              .Produces<ApiResponse<PagedResult<OrdersDto>>>((int)HttpStatusCode.InternalServerError);
 
             app.MapPost("/api/orders-new", async ([FromBody]AddOrderRequest req ,[FromServices]IOrderRepository orderRepository,
                 IConfiguration _config) =>
@@ -119,7 +123,7 @@ namespace BikeHub.Features
 
                     Utils.verifyPaymentSignature(attributes);//if payment no success it throws an error
                     var result = true;
-                    var isPaymentSucessUpdate=  await orderRepository.ConfirmPaymentAndQueueEmailAsync(data.OrderId, data.RazorpayPaymentId);
+                    var isPaymentSucessUpdate=  await orderRepository.ConfirmPaymentAndQueueEmailAsync(data.OrderId, data.RazorpayOrderId, data.RazorpayPaymentId, data.RazorpaySignature);
 
                     if (result)
                         return Results.Ok(ApiResponse<string>.Success("Payment verified and order updated"));
@@ -128,12 +132,12 @@ namespace BikeHub.Features
                 }
                 catch (SignatureVerificationError)
                 {
-                    await orderRepository.UpdateOrderPaymentStatusAsync(data.OrderId, data.RazorpayOrderId, PaymentStatus.PaymentFailed);
+                    await orderRepository.UpdateOrderPaymentStatusAsync(data.OrderId, data.RazorpayOrderId, PaymentStatus.Failed    );
                     return Results.BadRequest(ApiResponse<string>.Fail("Invalid payment signature. Security alert!"));
                 }
                 catch (Exception ex)
                 {
-                    await orderRepository.UpdateOrderPaymentStatusAsync(data.OrderId, data.RazorpayOrderId, PaymentStatus.PaymentFailed);
+                    await orderRepository.UpdateOrderPaymentStatusAsync(data.OrderId, data.RazorpayOrderId, PaymentStatus.Failed);
                     return Results.InternalServerError(ApiResponse<string>.Fail("Internal error during verification"));
                 }
             })

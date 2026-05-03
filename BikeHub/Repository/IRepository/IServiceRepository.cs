@@ -21,7 +21,12 @@ namespace BikeHub.Repository.IRepository
         Task<IEnumerable<DropdownDto>> GetServiceStatusDropdownAsync();
         Task<IEnumerable<DropdownDto>> GetServicePartsDropdownAsync();
         Task<IEnumerable<DropdownDto>> GetServicePartsCategoryDropdownAsync();
+        Task<IEnumerable<DropdownDto>> GetPaymentStatusDropdownAsync();
         Task<bool> AddServiceItemsAsync(AddServiceItemsDto dto);
         Task<IEnumerable<PartsDto>> GetServiceParts();
+        
+        Task MarkReadyForPickupAsync(int jobId);
+
+        
     }
 }

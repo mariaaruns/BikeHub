@@ -6,6 +6,7 @@ using BikeHub.Service;
 using BikeHub.Service.Interface;
 using BikeHub.Shared.Common;
 using Carter;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Data.SqlClient;
@@ -180,6 +181,7 @@ builder.Services.AddAntiforgery(options =>
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen(options =>
 {
+    
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -233,7 +235,12 @@ app.UseCors("AllowAll");
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options => {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+        options.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
+        options.DefaultModelsExpandDepth(-1); 
+        options.DisplayRequestDuration();     
+    });
     app.MapOpenApi();
 }
 app.UseHttpsRedirection();

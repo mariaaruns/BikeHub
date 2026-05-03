@@ -26,14 +26,16 @@ namespace BikeHub.Repository
         {
             try
             {
-
                 var parameters = new
                 {
                     OrderId = dto.OrderId,
                     Offset = (dto.PageNumber - 1) * dto.PageSize,
                     PageSize = dto.PageSize,
                     OrderStatus = dto.OrderStatus,
-                    OrderDate = dto.StartDate
+                    fromDate = dto.FromDate,
+                    toDate=dto.ToDate,
+                    paymentStatus=dto.PaymentStatus
+
                 };
 
                 using (var connection = new SqlConnection(_dbConnection.ConnectionString))
@@ -94,7 +96,6 @@ namespace BikeHub.Repository
                             req.RequiredDate,
                             req.ShippedDate,
                             req.StaffId,
-                            RazorpayOrderId =req.RazorpayOrderId
                             
                         }, commandType: CommandType.Text, transaction: transaction);
 
@@ -115,33 +116,22 @@ namespace BikeHub.Repository
                             }, commandType: CommandType.Text, transaction: transaction);
                         }
 
-                        //var customerDetail = await connection.QuerySingleAsync<CustomersDto>
-                        //    (customer, new { @Id = req.CustomerId }, transaction: transaction);
-
-                        //if (!string.IsNullOrEmpty(customerDetail.Email))
-                        //{
-                        //    var emailTemplate = await connection.QueryFirstOrDefaultAsync<(string Subject, string HtmlBody)>
-                        //                            (EmailTemplateSql, new { @slugName = "Order-Ready-Delivery" }, transaction);
-
-
-                        //    var htmlBody = emailTemplate.HtmlBody.Replace("{OrderNumber}", lastInsertedOrderId.ToString())
-                        //                                                    .Replace("{Carrier}", "N/A")
-                        //                                                    .Replace("{ItemCount}", "N/A");
-
-                        //    //Insert into outbox for email notification
-
-                        //    await connection.ExecuteAsync(outboxSql, new
-                        //    {
-                        //        @eventType = "Order-Ready-Delivery",
-                        //        @payLoad = System.Text.Json.JsonSerializer.Serialize(new OutBoxMessagePayload
-                        //        {
-                        //                Email = customerDetail.Email,
-                        //                CustomerName = customerDetail.CustomerName,
-                        //                Subject = emailTemplate.Subject,
-                        //                TemplateContent = htmlBody
-                        //        })
-                        //    }, transaction);
-                        //}
+                        await connection.ExecuteAsync(OrderQuery.InsertOrderPayments, new
+                        {
+                            ReferenceType = "Order",
+                            ReferenceId = lastInsertedOrderId,
+                            Amount = req.OrderItemRequests.Sum(x =>
+                            {
+                                var amount = x.UnitPrice * x.Quantity;
+                                var discountAmount = amount * (x.Discount / 100);
+                                var finalAmount = amount - discountAmount;
+                                return finalAmount;
+                            }),
+                            MethodId = (int)PaymentMethod.Online,
+                            StatusId = (int)PaymentStatus.Initiated,
+                            RazorpayOrderID = req.RazorpayOrderId,
+                            createdAt = DateTime.Now
+                        }, commandType: CommandType.Text, transaction: transaction);
 
                     
                         await transaction.CommitAsync();
@@ -284,7 +274,7 @@ namespace BikeHub.Repository
 
         }
 
-        public async Task<bool> ConfirmPaymentAndQueueEmailAsync(int orderId, string paymentId)
+        public async Task<bool> ConfirmPaymentAndQueueEmailAsync(int orderId, string RazorpayOrderId,string RazorPaymentId,string RazorpaySignature)
         {
             var lastInsertedOrderId = 0L;
             try
@@ -303,10 +293,14 @@ namespace BikeHub.Repository
                     {
                         
 
-                        await connection.ExecuteAsync(OrderQuery.UpdateOrderPaymentStatus, 
-                            new { @paymnetStatus = (int)PaymentStatus.PaymentSuccess
-                                , @orderId = orderId, @razorpayOrderId = paymentId }
+                        
+                        await connection.ExecuteAsync(OrderQuery.UpdatePaymentStatusInPaymentsTable, 
+                            new { @StatusId = (int)PaymentStatus.Paid, 
+                                @RazorpayPaymentID=RazorPaymentId,
+                                @RazorpaySignature=RazorpaySignature, 
+                                @RazorpayOrderID=RazorpayOrderId }
                             , commandType: CommandType.Text, transaction: transaction);
+
 
                         var customerId= await connection.ExecuteScalarAsync<int>(getCustomerIdByOrderSql, new { @OrderId = orderId }, transaction: transaction);
 

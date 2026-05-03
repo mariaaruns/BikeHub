@@ -11,6 +11,7 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Data.Common;
 using System.Net.NetworkInformation;
+using static BikeHub.Shared.Enum.Enums;
 
 
 namespace BikeHub.Repository
@@ -270,6 +271,23 @@ namespace BikeHub.Repository
             }
         }
 
+        public async Task<IEnumerable<DropdownDto>> GetPaymentStatusDropdownAsync()
+        {
+            try
+            {
+                var sql = ServiceQuery.PaymentStatusDropdown;
+                using (var connection = new SqlConnection(_dbConnection.ConnectionString))
+                {
+                    return (await connection.QueryAsync<DropdownDto>(sql));
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         public async Task<IEnumerable<ServiceItemDto>> GetServiceItemsAsync(int jobId)
         {
             try
@@ -359,6 +377,29 @@ namespace BikeHub.Repository
             }
         }
 
+        public async Task MarkReadyForPickupAsync(int jobId)
+        {
+           try
+            {
+                var sql = ServiceQuery.UpdateServiceStatus;
+                var parameters = new
+                {
+                    @serviceJobId = jobId,
+                    @serviceStatus = (int)ServiceStatus.ReadyForPickup
+                };
+
+                using (var connection = new SqlConnection(_dbConnection.ConnectionString))
+                {
+                    await connection.ExecuteAsync(sql, parameters);
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         public async Task StartJobAsync(int jobId)
         {
             try
@@ -403,5 +444,7 @@ namespace BikeHub.Repository
                 throw;
             }
         }
+        
+      
     }
 }

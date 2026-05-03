@@ -12,7 +12,7 @@ namespace BikeHub.DapperQuery
                                         select  count(distinct t2.MechanicId) BusyMechanics from service.service_jobs t1
                                         inner join Service.service_job_assignments t2
                                         on t1.ServiceJobId=t2.ServiceJobId
-                                        where t1.ServiceStatus not in (1007,1008);
+                                        where t1.ServiceStatus not in (1007,1008,1012,1013);
                                         
                                         SELECT COUNT(1) AvailableMechanics
                                         FROM auth.Users u
@@ -34,7 +34,7 @@ namespace BikeHub.DapperQuery
                                             FROM service.service_job_assignments t2
                                             JOIN Service.service_jobs t1 
                                                 ON t1.ServiceJobId = t2.ServiceJobId
-                                            WHERE t1.ServiceStatus NOT IN (1007,1008)
+                                            WHERE t1.ServiceStatus NOT IN (1007,1008,1012,1013)
                                             GROUP BY t2.MechanicId
                                             HAVING COUNT(*) > 5
                                         ) tab;";
@@ -149,7 +149,7 @@ namespace BikeHub.DapperQuery
                                                               where ServiceJobId=@serviceJobId";
 
 
-        public const string AddServiceItems= @"INSERT INTO Service.service_items
+        public const string AddServiceItems = @"INSERT INTO Service.service_items
                                         (ServiceJobId, PartId, Qty, Total, CreatedAt)
                                         VALUES (@serviceJobId, @partId, @qty, @total, @createdAt)";
 
@@ -161,6 +161,7 @@ namespace BikeHub.DapperQuery
                                                     update service.Service_job_Assignments
                                                     set StartTime=GETDATE()
                                                     where ServiceJobId=@serviceJobId   ";
+
 
         public const string UpdateInprogressToCompletedStatus = @" 
                                                             update Service.service_jobs
@@ -248,9 +249,12 @@ namespace BikeHub.DapperQuery
 
         public const string ServiceStatusDropdown = @"SELECT Id [Value], Value [Text] FROM t000_lookUp WHERE LookupName = 'ServiceStatus'";
 
+
+        public const string PaymentStatusDropdown = @"SELECT Id [Value], Value [Text] FROM t000_lookUp WHERE LookupName = 'PaymentStatus'";
+
         public const string ServicePartsDropdown = @"select t1.PartId [Value],t1.PartName [Text] 
                                                      from Service.parts t1 where isactive=1";
-                                                     
+
         public const string ServicePartsCategoryDropdown = @"
                             select t1.CategoryId [Value],t1.CategoryName [Text] 
                             from  Service.parts_category t1 where IsActive=1";

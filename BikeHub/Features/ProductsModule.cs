@@ -417,7 +417,7 @@ namespace BikeHub.Features
                     {
                         BrandId=x.BrandId,
                         BrandName=x.BrandName,
-                        Image= @"https://f405rch9-7079.inc1.devtunnels.ms/Content/Images/Brands/" + x.Image
+                        Image= @$"{commonInfo.BaseUrl}/{commonInfo.Brand_IMG_PATH}" + x.Image
                     });
                     if (rowsaffect == null)
                     {
